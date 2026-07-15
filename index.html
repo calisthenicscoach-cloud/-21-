@@ -1,0 +1,648 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>תוכניות אימון — ידיים וכתפיים ב-21 יום</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0F1729;
+    --navy2:#16213E;
+    --card:#1C2A4A;
+    --line:#2A3A5C;
+    --orange:#FF6B35;
+    --orange-d:#E85826;
+    --red:#E63946;
+    --ink:#F4F6FB;
+    --muted:#9AA7C2;
+    --green:#39C16C;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{background:var(--navy);color:var(--ink);font-family:'Rubik',sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;overflow-x:hidden}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+
+  /* screens */
+  .screen{display:none;animation:fade .35s ease}
+  .screen.active{display:block}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
+  /* ---------- HERO ---------- */
+  .hero{
+    background:
+      radial-gradient(120% 90% at 80% -10%, rgba(255,107,53,.28), transparent 60%),
+      linear-gradient(180deg,var(--navy2),var(--navy));
+    padding:52px 18px 34px;
+    border-bottom:1px solid var(--line);
+  }
+  .hero-inner{max-width:680px;margin:0 auto}
+  .eyebrow{
+    display:inline-block;font-size:13px;font-weight:700;letter-spacing:.14em;
+    color:var(--orange);text-transform:uppercase;margin-bottom:14px;
+    border:1px solid rgba(255,107,53,.4);padding:5px 12px;border-radius:100px;
+  }
+  h1.title{font-size:clamp(30px,8vw,46px);font-weight:900;line-height:1.05;letter-spacing:-.01em}
+  h1.title .hl{color:var(--orange)}
+  .sub{margin-top:12px;color:var(--muted);font-size:16px;font-weight:400;max-width:440px;line-height:1.55}
+  .meta{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+  .chip{font-size:12.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.06);
+    border:1px solid var(--line);padding:6px 12px;border-radius:100px}
+
+  /* ---------- WARMUP ---------- */
+  .warmup{
+    margin-top:22px;display:flex;align-items:center;gap:14px;
+    background:linear-gradient(100deg,var(--orange),var(--orange-d));
+    border-radius:18px;padding:16px 18px;cursor:pointer;
+    box-shadow:0 12px 30px -12px rgba(255,107,53,.7);
+    transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .warmup:hover{transform:translateY(-2px);box-shadow:0 18px 40px -14px rgba(255,107,53,.85)}
+  .warmup:active{transform:translateY(0)}
+  .play{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.22);
+    display:grid;place-items:center}
+  .play svg{width:20px;height:20px;fill:#fff;margin-right:-2px}
+  .warmup .wt{font-weight:800;font-size:17px;color:#fff;line-height:1.2}
+  .warmup .ws{font-size:13px;color:rgba(255,255,255,.9);font-weight:500;margin-top:3px}
+  .warmup .arrow{margin-inline-start:auto;font-size:22px;color:#fff;opacity:.9}
+
+  /* ---------- TECHNIQUE BOX ---------- */
+  .techbox{margin-top:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);
+    border-radius:16px;padding:14px 15px}
+  .tech-t{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .techs{display:flex;gap:8px}
+  .techs .tech{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
+    background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.35);border-radius:11px;
+    color:var(--ink);font-family:inherit;font-size:13px;font-weight:700;padding:10px 6px;
+    cursor:pointer;transition:all .13s ease}
+  .techs .tech:hover{background:rgba(255,107,53,.26);border-color:var(--orange)}
+  .techs .tech .tp{font-size:9px;color:var(--orange)}
+
+  /* ---------- SECTION LABEL ---------- */
+  .seclabel{display:flex;align-items:center;gap:12px;margin:34px 2px 16px}
+  .seclabel h2{font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+  .seclabel .rule{height:1px;flex:1;background:var(--line)}
+
+  /* ---------- LEVEL CARDS ---------- */
+  .levels{display:flex;flex-direction:column;gap:14px}
+  .lvl{
+    position:relative;display:block;width:100%;text-align:right;cursor:pointer;
+    background:var(--card);border:1px solid var(--line);border-radius:20px;
+    padding:20px 20px 18px;overflow:hidden;
+    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+  }
+  .lvl:hover{transform:translateY(-3px);border-color:var(--orange);box-shadow:0 16px 34px -18px rgba(0,0,0,.8)}
+  .lvl .glow{position:absolute;inset-block-start:-40px;inset-inline-end:-40px;width:150px;height:150px;
+    border-radius:50%;filter:blur(40px);opacity:.5}
+  .lvl-1 .glow{background:#39C16C}
+  .lvl-2 .glow{background:var(--orange)}
+  .lvl-3 .glow{background:var(--red)}
+  .lvl-top{display:flex;align-items:center;gap:14px;position:relative}
+  .lvl-num{font-size:34px;font-weight:900;line-height:1;width:52px;height:52px;border-radius:14px;
+    display:grid;place-items:center;color:#fff;flex:0 0 auto}
+  .lvl-1 .lvl-num{background:linear-gradient(150deg,#39C16C,#2AA457)}
+  .lvl-2 .lvl-num{background:linear-gradient(150deg,var(--orange),var(--orange-d))}
+  .lvl-3 .lvl-num{background:linear-gradient(150deg,var(--red),#B71C2B)}
+  .lvl-name{font-size:21px;font-weight:800}
+  .lvl-tag{font-size:13px;color:var(--muted);font-weight:500;margin-top:2px}
+  .lvl-cta{margin-inline-start:auto;font-size:24px;color:var(--orange);font-weight:700}
+  .test{margin-top:16px;display:flex;gap:8px;position:relative}
+  .test .t{flex:1;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:12px;
+    padding:9px 6px;text-align:center}
+  .test .t b{display:block;font-size:17px;font-weight:800;color:var(--ink)}
+  .test .t span{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
+  .test-hd{position:relative;margin-top:15px;font-size:12px;color:var(--muted);font-weight:600}
+
+  .note{
+    margin-top:18px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.28);
+    border-radius:14px;padding:14px 16px;font-size:13.5px;line-height:1.6;color:#F0D9CC;
+  }
+  .note b{color:var(--orange)}
+  .note-t{font-size:15px;font-weight:800;color:var(--orange);margin-bottom:8px}
+
+  /* ---------- LEVEL DETAIL ---------- */
+  .lv-hero{padding:26px 18px 20px;border-bottom:1px solid var(--line);
+    background:linear-gradient(180deg,var(--navy2),var(--navy))}
+  .lv-hero-inner{max-width:680px;margin:0 auto}
+  .back{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:14.5px;
+    color:var(--muted);cursor:pointer;margin-bottom:16px;background:none;border:none;font-family:inherit}
+  .back:hover{color:var(--ink)}
+  .lv-badge{display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.06em;
+    color:#fff;padding:5px 13px;border-radius:100px;text-transform:uppercase}
+  .lv-title{font-size:30px;font-weight:900;margin-top:12px}
+  .lv-testline{margin-top:10px;font-size:14px;color:var(--muted);font-weight:500}
+  .lv-testline b{color:var(--ink);font-weight:700}
+
+  .wk{margin-top:22px}
+  .wk-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
+  .wk-badge{font-size:22px;font-weight:900;width:42px;height:42px;border-radius:12px;
+    display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--orange)}
+  .wk-name{font-size:19px;font-weight:800}
+  .wk-focus{font-size:13px;color:var(--muted);font-weight:500;margin-top:1px}
+
+  .ss{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px}
+  .ss-lbl{display:flex;align-items:center;gap:8px;padding:11px 16px;
+    background:rgba(255,107,53,.12);border-bottom:1px solid var(--line);
+    font-size:12.5px;font-weight:800;color:var(--orange);letter-spacing:.03em}
+  .ss-lbl .dot{width:7px;height:7px;border-radius:50%;background:var(--orange)}
+  .ss-lbl.fin{background:rgba(230,57,70,.13);color:#FF8B96}
+  .ss-lbl.fin .dot{background:var(--red)}
+
+  .ex{display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;
+    border-bottom:1px solid rgba(42,58,92,.55);transition:background .12s ease}
+  .ex:last-child{border-bottom:none}
+  .ex:hover{background:rgba(255,255,255,.04)}
+  .ex:active{background:rgba(255,255,255,.07)}
+  .ex-play{flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:rgba(255,107,53,.15);
+    border:1px solid rgba(255,107,53,.35);display:grid;place-items:center;transition:background .12s ease}
+  .ex:hover .ex-play{background:rgba(255,107,53,.28)}
+  .ex-play svg{width:15px;height:15px;fill:var(--orange);margin-right:-2px}
+  .ex-body{flex:1;min-width:0}
+  .ex-name{font-size:15.5px;font-weight:700;line-height:1.25}
+  .ex-sub{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:3px}
+  .ex-nums{flex:0 0 auto;text-align:center;min-width:84px}
+  .ex-main-rir{font-size:15.5px;font-weight:800;color:var(--orange);line-height:1.2;white-space:nowrap}
+  .ex-main-rir.fail{font-size:14.5px}
+  .ex-sub-reps{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:3px;white-space:nowrap}
+
+  /* alternative (easier) exercise line */
+  .ex-altline{display:inline-flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;
+    font-size:12.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.05);
+    border:1px solid var(--line);border-radius:8px;padding:5px 9px;transition:all .12s ease}
+  .ex-altline:hover{color:var(--ink);border-color:var(--orange)}
+  .ex-altline b{color:var(--orange);font-weight:700}
+  .ex-altline .alt-ic{font-size:13px;color:var(--orange)}
+  .ex-altline .alt-play{font-size:9px;color:var(--orange);opacity:.8}
+
+  /* reps-info box */
+  .info.reps .it{color:#7FB4FF}
+  .info.reps{background:rgba(60,120,220,.09);border-color:rgba(90,140,230,.32)}
+  .info.reps .ip b{color:#fff}
+  .ex-rir{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
+  .ex-watch{flex:0 0 auto;font-size:11px;color:var(--orange);font-weight:700;opacity:.75}
+
+  .prog{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 8px}
+  .prog h3{font-size:16px;font-weight:800;margin-bottom:6px}
+  .prog p.lead{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:14px}
+  .prog.single{padding:16px 18px 14px}
+  .prog.single h3{color:var(--orange);margin-bottom:4px}
+  .prog.single p.lead{margin-bottom:0;font-size:14px;color:var(--ink);font-weight:600}
+  .wkrow{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+  .wknum{flex:0 0 auto;font-size:12px;font-weight:800;color:#fff;background:var(--orange-d);
+    padding:4px 10px;border-radius:8px;height:fit-content;white-space:nowrap}
+  .wktxt{font-size:13.5px;line-height:1.55;color:var(--ink)}
+  .wktxt b{color:var(--orange)}
+
+  .foot{margin-top:26px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.7}
+  .foot .rir-key{background:var(--card);border:1px solid var(--line);border-radius:12px;
+    padding:12px 14px;margin-top:4px;font-size:12.5px;color:var(--muted);line-height:1.6}
+  .foot .rir-key b{color:var(--orange)}
+
+  /* ---------- HOW IT WORKS (home) ---------- */
+  .howit{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 6px;margin-top:2px}
+  .howit .hi-block{padding:14px 0;border-top:1px solid var(--line)}
+  .howit .hi-block:first-child{border-top:none;padding-top:4px}
+  .howit .hi-t{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;margin-bottom:7px}
+  .howit .hi-ic{width:28px;height:28px;border-radius:8px;background:rgba(255,107,53,.15);
+    border:1px solid rgba(255,107,53,.35);display:grid;place-items:center;font-size:15px;flex:0 0 auto}
+  .howit .hi-p{font-size:14px;line-height:1.65;color:var(--muted)}
+  .howit .hi-p b{color:var(--ink);font-weight:700}
+  .howit .hi-p .o{color:var(--orange);font-weight:700}
+  .sched{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+  .sched .srow{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.22);
+    border:1px solid var(--line);border-radius:12px;padding:11px 13px}
+  .sched .sw{font-size:13px;font-weight:800;color:#fff;background:var(--orange-d);
+    padding:4px 11px;border-radius:8px;white-space:nowrap;flex:0 0 auto}
+  .sched .sd{font-size:14px;font-weight:700;color:var(--ink)}
+  .sched .sd span{font-weight:500;color:var(--muted);font-size:13px}
+
+  /* ---------- SUPERSET EXPLAINER (level) ---------- */
+  .info{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);
+    border-radius:16px;padding:15px 17px;margin-top:20px}
+  .info .it{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:800;color:var(--orange);margin-bottom:8px}
+  .info .ip{font-size:14px;line-height:1.65;color:#F0DACE}
+  .info .ip b{color:#fff;font-weight:700}
+  .rir-watch{display:flex;align-items:center;gap:10px;margin-top:13px;padding-top:13px;
+    border-top:1px solid rgba(255,107,53,.28);cursor:pointer;font-weight:700;font-size:14px;color:var(--orange)}
+  .rir-watch .rw-play{width:34px;height:34px;border-radius:9px;background:var(--orange);
+    display:grid;place-items:center;flex:0 0 auto;box-shadow:0 8px 18px -8px rgba(255,107,53,.8)}
+  .rir-watch .rw-play svg{width:14px;height:14px;fill:#fff;margin-right:-2px}
+  .rir-watch .rw-arrow{margin-inline-start:auto;font-size:20px;opacity:.8}
+  .rir-watch:hover{color:#fff}
+  .rir-watch:hover .rw-play{background:var(--orange-d)}
+
+  /* reps unit */
+  .ex-reps .unit{font-size:11px;font-weight:600;color:var(--muted)}
+
+  /* ---------- MODE TOGGLE ---------- */
+  .modewrap{margin-top:20px}
+  .modelbl{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:9px}
+  .modes{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);
+    border-radius:14px;padding:5px}
+  .modes .mode{flex:1;border:none;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:700;
+    color:var(--muted);background:transparent;padding:11px 8px;border-radius:10px;transition:all .15s ease}
+  .modes .mode:hover{color:var(--ink)}
+  .modes .mode.active{background:linear-gradient(150deg,var(--orange),var(--orange-d));color:#fff;
+    box-shadow:0 8px 18px -8px rgba(255,107,53,.7)}
+  .modehint{font-size:13px;color:var(--muted);line-height:1.55;margin-top:10px;padding:0 2px}
+  .modehint b{color:var(--ink);font-weight:700}
+</style>
+</head>
+<body>
+
+<!-- ================= HOME ================= -->
+<section id="home" class="screen active">
+  <div class="hero">
+    <div class="hero-inner">
+      <span class="eyebrow">האתגר שלך · 21 יום</span>
+      <h1 class="title">תוכניות <span class="hl">האימון</span></h1>
+
+      <div class="warmup" onclick="openVid('https://youtu.be/0Aeflpg7btQ')">
+        <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <div>
+          <div class="wt">חימום — לפני כל אימון</div>
+          <div class="ws">חובה בכל רמה, לפני כל אימון. לוחצים ומתחממים.</div>
+        </div>
+        <span class="arrow">‹</span>
+      </div>
+
+      <div class="techbox">
+        <div class="tech-t">טכניקה נכונה — לפני שמתחילים</div>
+        <div class="techs">
+          <button class="tech" onclick="openVid('https://youtu.be/vtHiG82rHCE')"><span class="tp">▶</span>מתח</button>
+          <button class="tech" onclick="openVid('https://youtu.be/lpC8OJC255Q')"><span class="tp">▶</span>מקבילים</button>
+          <button class="tech" onclick="openVid('https://youtu.be/98NG8WCzmeM')"><span class="tp">▶</span>שכיבות שמיכה</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <div class="seclabel"><h2>בחר את הרמה שלך</h2><span class="rule"></span></div>
+
+    <div class="levels">
+      <!-- LEVEL 1 -->
+      <button class="lvl lvl-1" onclick="showLevel(1)">
+        <span class="glow"></span>
+        <div class="lvl-top">
+          <span class="lvl-num">1</span>
+          <div>
+            <div class="lvl-name">רמה 1 · מתחיל</div>
+          </div>
+          <span class="lvl-cta">‹</span>
+        </div>
+        <div class="test">
+          <div class="t"><b>0–3</b><span>מתח</span></div>
+          <div class="t"><b>0–5</b><span>מקבילים</span></div>
+          <div class="t"><b>0–15</b><span>שכיבות שמיכה</span></div>
+        </div>
+      </button>
+
+      <!-- LEVEL 2 -->
+      <button class="lvl lvl-2" onclick="showLevel(2)">
+        <span class="glow"></span>
+        <div class="lvl-top">
+          <span class="lvl-num">2</span>
+          <div>
+            <div class="lvl-name">רמה 2 · בינוני</div>
+          </div>
+          <span class="lvl-cta">‹</span>
+        </div>
+        <div class="test">
+          <div class="t"><b>4–10</b><span>מתח</span></div>
+          <div class="t"><b>6–15</b><span>מקבילים</span></div>
+          <div class="t"><b>16–29</b><span>שכיבות שמיכה</span></div>
+        </div>
+      </button>
+
+      <!-- LEVEL 3 -->
+      <button class="lvl lvl-3" onclick="showLevel(3)">
+        <span class="glow"></span>
+        <div class="lvl-top">
+          <span class="lvl-num">3</span>
+          <div>
+            <div class="lvl-name">רמה 3 · מתקדם</div>
+          </div>
+          <span class="lvl-cta">‹</span>
+        </div>
+        <div class="test">
+          <div class="t"><b>+11</b><span>מתח</span></div>
+          <div class="t"><b>+16</b><span>מקבילים</span></div>
+          <div class="t"><b>+30</b><span>שכיבות שמיכה</span></div>
+        </div>
+      </button>
+    </div>
+
+    <div class="note">
+      <div class="note-t">איך בוחרים רמה ואיך עוברים רמה</div>
+      פעם בשבוע בצע <b>מקסימום חזרות</b> בכל תרגיל: מתח, מקבילים, שכיבות שמיכה. לפי התוצאה — עבור לרמה המתאימה לך.<br><br>
+      <b>תוצאות מעורבות?</b> לך לפי הרמה הנמוכה. למשל 7 מתח אבל 3 מקבילים = רמה 1.
+    </div>
+
+    <div class="seclabel"><h2>איך עובדים עם התוכנית</h2><span class="rule"></span></div>
+
+    <div class="howit">
+      <div class="hi-block">
+        <div class="hi-t"><span class="hi-ic">🔀</span>שתי דרכים להתאמן — בחר אחת</div>
+        <div class="hi-p"><b>מחולק (A/B):</b> שני אימונים קצרים שמתחלפים — <span class="o">אימון A</span> דחיפה (יד אחורית + כתפיים), <span class="o">אימון B</span> משיכה (יד קדמית + גב).<br>
+        <b>אימון מלא:</b> אימון אחד שמאמן את כל השרירים ביחד.</div>
+      </div>
+
+      <div class="hi-block">
+        <div class="hi-t"><span class="hi-ic">🔁</span>איך מסדרים את A ו-B בשבוע</div>
+        <div class="hi-p">מתחלפים ביניהם בימים שונים: A, אחר כך B, אחר כך A. <b>לא עושים את אותו אימון יומיים ברצף.</b><br><br>
+        מתאמן מספר <b>אי-זוגי</b> של פעמים בשבוע (3 או 5)? עשה יותר מהאימון שהכי חשוב לך — למשל <span class="o">פעמיים A ופעם אחת B</span>.</div>
+      </div>
+
+      <div class="hi-block">
+        <div class="hi-t"><span class="hi-ic">📅</span>כמה אימונים בשבוע</div>
+        <div class="sched">
+          <div class="srow"><span class="sw">שבוע 1</span><div class="sd">3 אימונים <span>— יום אימון, יום מנוחה</span></div></div>
+          <div class="srow"><span class="sw">שבוע 2</span><div class="sd">3–4 אימונים <span>— מוסיפים אימון אחרי שהתרגלת לשגרה</span></div></div>
+          <div class="srow"><span class="sw">שבוע 3</span><div class="sd">4–5 אימונים <span>— מוסיפים עוד אימון כשהגוף עומד בעומס</span></div></div>
+        </div>
+        <div class="hi-p" style="margin-top:12px">תמיד תשאיר לפחות <b>יום מנוחה אחד בשבוע</b>, ואל תעשה שני אימונים קשים על אותם שרירים יום אחרי יום.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= LEVEL DETAIL (rendered by JS) ================= -->
+<section id="level" class="screen">
+  <div id="levelContent"></div>
+</section>
+
+<script>
+const YT = {}; // reference: exercise -> url handled inline below
+
+function openVid(url){ window.open(url, '_blank', 'noopener'); }
+
+// ---------- DATA ----------
+const LEVELS = {
+  1: {
+    name:"מתחיל", color:"#39C16C", colorD:"#2AA457",
+    test:"0–3 מתח · 0–5 מקבילים · 0–15 שכיבות שמיכה",
+    split:[
+      { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
+        { label:"סופרסט 1 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מקבילים — רק ירידה", s:"יד אחורית · ירידה איטית 3–5 שנ'", fail:true, u:"https://youtu.be/lOFWL94QqXs"},
+          {n:"החזקה סטטית במקבילים", s:"יד אחורית · להחזיק למעלה בכיפוף", fail:true, u:"https://youtu.be/gRIAcEZwHc8"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"שכיבות שמיכה בשיפוע חיובי", s:"חזה + יד אחורית · ידיים על משטח מוגבה", r:"8–12", rir:"RIR 2", u:"https://youtu.be/3KQ83iXuFvc"},
+          {n:"שכיבות שמיכה על הברכיים", s:"חזה + יד אחורית", fail:true, u:"https://youtu.be/RzLVTDIhhpU", alt:{n:"שכיבות שמיכה — רק ירידה", u:"https://youtu.be/NWHykVBlBc8"}},
+        ]},
+        { fin:true, label:"פיניש — לבצע 1–2 סבבים", ex:[
+          {n:"ג'קסונים", s:"כתפיים", fail:true, u:"https://youtu.be/IuXEi463LHw"},
+        ]},
+      ]},
+      { badge:"B", name:"אימון B — משיכה", focus:"יד קדמית + גב", blocks:[
+        { label:"סופרסט 1 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח שלילי", s:"גב + יד קדמית · ירידה איטית 3–5 שנ'", fail:true, u:"https://youtu.be/bSgTY9Oni5A", alt:{n:"מתח שכמות", u:"https://youtu.be/QX6s1wbX0vY"}},
+          {n:"מתח אוסטרלי", s:"גב + יד קדמית", r:"8–12", rir:"RIR 2", u:"https://youtu.be/8Vy15j8t4WM"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח אוסטרלי סופינציה", s:"דגש יד קדמית", r:"8–12", rir:"RIR 2", u:"https://youtu.be/HTmPbbxFqhA"},
+          {n:"שכיבות שמיכה הפוכות", s:"חתירה לגב", fail:true, u:"https://youtu.be/UzMHnSKl_lE"},
+        ]},
+        { fin:true, label:"פיניש — לבצע 1–2 סבבים", ex:[
+          {n:"מתח סטטי", s:"גב + יד קדמית · להחזיק למעלה", fail:true, u:"https://youtu.be/Aqa0Hf0mWvQ"},
+        ]},
+      ]},
+    ],
+    full:[
+      { badge:"★", name:"אימון מלא — כל השרירים", focus:"משיכה + דחיפה ביחד · מהקשה לקל", blocks:[
+        { label:"סופרסט 1 — לבצע 3 סבבים · מנוחה 60–120 שנ' · הכי תובעני", ex:[
+          {n:"מתח שלילי", s:"משיכה · ירידה איטית 3–5 שנ'", fail:true, u:"https://youtu.be/bSgTY9Oni5A", alt:{n:"מתח שכמות", u:"https://youtu.be/QX6s1wbX0vY"}},
+          {n:"מקבילים — רק ירידה", s:"דחיפה · ירידה איטית 3–5 שנ'", fail:true, u:"https://youtu.be/lOFWL94QqXs", alt:{n:"החזקה סטטית במקבילים", u:"https://youtu.be/gRIAcEZwHc8"}},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח אוסטרלי", s:"משיכה · גב + יד קדמית", r:"8–12", rir:"RIR 1", u:"https://youtu.be/8Vy15j8t4WM"},
+          {n:"שכיבות שמיכה בשיפוע חיובי", s:"דחיפה · חזה + יד אחורית", fail:true, u:"https://youtu.be/3KQ83iXuFvc", alt:{n:"שכיבות שמיכה על הברכיים", u:"https://youtu.be/RzLVTDIhhpU"}},
+        ]},
+        { label:"סופרסט 3 — לבצע 3 סבבים · מנוחה 60–120 שנ' · קל, לסיום", ex:[
+          {n:"מתח אוסטרלי סופינציה", s:"משיכה · דגש יד קדמית", fail:true, u:"https://youtu.be/HTmPbbxFqhA"},
+          {n:"ג'קסונים", s:"דחיפה · כתפיים", fail:true, u:"https://youtu.be/IuXEi463LHw"},
+        ]},
+      ]},
+    ]
+  },
+  2: {
+    name:"בינוני", color:"#FF6B35", colorD:"#E85826",
+    test:"4–10 מתח · 6–15 מקבילים · 16–29 שכיבות שמיכה",
+    split:[
+      { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
+        { label:"סופרסט 1 — לבצע 3–4 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מקבילים", s:"יד אחורית + חזה", r:"6–10", rir:"RIR 1–2", u:"https://youtu.be/-2gDURd1h4c"},
+          {n:"פייק פוש-אפ (ידיים בהגבהה)", s:"כתפיים", fail:true, u:"https://youtu.be/BmAsE__CC3s"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"שכיבות שמיכה יהלום", s:"דגש יד אחורית", r:"10–15", rir:"RIR 1–2", u:"https://youtu.be/oe8lXv62sts"},
+          {n:"שכיבת שמיכה עם נגיעת חזה", s:"טווח מלא", fail:true, u:"https://youtu.be/moSdBGxmc34"},
+        ]},
+        { fin:true, label:"פיניש — לבצע 1–2 סבבים", ex:[
+          {n:"פשיטת מרפקים בזווית", s:"יד אחורית · בידוד ישיר", fail:true, u:"https://youtu.be/TbD4LyoFL1c"},
+        ]},
+      ]},
+      { badge:"B", name:"אימון B — משיכה", focus:"יד קדמית + גב", blocks:[
+        { label:"סופרסט 1 — לבצע 3–4 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח רגיל", s:"אחיזה עליונה — גב", r:"5–8", rir:"RIR 1–2", u:"https://youtu.be/T6o0ALLAvGM"},
+          {n:"מתח אוסטרלי", s:"נפח לגב + יד קדמית", fail:true, u:"https://youtu.be/8Vy15j8t4WM"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח סופינציה", s:"דגש יד קדמית", r:"5–8", rir:"RIR 1–2", u:"https://youtu.be/qNLCxSzMLpY"},
+          {n:"מתח אוסטרלי סופינציה", s:"יד קדמית", fail:true, u:"https://youtu.be/HTmPbbxFqhA"},
+        ]},
+        { fin:true, label:"פיניש — לבצע 2 סבבים", ex:[
+          {n:"מתח שלילי", s:"ירידה איטית 4–5 שנ'", fail:true, u:"https://youtu.be/bSgTY9Oni5A"},
+        ]},
+      ]},
+    ],
+    full:[
+      { badge:"★", name:"אימון מלא — כל השרירים", focus:"משיכה + דחיפה ביחד · מהקשה לקל", blocks:[
+        { label:"סופרסט 1 — לבצע 3 סבבים · מנוחה 60–120 שנ' · הכי תובעני", ex:[
+          {n:"מתח רגיל", s:"משיכה · אחיזה עליונה — גב", r:"5–8", rir:"RIR 1–2", u:"https://youtu.be/T6o0ALLAvGM"},
+          {n:"מקבילים", s:"דחיפה · יד אחורית + חזה", r:"6–10", rir:"RIR 1–2", u:"https://youtu.be/-2gDURd1h4c"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח סופינציה", s:"משיכה · דגש יד קדמית", r:"5–8", rir:"RIR 1–2", u:"https://youtu.be/qNLCxSzMLpY"},
+          {n:"פייק פוש-אפ (ידיים בהגבהה)", s:"דחיפה · כתפיים", r:"8–12", rir:"RIR 1–2", u:"https://youtu.be/BmAsE__CC3s"},
+        ]},
+        { label:"סופרסט 3 — לבצע 3 סבבים · מנוחה 60–120 שנ' · קל, לסיום", ex:[
+          {n:"מתח אוסטרלי סופינציה", s:"משיכה · יד קדמית", r:"8–12", rir:"RIR 1–2", u:"https://youtu.be/HTmPbbxFqhA"},
+          {n:"שכיבות שמיכה יהלום", s:"דחיפה · דגש יד אחורית", r:"10–15", rir:"RIR 1–2", u:"https://youtu.be/oe8lXv62sts"},
+        ]},
+      ]},
+    ]
+  },
+  3: {
+    name:"מתקדם", color:"#E63946", colorD:"#B71C2B",
+    test:"11+ מתח · 16+ מקבילים · 30+ שכיבות שמיכה",
+    split:[
+      { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
+        { label:"סופרסט 1 — לבצע 4 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מקבילים", s:"יד אחורית + חזה · ירידה 3 שנ', עלייה 2 שנ'", r:"8–12", rir:"RIR 1", u:"https://youtu.be/-2gDURd1h4c"},
+          {n:"שכיבות שמיכה בהישענות", s:"כתפיים · עד שלא מצליח לשמור על ההישענות", fail:true, u:"https://youtu.be/SQPrRMFCOVw"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"שכיבות שמיכה בשיפוע שלילי", s:"רגליים מוגבהות — חזה עליון + כתף", r:"12–15", rir:"RIR 1", u:"https://youtu.be/NO6waBz_fY4"},
+          {n:"שכיבות שמיכה יהלום", s:"יד אחורית · ירידה 3 שנ', עלייה 2 שנ'", r:"15–20", rir:"RIR 1", u:"https://youtu.be/oe8lXv62sts"},
+        ]},
+        { fin:true, label:"פיניש — לבצע 1–2 סבבים", ex:[
+          {n:"פשיטת מרפקים בזווית", s:"יד אחורית · בידוד ישיר", fail:true, u:"https://youtu.be/TbD4LyoFL1c"},
+        ]},
+      ]},
+      { badge:"B", name:"אימון B — משיכה", focus:"יד קדמית + גב", blocks:[
+        { label:"סופרסט 1 — לבצע 4 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח לארוסה", s:"גב + יד קדמית · דגש על כל יד בנפרד", r:"6–10", rir:"RIR 1", u:"https://youtu.be/xW2PXwR5nQg"},
+          {n:"מתח אוסטרלי סופינציה", s:"יד קדמית", r:"8–12", rir:"RIR 1", u:"https://youtu.be/HTmPbbxFqhA"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח רחב", s:"דגש גב", r:"6–10", rir:"RIR 1", u:"https://youtu.be/llkU-BLJCF4"},
+          {n:"מתח סופינציה", s:"יד קדמית · ירידה 3 שנ', עלייה 2 שנ'", r:"8–12", rir:"RIR 1", u:"https://youtu.be/qNLCxSzMLpY"},
+        ]},
+      ]},
+    ],
+    full:[
+      { badge:"★", name:"אימון מלא — כל השרירים", focus:"משיכה + דחיפה ביחד · מהקשה לקל", blocks:[
+        { label:"סופרסט 1 — לבצע 3 סבבים · מנוחה 60–120 שנ' · הכי תובעני", ex:[
+          {n:"מתח לארוסה", s:"משיכה · גב + יד קדמית · דגש על כל יד בנפרד", r:"6–10", rir:"RIR 1", u:"https://youtu.be/xW2PXwR5nQg"},
+          {n:"מקבילים", s:"דחיפה · יד אחורית + חזה · ירידה 3 שנ', עלייה 2 שנ'", r:"8–12", rir:"RIR 1", u:"https://youtu.be/-2gDURd1h4c"},
+        ]},
+        { label:"סופרסט 2 — לבצע 3 סבבים · מנוחה 60–120 שנ'", ex:[
+          {n:"מתח רחב", s:"משיכה · דגש גב", r:"6–10", rir:"RIR 1", u:"https://youtu.be/llkU-BLJCF4"},
+          {n:"שכיבות שמיכה בהישענות", s:"דחיפה · כתפיים · עד שלא מצליח לשמור על ההישענות", fail:true, u:"https://youtu.be/SQPrRMFCOVw"},
+        ]},
+        { label:"סופרסט 3 — לבצע 3 סבבים · מנוחה 60–120 שנ' · קל, לסיום", ex:[
+          {n:"מתח סופינציה", s:"משיכה · יד קדמית · ירידה 3 שנ', עלייה 2 שנ'", r:"8–12", rir:"RIR 1", u:"https://youtu.be/qNLCxSzMLpY"},
+          {n:"פשיטת מרפקים בזווית", s:"דחיפה · יד אחורית · בידוד ישיר", fail:true, u:"https://youtu.be/TbD4LyoFL1c"},
+        ]},
+      ]},
+    ]
+  }
+};
+
+const PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
+
+let curLevel = 1;
+let curMode = 'split';
+
+function renderLevel(n, mode){
+  const L = LEVELS[n];
+  mode = mode || 'split';
+  const list = (mode === 'full') ? L.full : L.split;
+  let html = `
+    <div class="lv-hero">
+      <div class="lv-hero-inner">
+        <button class="back" onclick="showHome()">‹ חזרה לכל הרמות</button>
+        <span class="lv-badge" style="background:linear-gradient(150deg,${L.color},${L.colorD})">רמה ${n} · ${L.name}</span>
+        <div class="lv-title">תוכנית האימון שלך</div>
+      </div>
+    </div>
+    <div class="wrap">
+
+      <div class="info">
+        <div class="it">🔁 מה זה סופרסט?</div>
+        <div class="ip"><b>סופרסט = שני תרגילים אחד אחרי השני, בלי מנוחה באמצע.</b> רק לאחר סיום הסופרסט נחים 60–120 שניות — וזה סבב אחד. חוזרים לפי מספר הסבבים שכתוב.<br><br>
+        צריך יותר זמן מנוחה? קח אותו — אפילו 3–4 דקות. מה שחשוב הוא להגיע לסבב הבא חזק ומוכן, לא להיצמד לשניות.</div>
+      </div>
+
+      <div class="info rir">
+        <div class="it">💪 מה זה RIR?</div>
+        <div class="ip"><b>RIR = כמה חזרות נשארו לך לפני כשל בסוף הסט.</b> "RIR 2" = עצרת 2 חזרות לפני כשל. ככל שהמספר נמוך יותר — קרוב יותר לכשל.</div>
+        <div class="rir-watch" onclick="openVid('https://youtu.be/bNP1c_PJ80E')">
+          <div class="rw-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+          <span>צפה בסרטון הסבר על RIR</span>
+          <span class="rw-arrow">‹</span>
+        </div>
+      </div>
+
+      <div class="info reps">
+        <div class="it">🔢 כמה חזרות לעשות?</div>
+        <div class="ip">מספר החזרות שכתוב ליד כל תרגיל הוא <b>רק כיוון</b>. מה שקובע זה ה־<b>RIR</b> שכתוב ליד התרגיל — תבצע חזרות עד שתגיע אליו, גם אם יצאת מהטווח שכתוב.<br><br>
+        עשית יותר חזרות מהטווח? מצוין. פחות? גם בסדר. תבצע לפי הכוח שלך.</div>
+      </div>
+
+      <div class="modewrap">
+        <div class="modelbl">איך אתה רוצה להתאמן?</div>
+        <div class="modes">
+          <button class="mode ${mode==='split'?'active':''}" onclick="setMode('split')">מחולק · A/B</button>
+          <button class="mode ${mode==='full'?'active':''}" onclick="setMode('full')">אימון מלא</button>
+        </div>
+        <div class="modehint">${mode==='split'
+          ? 'שני אימונים קצרים שמתחלפים — <b>אימון A</b> (דחיפה) ו<b>אימון B</b> (משיכה), בימים שונים.'
+          : 'אימון אחד שמאמן את <b>כל השרירים ביחד</b>. בוחרים יום, ומבצעים את כל האימון.'}</div>
+      </div>`;
+
+  list.forEach(w=>{
+    html += `
+      <div class="wk">
+        <div class="wk-head">
+          <span class="wk-badge">${w.badge}</span>
+          <div><div class="wk-name">${w.name}</div><div class="wk-focus">${w.focus}</div></div>
+        </div>`;
+    w.blocks.forEach(b=>{
+      html += `<div class="ss">
+        <div class="ss-lbl ${b.fin?'fin':''}"><span class="dot"></span>${b.label}</div>`;
+      b.ex.forEach(e=>{
+        const nums = e.fail
+          ? `<div class="ex-main-rir fail">עד כשל</div>`
+          : `<div class="ex-main-rir">${e.rir}</div>${e.r ? `<div class="ex-sub-reps">${e.r} חזרות</div>` : ''}`;
+        const altline = e.alt
+          ? `<div class="ex-altline" onclick="event.stopPropagation(); openVid('${e.alt.u}')"><span class="alt-ic">↺</span><span>לא מצליח? עשה <b>${e.alt.n}</b></span><span class="alt-play">▶</span></div>`
+          : '';
+        html += `
+          <div class="ex" onclick="openVid('${e.u}')">
+            <div class="ex-play">${PLAY}</div>
+            <div class="ex-body">
+              <div class="ex-name">${e.n}</div>
+              <div class="ex-sub">${e.s}</div>
+              ${altline}
+            </div>
+            <div class="ex-nums">${nums}</div>
+          </div>`;
+      });
+      html += `</div>`;
+    });
+    html += `</div>`;
+  });
+
+  // progression
+  html += `
+    <div class="prog single">
+      <h3>מרגיש שהאימון קל מדי?</h3>
+      <p class="lead">הוסף סבב לכל סופרסט.</p>
+    </div>
+
+    <div class="foot">
+      <p>פעם בשבוע בצע מקסימום חזרות במתח, מקבילים ושכיבות שמיכה. עברת את הרף של הרמה הבאה בטכניקה נקייה? עבור לתוכנית הבאה.</p>
+    </div>
+    </div>`;
+
+  document.getElementById('levelContent').innerHTML = html;
+}
+
+function showLevel(n){
+  curLevel = n;
+  curMode = 'split';
+  renderLevel(n, curMode);
+  document.getElementById('home').classList.remove('active');
+  document.getElementById('level').classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function setMode(m){
+  curMode = m;
+  renderLevel(curLevel, curMode);
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function showHome(){
+  document.getElementById('level').classList.remove('active');
+  document.getElementById('home').classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+</script>
+</body>
+</html>
