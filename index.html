@@ -9,246 +9,298 @@
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>
   :root{
-    --navy:#0F1729;
-    --navy2:#16213E;
-    --card:#1C2A4A;
-    --line:#2A3A5C;
+    --bg:#090D15;
+    --bg2:#0E1421;
+    --surface:#141B29;
+    --surface2:#1A2333;
+    --line:rgba(255,255,255,.07);
+    --line-2:rgba(255,255,255,.12);
+    --ink:#F4F7FC;
+    --ink2:#C6CEDE;
+    --muted:#7C8698;
     --orange:#FF6B35;
+    --orange-2:#FF8C57;
     --orange-d:#E85826;
-    --red:#E63946;
-    --ink:#F4F6FB;
-    --muted:#9AA7C2;
-    --green:#39C16C;
+    --grad:linear-gradient(135deg,#FF8146,#EE5220);
+    --l1:#33C98A;
+    --l2:#F5A524;
+    --l3:#FB5063;
+    --blue:#5B9DFF;
+    --r:16px;
+    --shadow:0 1px 2px rgba(0,0,0,.35), 0 14px 34px -18px rgba(0,0,0,.8);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35), 0 6px 16px -10px rgba(0,0,0,.7);
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html,body{background:var(--navy);color:var(--ink);font-family:'Rubik',sans-serif;-webkit-font-smoothing:antialiased}
-  body{min-height:100vh;overflow-x:hidden}
+  html,body{overflow-x:clip}
+  html,body{
+    background:var(--bg);color:var(--ink);
+    font-family:'Rubik','Segoe UI',system-ui,-apple-system,'Helvetica Neue',Arial,sans-serif;
+    -webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility;
+  }
+  body{min-height:100vh;position:relative}
+  body::before{
+    content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(90% 55% at 82% -8%, rgba(255,107,53,.14), transparent 60%),
+      linear-gradient(180deg,var(--bg2),var(--bg) 42%);
+  }
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:680px;margin:0 auto;padding:0 18px 60px}
+  button{font-family:inherit}
+  svg{display:block}
+  .ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.85;
+    stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+  .ic-fill{fill:currentColor;stroke:none}
+  .wrap{max-width:640px;margin:0 auto;padding:0 18px 64px}
 
   /* screens */
-  .screen{display:none;animation:fade .35s ease}
-  .screen.active{display:block}
-  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .38s cubic-bezier(.2,.7,.3,1)}
+  @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+  @media (prefers-reduced-motion:reduce){
+    .screen.active{animation:none}
+    *{transition:none !important}
+  }
 
   /* ---------- HERO ---------- */
-  .hero{
-    background:
-      radial-gradient(120% 90% at 80% -10%, rgba(255,107,53,.28), transparent 60%),
-      linear-gradient(180deg,var(--navy2),var(--navy));
-    padding:52px 18px 34px;
-    border-bottom:1px solid var(--line);
-  }
-  .hero-inner{max-width:680px;margin:0 auto}
+  .hero{padding:46px 18px 30px;border-bottom:1px solid var(--line)}
+  .hero-inner{max-width:640px;margin:0 auto}
   .eyebrow{
-    display:inline-block;font-size:13px;font-weight:700;letter-spacing:.14em;
-    color:var(--orange);text-transform:uppercase;margin-bottom:14px;
-    border:1px solid rgba(255,107,53,.4);padding:5px 12px;border-radius:100px;
+    display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.12em;color:var(--orange-2);text-transform:uppercase;margin-bottom:16px;
+    border:1px solid var(--line-2);background:rgba(255,107,53,.07);
+    padding:6px 13px;border-radius:100px;
   }
-  h1.title{font-size:clamp(30px,8vw,46px);font-weight:900;line-height:1.05;letter-spacing:-.01em}
-  h1.title .hl{color:var(--orange)}
-  .sub{margin-top:12px;color:var(--muted);font-size:16px;font-weight:400;max-width:440px;line-height:1.55}
-  .meta{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
-  .chip{font-size:12.5px;font-weight:600;color:var(--ink);background:rgba(255,255,255,.06);
-    border:1px solid var(--line);padding:6px 12px;border-radius:100px}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--orange);
+    box-shadow:0 0 0 4px rgba(255,107,53,.16)}
+  h1.title{font-size:clamp(32px,8.5vw,50px);font-weight:900;line-height:1.02;letter-spacing:-.025em;text-wrap:balance}
+  h1.title .hl{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .sub{margin-top:13px;color:var(--ink2);font-size:15.5px;font-weight:400;max-width:430px;line-height:1.6}
 
-  /* ---------- WARMUP ---------- */
+  /* warmup CTA */
   .warmup{
-    margin-top:22px;display:flex;align-items:center;gap:14px;
-    background:linear-gradient(100deg,var(--orange),var(--orange-d));
-    border-radius:18px;padding:16px 18px;cursor:pointer;
-    box-shadow:0 12px 30px -12px rgba(255,107,53,.7);
-    transition:transform .15s ease, box-shadow .15s ease;
+    margin-top:24px;display:flex;align-items:center;gap:14px;width:100%;text-align:right;
+    background:var(--grad);border:none;border-radius:16px;padding:15px 16px;cursor:pointer;
+    box-shadow:0 12px 30px -14px rgba(255,107,53,.75), inset 0 1px 0 rgba(255,255,255,.18);
+    transition:transform .16s ease, box-shadow .16s ease;
   }
-  .warmup:hover{transform:translateY(-2px);box-shadow:0 18px 40px -14px rgba(255,107,53,.85)}
+  .warmup:hover{transform:translateY(-2px);box-shadow:0 18px 40px -16px rgba(255,107,53,.9), inset 0 1px 0 rgba(255,255,255,.18)}
   .warmup:active{transform:translateY(0)}
-  .play{flex:0 0 auto;width:46px;height:46px;border-radius:50%;background:rgba(0,0,0,.22);
-    display:grid;place-items:center}
-  .play svg{width:20px;height:20px;fill:#fff;margin-right:-2px}
-  .warmup .wt{font-weight:800;font-size:17px;color:#fff;line-height:1.2}
-  .warmup .ws{font-size:13px;color:rgba(255,255,255,.9);font-weight:500;margin-top:3px}
-  .warmup .arrow{margin-inline-start:auto;font-size:22px;color:#fff;opacity:.9}
+  .warmup .play{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:rgba(0,0,0,.2);
+    display:grid;place-items:center;color:#fff;font-size:19px}
+  .warmup .play .ic{margin-inline-start:2px}
+  .warmup .wt{font-weight:800;font-size:16px;color:#fff;line-height:1.2}
+  .warmup .ws{font-size:12.5px;color:rgba(255,255,255,.86);font-weight:500;margin-top:3px}
+  .warmup .chev{margin-inline-start:auto;color:#fff;font-size:20px;opacity:.85}
 
-  /* ---------- TECHNIQUE BOX ---------- */
-  .techbox{margin-top:14px;background:rgba(255,255,255,.05);border:1px solid var(--line);
-    border-radius:16px;padding:14px 15px}
-  .tech-t{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:10px}
-  .techs{display:flex;gap:8px}
-  .techs .tech{flex:1;display:flex;align-items:center;justify-content:center;gap:6px;
-    background:rgba(255,107,53,.12);border:1px solid rgba(255,107,53,.35);border-radius:11px;
-    color:var(--ink);font-family:inherit;font-size:13px;font-weight:700;padding:10px 6px;
-    cursor:pointer;transition:all .13s ease}
-  .techs .tech:hover{background:rgba(255,107,53,.26);border-color:var(--orange)}
-  .techs .tech .tp{font-size:9px;color:var(--orange)}
+  /* technique */
+  .techbox{margin-top:12px}
+  .tech-t{font-size:12px;font-weight:700;color:var(--muted);letter-spacing:.06em;
+    text-transform:uppercase;margin:0 2px 9px}
+  .techs{display:flex;gap:9px}
+  .techs .tech{flex:1;display:flex;flex-direction:column;align-items:center;gap:7px;
+    background:var(--surface);border:1px solid var(--line);border-radius:13px;
+    color:var(--ink);font-size:13px;font-weight:700;padding:12px 6px;cursor:pointer;
+    transition:border-color .14s ease, background .14s ease, transform .14s ease}
+  .techs .tech:hover{background:var(--surface2);border-color:rgba(255,107,53,.5);transform:translateY(-2px)}
+  .techs .tech .tic{width:30px;height:30px;border-radius:9px;display:grid;place-items:center;
+    background:rgba(255,107,53,.12);color:var(--orange);font-size:15px}
 
   /* ---------- SECTION LABEL ---------- */
-  .seclabel{display:flex;align-items:center;gap:12px;margin:34px 2px 16px}
-  .seclabel h2{font-size:15px;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;white-space:nowrap}
+  .seclabel{display:flex;align-items:center;gap:11px;margin:34px 2px 16px}
+  .seclabel .tick{width:3px;height:17px;border-radius:2px;background:var(--orange)}
+  .seclabel h2{font-size:12.5px;font-weight:800;letter-spacing:.1em;color:var(--ink2);
+    text-transform:uppercase;white-space:nowrap}
   .seclabel .rule{height:1px;flex:1;background:var(--line)}
 
   /* ---------- LEVEL CARDS ---------- */
-  .levels{display:flex;flex-direction:column;gap:14px}
+  .levels{display:flex;flex-direction:column;gap:13px}
   .lvl{
     position:relative;display:block;width:100%;text-align:right;cursor:pointer;
-    background:var(--card);border:1px solid var(--line);border-radius:20px;
-    padding:20px 20px 18px;overflow:hidden;
-    transition:transform .15s ease,border-color .15s ease,box-shadow .15s ease;
+    background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:18px 22px 16px;overflow:hidden;box-shadow:var(--shadow-sm);
+    transition:transform .18s ease,border-color .18s ease,background .18s ease;
   }
-  .lvl:hover{transform:translateY(-3px);border-color:var(--orange);box-shadow:0 16px 34px -18px rgba(0,0,0,.8)}
-  .lvl .glow{position:absolute;inset-block-start:-40px;inset-inline-end:-40px;width:150px;height:150px;
-    border-radius:50%;filter:blur(40px);opacity:.5}
-  .lvl-1 .glow{background:#39C16C}
-  .lvl-2 .glow{background:var(--orange)}
-  .lvl-3 .glow{background:var(--red)}
-  .lvl-top{display:flex;align-items:center;gap:14px;position:relative}
-  .lvl-num{font-size:34px;font-weight:900;line-height:1;width:52px;height:52px;border-radius:14px;
-    display:grid;place-items:center;color:#fff;flex:0 0 auto}
-  .lvl-1 .lvl-num{background:linear-gradient(150deg,#39C16C,#2AA457)}
-  .lvl-2 .lvl-num{background:linear-gradient(150deg,var(--orange),var(--orange-d))}
-  .lvl-3 .lvl-num{background:linear-gradient(150deg,var(--red),#B71C2B)}
-  .lvl-name{font-size:21px;font-weight:800}
-  .lvl-tag{font-size:13px;color:var(--muted);font-weight:500;margin-top:2px}
-  .lvl-cta{margin-inline-start:auto;font-size:24px;color:var(--orange);font-weight:700}
-  .test{margin-top:16px;display:flex;gap:8px;position:relative}
-  .test .t{flex:1;background:rgba(0,0,0,.22);border:1px solid var(--line);border-radius:12px;
-    padding:9px 6px;text-align:center}
-  .test .t b{display:block;font-size:17px;font-weight:800;color:var(--ink)}
-  .test .t span{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:2px}
-  .test-hd{position:relative;margin-top:15px;font-size:12px;color:var(--muted);font-weight:600}
+  .lvl:hover{transform:translateY(-3px);background:var(--surface2);
+    border-color:color-mix(in srgb,var(--acc) 50%,var(--line-2))}
+  .lvl-bar{position:absolute;inset-inline-start:0;inset-block:0;width:4px;
+    background:linear-gradient(180deg,var(--acc),color-mix(in srgb,var(--acc) 55%,#000))}
+  .lvl-head{display:flex;align-items:center;gap:14px}
+  .lvl-num{width:50px;height:50px;border-radius:14px;flex:0 0 auto;display:grid;place-items:center;
+    font-size:26px;font-weight:900;color:var(--acc);
+    background:color-mix(in srgb,var(--acc) 15%,transparent);
+    border:1px solid color-mix(in srgb,var(--acc) 30%,transparent)}
+  .lvl-name{font-size:20px;font-weight:800;line-height:1.15}
+  .lvl-tag{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:2px;
+    display:inline-flex;align-items:center;gap:6px}
+  .lvl-tag .pip{width:6px;height:6px;border-radius:50%;background:var(--acc)}
+  .lvl-go{margin-inline-start:auto;color:var(--acc);font-size:22px;display:grid;place-items:center;
+    width:30px;height:30px;transition:transform .18s ease}
+  .lvl:hover .lvl-go{transform:translateX(-3px)}
+  .lvl-stats{margin-top:16px;display:flex;background:rgba(0,0,0,.22);
+    border:1px solid var(--line);border-radius:13px;overflow:hidden}
+  .lvl-stats .stat{flex:1;padding:10px 6px;text-align:center;border-inline-start:1px solid var(--line)}
+  .lvl-stats .stat:first-child{border-inline-start:none}
+  .lvl-stats .stat b{display:block;font-size:16px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}
+  .lvl-stats .stat span{display:block;font-size:11px;color:var(--muted);font-weight:500;margin-top:3px}
 
+  /* note */
   .note{
-    margin-top:18px;background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.28);
-    border-radius:14px;padding:14px 16px;font-size:13.5px;line-height:1.6;color:#F0D9CC;
+    margin-top:18px;background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.22);
+    border-radius:15px;padding:15px 17px;
   }
-  .note b{color:var(--orange)}
-  .note-t{font-size:15px;font-weight:800;color:var(--orange);margin-bottom:8px}
+  .note-t{display:flex;align-items:center;gap:9px;font-size:14.5px;font-weight:800;
+    color:var(--orange-2);margin-bottom:9px}
+  .note-t .nic{width:26px;height:26px;border-radius:8px;background:rgba(255,107,53,.14);
+    display:grid;place-items:center;font-size:14px}
+  .note p{font-size:13.5px;line-height:1.65;color:var(--ink2)}
+  .note b{color:var(--ink)}
 
-  /* ---------- LEVEL DETAIL ---------- */
-  .lv-hero{padding:26px 18px 20px;border-bottom:1px solid var(--line);
-    background:linear-gradient(180deg,var(--navy2),var(--navy))}
-  .lv-hero-inner{max-width:680px;margin:0 auto}
-  .back{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:14.5px;
-    color:var(--muted);cursor:pointer;margin-bottom:16px;background:none;border:none;font-family:inherit}
-  .back:hover{color:var(--ink)}
-  .lv-badge{display:inline-block;font-size:12.5px;font-weight:800;letter-spacing:.06em;
-    color:#fff;padding:5px 13px;border-radius:100px;text-transform:uppercase}
-  .lv-title{font-size:30px;font-weight:900;margin-top:12px}
-  .lv-testline{margin-top:10px;font-size:14px;color:var(--muted);font-weight:500}
-  .lv-testline b{color:var(--ink);font-weight:700}
-
-  .wk{margin-top:22px}
-  .wk-head{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-  .wk-badge{font-size:22px;font-weight:900;width:42px;height:42px;border-radius:12px;
-    display:grid;place-items:center;background:var(--card);border:1px solid var(--line);color:var(--orange)}
-  .wk-name{font-size:19px;font-weight:800}
-  .wk-focus{font-size:13px;color:var(--muted);font-weight:500;margin-top:1px}
-
-  .ss{background:var(--card);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:14px}
-  .ss-lbl{display:flex;align-items:center;gap:8px;padding:11px 16px;
-    background:rgba(255,107,53,.12);border-bottom:1px solid var(--line);
-    font-size:12.5px;font-weight:800;color:var(--orange);letter-spacing:.03em}
-  .ss-lbl .dot{width:7px;height:7px;border-radius:50%;background:var(--orange)}
-  .ss-lbl.fin{background:rgba(230,57,70,.13);color:#FF8B96}
-  .ss-lbl.fin .dot{background:var(--red)}
-
-  .ex{display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;
-    border-bottom:1px solid rgba(42,58,92,.55);transition:background .12s ease}
-  .ex:last-child{border-bottom:none}
-  .ex:hover{background:rgba(255,255,255,.04)}
-  .ex:active{background:rgba(255,255,255,.07)}
-  .ex-play{flex:0 0 auto;width:38px;height:38px;border-radius:10px;background:rgba(255,107,53,.15);
-    border:1px solid rgba(255,107,53,.35);display:grid;place-items:center;transition:background .12s ease}
-  .ex:hover .ex-play{background:rgba(255,107,53,.28)}
-  .ex-play svg{width:15px;height:15px;fill:var(--orange);margin-right:-2px}
-  .ex-body{flex:1;min-width:0}
-  .ex-name{font-size:15.5px;font-weight:700;line-height:1.25}
-  .ex-sub{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:3px}
-  .ex-nums{flex:0 0 auto;text-align:center;min-width:84px}
-  .ex-main-rir{font-size:15.5px;font-weight:800;color:var(--orange);line-height:1.2;white-space:nowrap}
-  .ex-main-rir.fail{font-size:14.5px}
-  .ex-sub-reps{font-size:11.5px;color:var(--muted);font-weight:500;margin-top:3px;white-space:nowrap}
-
-  /* alternative (easier) exercise line */
-  .ex-altline{display:inline-flex;align-items:center;gap:6px;margin-top:8px;cursor:pointer;
-    font-size:12.5px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.05);
-    border:1px solid var(--line);border-radius:8px;padding:5px 9px;transition:all .12s ease}
-  .ex-altline:hover{color:var(--ink);border-color:var(--orange)}
-  .ex-altline b{color:var(--orange);font-weight:700}
-  .ex-altline .alt-ic{font-size:13px;color:var(--orange)}
-  .ex-altline .alt-play{font-size:9px;color:var(--orange);opacity:.8}
-
-  /* reps-info box */
-  .info.reps .it{color:#7FB4FF}
-  .info.reps{background:rgba(60,120,220,.09);border-color:rgba(90,140,230,.32)}
-  .info.reps .ip b{color:#fff}
-  .ex-rir{font-size:11px;color:var(--muted);font-weight:600;margin-top:2px}
-  .ex-watch{flex:0 0 auto;font-size:11px;color:var(--orange);font-weight:700;opacity:.75}
-
-  .prog{margin-top:24px;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 8px}
-  .prog h3{font-size:16px;font-weight:800;margin-bottom:6px}
-  .prog p.lead{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:14px}
-  .prog.single{padding:16px 18px 14px}
-  .prog.single h3{color:var(--orange);margin-bottom:4px}
-  .prog.single p.lead{margin-bottom:0;font-size:14px;color:var(--ink);font-weight:600}
-  .wkrow{display:flex;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
-  .wknum{flex:0 0 auto;font-size:12px;font-weight:800;color:#fff;background:var(--orange-d);
-    padding:4px 10px;border-radius:8px;height:fit-content;white-space:nowrap}
-  .wktxt{font-size:13.5px;line-height:1.55;color:var(--ink)}
-  .wktxt b{color:var(--orange)}
-
-  .foot{margin-top:26px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.7}
-  .foot .rir-key{background:var(--card);border:1px solid var(--line);border-radius:12px;
-    padding:12px 14px;margin-top:4px;font-size:12.5px;color:var(--muted);line-height:1.6}
-  .foot .rir-key b{color:var(--orange)}
-
-  /* ---------- HOW IT WORKS (home) ---------- */
-  .howit{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:18px 18px 6px;margin-top:2px}
-  .howit .hi-block{padding:14px 0;border-top:1px solid var(--line)}
-  .howit .hi-block:first-child{border-top:none;padding-top:4px}
-  .howit .hi-t{display:flex;align-items:center;gap:9px;font-size:16px;font-weight:800;margin-bottom:7px}
-  .howit .hi-ic{width:28px;height:28px;border-radius:8px;background:rgba(255,107,53,.15);
-    border:1px solid rgba(255,107,53,.35);display:grid;place-items:center;font-size:15px;flex:0 0 auto}
-  .howit .hi-p{font-size:14px;line-height:1.65;color:var(--muted)}
-  .howit .hi-p b{color:var(--ink);font-weight:700}
-  .howit .hi-p .o{color:var(--orange);font-weight:700}
-  .sched{display:flex;flex-direction:column;gap:9px;margin-top:12px}
-  .sched .srow{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.22);
+  /* how it works */
+  .howit{background:var(--surface);border:1px solid var(--line);border-radius:18px;
+    padding:6px 18px;margin-top:2px;box-shadow:var(--shadow-sm)}
+  .hi-block{padding:16px 0;border-top:1px solid var(--line)}
+  .hi-block:first-child{border-top:none}
+  .hi-t{display:flex;align-items:center;gap:11px;font-size:15.5px;font-weight:800;margin-bottom:9px}
+  .hi-ic{width:34px;height:34px;border-radius:10px;background:rgba(255,107,53,.12);
+    color:var(--orange);display:grid;place-items:center;font-size:17px;flex:0 0 auto}
+  .hi-p{font-size:13.5px;line-height:1.7;color:var(--muted)}
+  .hi-p b{color:var(--ink);font-weight:700}
+  .hi-p .o{color:var(--orange-2);font-weight:700}
+  .sched{display:flex;flex-direction:column;gap:9px;margin-top:13px}
+  .srow{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.22);
     border:1px solid var(--line);border-radius:12px;padding:11px 13px}
-  .sched .sw{font-size:13px;font-weight:800;color:#fff;background:var(--orange-d);
-    padding:4px 11px;border-radius:8px;white-space:nowrap;flex:0 0 auto}
-  .sched .sd{font-size:14px;font-weight:700;color:var(--ink)}
-  .sched .sd span{font-weight:500;color:var(--muted);font-size:13px}
+  .sw{font-size:12.5px;font-weight:800;color:#fff;background:var(--grad);
+    padding:5px 11px;border-radius:8px;white-space:nowrap;flex:0 0 auto;box-shadow:var(--shadow-sm)}
+  .sd{font-size:14px;font-weight:700;color:var(--ink)}
+  .sd span{font-weight:500;color:var(--muted);font-size:13px}
 
-  /* ---------- SUPERSET EXPLAINER (level) ---------- */
-  .info{background:rgba(255,107,53,.08);border:1px solid rgba(255,107,53,.3);
-    border-radius:16px;padding:15px 17px;margin-top:20px}
-  .info .it{display:flex;align-items:center;gap:9px;font-size:15.5px;font-weight:800;color:var(--orange);margin-bottom:8px}
-  .info .ip{font-size:14px;line-height:1.65;color:#F0DACE}
-  .info .ip b{color:#fff;font-weight:700}
-  .rir-watch{display:flex;align-items:center;gap:10px;margin-top:13px;padding-top:13px;
-    border-top:1px solid rgba(255,107,53,.28);cursor:pointer;font-weight:700;font-size:14px;color:var(--orange)}
-  .rir-watch .rw-play{width:34px;height:34px;border-radius:9px;background:var(--orange);
-    display:grid;place-items:center;flex:0 0 auto;box-shadow:0 8px 18px -8px rgba(255,107,53,.8)}
-  .rir-watch .rw-play svg{width:14px;height:14px;fill:#fff;margin-right:-2px}
-  .rir-watch .rw-arrow{margin-inline-start:auto;font-size:20px;opacity:.8}
-  .rir-watch:hover{color:#fff}
-  .rir-watch:hover .rw-play{background:var(--orange-d)}
+  /* ---------- STICKY APP BAR (level) ---------- */
+  .appbar{
+    position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;
+    padding:11px 16px;
+    background:color-mix(in srgb,var(--bg) 78%,transparent);
+    -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);
+    border-bottom:1px solid transparent;transition:border-color .2s ease, box-shadow .2s ease;
+  }
+  .appbar.scrolled{border-bottom-color:var(--line);box-shadow:0 6px 20px -14px rgba(0,0,0,.9)}
+  .back-btn{
+    display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    background:var(--surface);border:1px solid var(--line-2);color:var(--ink);
+    font-size:14.5px;font-weight:700;padding:9px 15px 9px 13px;border-radius:11px;min-height:42px;
+    transition:background .14s ease,border-color .14s ease,transform .14s ease;
+  }
+  .back-btn:hover{background:var(--surface2);border-color:rgba(255,107,53,.5)}
+  .back-btn:active{transform:scale(.97)}
+  .back-btn .ic{width:19px;height:19px;color:var(--orange)}
+  .appbar-ctx{margin-inline-start:auto;display:flex;align-items:center;gap:9px;min-width:0}
+  .ctx-badge{font-size:12px;font-weight:800;letter-spacing:.03em;color:#fff;
+    padding:5px 12px;border-radius:100px;white-space:nowrap}
+  .ctx-name{font-size:13.5px;font-weight:700;color:var(--ink2);white-space:nowrap;
+    overflow:hidden;text-overflow:ellipsis}
 
-  /* reps unit */
-  .ex-reps .unit{font-size:11px;font-weight:600;color:var(--muted)}
+  /* ---------- LEVEL HERO ---------- */
+  .lv-hero{padding:22px 18px 20px;border-bottom:1px solid var(--line)}
+  .lv-hero-inner{max-width:640px;margin:0 auto}
+  .lv-badge{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.05em;
+    color:#fff;padding:6px 14px;border-radius:100px;text-transform:uppercase}
+  .lv-title{font-size:28px;font-weight:900;margin-top:13px;letter-spacing:-.02em}
+  .lv-testline{margin-top:9px;font-size:13.5px;color:var(--muted);font-weight:500}
+  .lv-testline b{color:var(--ink2);font-weight:700}
 
-  /* ---------- MODE TOGGLE ---------- */
-  .modewrap{margin-top:20px}
-  .modelbl{font-size:14px;font-weight:800;color:var(--ink);margin-bottom:9px}
-  .modes{display:flex;gap:8px;background:var(--card);border:1px solid var(--line);
+  /* info boxes */
+  .info{background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:15px 17px;margin-top:14px;box-shadow:var(--shadow-sm)}
+  .info:first-of-type{margin-top:22px}
+  .info .it{display:flex;align-items:center;gap:11px;font-size:15px;font-weight:800;
+    color:var(--ink);margin-bottom:9px}
+  .info .iic{width:32px;height:32px;border-radius:9px;display:grid;place-items:center;
+    background:rgba(255,107,53,.12);color:var(--orange);font-size:16px;flex:0 0 auto}
+  .info .ip{font-size:13.5px;line-height:1.7;color:var(--muted)}
+  .info .ip b{color:var(--ink);font-weight:700}
+  .info.reps .iic{background:rgba(91,157,255,.13);color:var(--blue)}
+  .rir-watch{display:flex;align-items:center;gap:11px;margin-top:14px;padding-top:14px;
+    border-top:1px solid var(--line);cursor:pointer;font-weight:700;font-size:14px;color:var(--ink)}
+  .rir-watch .rw-play{width:36px;height:36px;border-radius:10px;background:var(--grad);color:#fff;
+    display:grid;place-items:center;flex:0 0 auto;box-shadow:0 8px 18px -9px rgba(255,107,53,.8);font-size:15px}
+  .rir-watch .rw-play .ic{margin-inline-start:2px}
+  .rir-watch .rw-arrow{margin-inline-start:auto;color:var(--orange);font-size:19px;opacity:.85}
+  .rir-watch:hover{color:var(--orange-2)}
+
+  /* mode toggle */
+  .modewrap{margin-top:22px}
+  .modelbl{font-size:13.5px;font-weight:800;color:var(--ink);margin-bottom:10px}
+  .modes{display:flex;gap:6px;background:var(--surface);border:1px solid var(--line);
     border-radius:14px;padding:5px}
-  .modes .mode{flex:1;border:none;cursor:pointer;font-family:inherit;font-size:14.5px;font-weight:700;
-    color:var(--muted);background:transparent;padding:11px 8px;border-radius:10px;transition:all .15s ease}
+  .modes .mode{flex:1;border:none;cursor:pointer;font-size:14px;font-weight:700;
+    color:var(--muted);background:transparent;padding:11px 8px;border-radius:10px;
+    transition:all .16s ease}
   .modes .mode:hover{color:var(--ink)}
-  .modes .mode.active{background:linear-gradient(150deg,var(--orange),var(--orange-d));color:#fff;
-    box-shadow:0 8px 18px -8px rgba(255,107,53,.7)}
-  .modehint{font-size:13px;color:var(--muted);line-height:1.55;margin-top:10px;padding:0 2px}
-  .modehint b{color:var(--ink);font-weight:700}
+  .modes .mode.active{background:var(--grad);color:#fff;box-shadow:0 8px 18px -9px rgba(255,107,53,.7)}
+  .modehint{font-size:13px;color:var(--muted);line-height:1.6;margin-top:11px;padding:0 2px}
+  .modehint b{color:var(--ink2);font-weight:700}
+
+  /* workout blocks */
+  .wk{margin-top:24px}
+  .wk-head{display:flex;align-items:center;gap:12px;margin-bottom:13px}
+  .wk-badge{font-size:19px;font-weight:900;width:42px;height:42px;border-radius:12px;
+    display:grid;place-items:center;background:rgba(255,107,53,.12);
+    border:1px solid rgba(255,107,53,.3);color:var(--orange)}
+  .wk-name{font-size:18px;font-weight:800}
+  .wk-focus{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:2px}
+
+  .ss{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+    overflow:hidden;margin-bottom:13px;box-shadow:var(--shadow-sm)}
+  .ss-lbl{display:flex;align-items:center;gap:9px;padding:11px 16px;
+    background:rgba(255,107,53,.1);border-bottom:1px solid var(--line);
+    font-size:12px;font-weight:800;color:var(--orange-2);letter-spacing:.02em}
+  .ss-lbl .dot{width:7px;height:7px;border-radius:50%;background:var(--orange);flex:0 0 auto}
+  .ss-lbl.fin{background:rgba(251,80,99,.1);color:#FF8791}
+  .ss-lbl.fin .dot{background:var(--l3)}
+
+  /* exercise rows — real links so video opens everywhere */
+  .ex{transition:background .12s ease}
+  .ex + .ex{border-top:1px solid var(--line)}
+  .ex-main{display:flex;align-items:center;gap:13px;padding:13px 16px;cursor:pointer;
+    transition:background .12s ease}
+  .ex-main:hover{background:rgba(255,255,255,.03)}
+  .ex-main:active{background:rgba(255,255,255,.06)}
+  .ex-play{flex:0 0 auto;width:40px;height:40px;border-radius:11px;background:rgba(255,107,53,.13);
+    border:1px solid rgba(255,107,53,.3);display:grid;place-items:center;color:var(--orange);
+    font-size:15px;transition:background .12s ease}
+  .ex-main:hover .ex-play{background:rgba(255,107,53,.24)}
+  .ex-play .ic{margin-inline-start:2px}
+  .ex-body{flex:1;min-width:0}
+  .ex-name{font-size:15px;font-weight:700;line-height:1.3}
+  .ex-sub{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:3px;line-height:1.4}
+  .ex-nums{flex:0 0 auto;text-align:center;min-width:80px}
+  .ex-main-rir{font-size:15px;font-weight:800;color:var(--orange);line-height:1.2;white-space:nowrap}
+  .ex-main-rir.fail{font-size:13.5px;color:#FF8791}
+  .ex-sub-reps{font-size:11px;color:var(--muted);font-weight:500;margin-top:3px;white-space:nowrap}
+  .ex-altline{display:inline-flex;align-items:center;gap:7px;margin:2px 16px 13px;cursor:pointer;
+    font-size:12px;font-weight:600;color:var(--muted);background:rgba(255,255,255,.04);
+    border:1px solid var(--line);border-radius:9px;padding:6px 10px;transition:all .12s ease}
+  .ex-altline:hover{color:var(--ink);border-color:rgba(255,107,53,.5)}
+  .ex-altline b{color:var(--orange-2);font-weight:700}
+  .ex-altline .alt-ic{color:var(--orange);font-size:13px}
+  .ex-altline .alt-play{color:var(--orange);font-size:11px;opacity:.85}
+
+  /* progression + foot */
+  .prog{margin-top:24px;background:var(--surface);border:1px solid var(--line);
+    border-radius:16px;padding:17px 18px;box-shadow:var(--shadow-sm);
+    display:flex;align-items:flex-start;gap:13px}
+  .prog .pic{width:36px;height:36px;border-radius:10px;background:rgba(255,107,53,.12);
+    color:var(--orange);display:grid;place-items:center;font-size:17px;flex:0 0 auto}
+  .prog h3{font-size:15.5px;font-weight:800;color:var(--orange-2);margin-bottom:3px}
+  .prog p.lead{font-size:14px;color:var(--ink);font-weight:600;line-height:1.5}
+  .foot{margin-top:22px;text-align:center;font-size:12.5px;color:var(--muted);line-height:1.7;padding:0 6px}
+
+  /* focus visibility for keyboard users */
+  a:focus-visible, button:focus-visible{outline:2px solid var(--orange);outline-offset:2px;border-radius:8px}
+
+  @media (max-width:380px){
+    .lvl-stats .stat b{font-size:15px}
+    .techs .tech{font-size:12px}
+  }
 </style>
 </head>
 <body>
@@ -257,133 +309,149 @@
 <section id="home" class="screen active">
   <div class="hero">
     <div class="hero-inner">
-      <span class="eyebrow">האתגר שלך · 21 יום</span>
+      <span class="eyebrow"><span class="dot"></span>האתגר שלך · 21 יום</span>
       <h1 class="title">תוכניות <span class="hl">האימון</span></h1>
+      <p class="sub">בחר את הרמה שלך לפי מבחן הכניסה, וקבל תוכנית מלאה עם וידאו לכל תרגיל.</p>
 
-      <div class="warmup" onclick="openVid('https://youtu.be/0Aeflpg7btQ')">
-        <div class="play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
-        <div>
-          <div class="wt">חימום — לפני כל אימון</div>
-          <div class="ws">חובה בכל רמה, לפני כל אימון. לוחצים ומתחממים.</div>
-        </div>
-        <span class="arrow">‹</span>
-      </div>
+      <a class="warmup" href="https://youtu.be/0Aeflpg7btQ" target="_blank" rel="noopener noreferrer">
+        <span class="play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>
+        <span>
+          <span class="wt">חימום — לפני כל אימון</span>
+          <span class="ws">חובה בכל רמה, לפני כל אימון. לוחצים ומתחממים.</span>
+        </span>
+        <span class="chev">‹</span>
+      </a>
 
       <div class="techbox">
         <div class="tech-t">טכניקה נכונה — לפני שמתחילים</div>
         <div class="techs">
-          <button class="tech" onclick="openVid('https://youtu.be/vtHiG82rHCE')"><span class="tp">▶</span>מתח</button>
-          <button class="tech" onclick="openVid('https://youtu.be/lpC8OJC255Q')"><span class="tp">▶</span>מקבילים</button>
-          <button class="tech" onclick="openVid('https://youtu.be/98NG8WCzmeM')"><span class="tp">▶</span>שכיבות שמיכה</button>
+          <a class="tech" href="https://youtu.be/vtHiG82rHCE" target="_blank" rel="noopener noreferrer"><span class="tic"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>מתח</a>
+          <a class="tech" href="https://youtu.be/lpC8OJC255Q" target="_blank" rel="noopener noreferrer"><span class="tic"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>מקבילים</a>
+          <a class="tech" href="https://youtu.be/98NG8WCzmeM" target="_blank" rel="noopener noreferrer"><span class="tic"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>שכיבות שמיכה</a>
         </div>
       </div>
     </div>
   </div>
 
   <div class="wrap">
-    <div class="seclabel"><h2>בחר את הרמה שלך</h2><span class="rule"></span></div>
+    <div class="seclabel"><span class="tick"></span><h2>בחר את הרמה שלך</h2><span class="rule"></span></div>
 
     <div class="levels">
       <!-- LEVEL 1 -->
-      <button class="lvl lvl-1" onclick="showLevel(1)">
-        <span class="glow"></span>
-        <div class="lvl-top">
+      <button class="lvl lvl-1" style="--acc:var(--l1)" onclick="showLevel(1)">
+        <span class="lvl-bar"></span>
+        <div class="lvl-head">
           <span class="lvl-num">1</span>
           <div>
-            <div class="lvl-name">רמה 1 · מתחיל</div>
+            <div class="lvl-name">מתחיל</div>
+            <div class="lvl-tag"><span class="pip"></span>רמה 1</div>
           </div>
-          <span class="lvl-cta">‹</span>
+          <span class="lvl-go">‹</span>
         </div>
-        <div class="test">
-          <div class="t"><b>0–3</b><span>מתח</span></div>
-          <div class="t"><b>0–5</b><span>מקבילים</span></div>
-          <div class="t"><b>0–15</b><span>שכיבות שמיכה</span></div>
+        <div class="lvl-stats">
+          <div class="stat"><b>0–3</b><span>מתח</span></div>
+          <div class="stat"><b>0–5</b><span>מקבילים</span></div>
+          <div class="stat"><b>0–15</b><span>שכיבות שמיכה</span></div>
         </div>
       </button>
 
       <!-- LEVEL 2 -->
-      <button class="lvl lvl-2" onclick="showLevel(2)">
-        <span class="glow"></span>
-        <div class="lvl-top">
+      <button class="lvl lvl-2" style="--acc:var(--l2)" onclick="showLevel(2)">
+        <span class="lvl-bar"></span>
+        <div class="lvl-head">
           <span class="lvl-num">2</span>
           <div>
-            <div class="lvl-name">רמה 2 · בינוני</div>
+            <div class="lvl-name">בינוני</div>
+            <div class="lvl-tag"><span class="pip"></span>רמה 2</div>
           </div>
-          <span class="lvl-cta">‹</span>
+          <span class="lvl-go">‹</span>
         </div>
-        <div class="test">
-          <div class="t"><b>4–10</b><span>מתח</span></div>
-          <div class="t"><b>6–15</b><span>מקבילים</span></div>
-          <div class="t"><b>16–29</b><span>שכיבות שמיכה</span></div>
+        <div class="lvl-stats">
+          <div class="stat"><b>4–10</b><span>מתח</span></div>
+          <div class="stat"><b>6–15</b><span>מקבילים</span></div>
+          <div class="stat"><b>16–29</b><span>שכיבות שמיכה</span></div>
         </div>
       </button>
 
       <!-- LEVEL 3 -->
-      <button class="lvl lvl-3" onclick="showLevel(3)">
-        <span class="glow"></span>
-        <div class="lvl-top">
+      <button class="lvl lvl-3" style="--acc:var(--l3)" onclick="showLevel(3)">
+        <span class="lvl-bar"></span>
+        <div class="lvl-head">
           <span class="lvl-num">3</span>
           <div>
-            <div class="lvl-name">רמה 3 · מתקדם</div>
+            <div class="lvl-name">מתקדם</div>
+            <div class="lvl-tag"><span class="pip"></span>רמה 3</div>
           </div>
-          <span class="lvl-cta">‹</span>
+          <span class="lvl-go">‹</span>
         </div>
-        <div class="test">
-          <div class="t"><b>+11</b><span>מתח</span></div>
-          <div class="t"><b>+16</b><span>מקבילים</span></div>
-          <div class="t"><b>+30</b><span>שכיבות שמיכה</span></div>
+        <div class="lvl-stats">
+          <div class="stat"><b>11+</b><span>מתח</span></div>
+          <div class="stat"><b>16+</b><span>מקבילים</span></div>
+          <div class="stat"><b>30+</b><span>שכיבות שמיכה</span></div>
         </div>
       </button>
     </div>
 
     <div class="note">
-      <div class="note-t">איך בוחרים רמה ואיך עוברים רמה</div>
-      פעם בשבוע בצע <b>מקסימום חזרות</b> בכל תרגיל: מתח, מקבילים, שכיבות שמיכה. לפי התוצאה — עבור לרמה המתאימה לך.<br><br>
-      <b>תוצאות מעורבות?</b> לך לפי הרמה הנמוכה. למשל 7 מתח אבל 3 מקבילים = רמה 1.
+      <div class="note-t"><span class="nic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 16v-5M12 8h.01M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/></svg></span>איך בוחרים רמה ואיך עוברים רמה</div>
+      <p>פעם בשבוע בצע <b>מקסימום חזרות</b> בכל תרגיל: מתח, מקבילים, שכיבות שמיכה. לפי התוצאה — עבור לרמה המתאימה לך.<br><br>
+      <b>תוצאות מעורבות?</b> לך לפי הרמה הנמוכה. למשל 7 מתח אבל 3 מקבילים = רמה 1.</p>
     </div>
 
-    <div class="seclabel"><h2>איך עובדים עם התוכנית</h2><span class="rule"></span></div>
+    <div class="seclabel"><span class="tick"></span><h2>איך עובדים עם התוכנית</h2><span class="rule"></span></div>
 
     <div class="howit">
       <div class="hi-block">
-        <div class="hi-t"><span class="hi-ic">🔀</span>שתי דרכים להתאמן — בחר אחת</div>
+        <div class="hi-t"><span class="hi-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg></span>שתי דרכים להתאמן — בחר אחת</div>
         <div class="hi-p"><b>מחולק (A/B):</b> שני אימונים קצרים שמתחלפים — <span class="o">אימון A</span> דחיפה (יד אחורית + כתפיים), <span class="o">אימון B</span> משיכה (יד קדמית + גב).<br>
         <b>אימון מלא:</b> אימון אחד שמאמן את כל השרירים ביחד.</div>
       </div>
 
       <div class="hi-block">
-        <div class="hi-t"><span class="hi-ic">🔁</span>איך מסדרים את A ו-B בשבוע</div>
+        <div class="hi-t"><span class="hi-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg></span>איך מסדרים את A ו-B בשבוע</div>
         <div class="hi-p">מתחלפים ביניהם בימים שונים: A, אחר כך B, אחר כך A. <b>לא עושים את אותו אימון יומיים ברצף.</b><br><br>
         מתאמן מספר <b>אי-זוגי</b> של פעמים בשבוע (3 או 5)? עשה יותר מהאימון שהכי חשוב לך — למשל <span class="o">פעמיים A ופעם אחת B</span>.</div>
       </div>
 
       <div class="hi-block">
-        <div class="hi-t"><span class="hi-ic">📅</span>כמה אימונים בשבוע</div>
+        <div class="hi-t"><span class="hi-ic"><svg class="ic" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></span>כמה אימונים בשבוע</div>
         <div class="sched">
           <div class="srow"><span class="sw">שבוע 1</span><div class="sd">3 אימונים <span>— יום אימון, יום מנוחה</span></div></div>
           <div class="srow"><span class="sw">שבוע 2</span><div class="sd">3–4 אימונים <span>— מוסיפים אימון אחרי שהתרגלת לשגרה</span></div></div>
           <div class="srow"><span class="sw">שבוע 3</span><div class="sd">4–5 אימונים <span>— מוסיפים עוד אימון כשהגוף עומד בעומס</span></div></div>
         </div>
-        <div class="hi-p" style="margin-top:12px">תמיד תשאיר לפחות <b>יום מנוחה אחד בשבוע</b>, ואל תעשה שני אימונים קשים על אותם שרירים יום אחרי יום.</div>
+        <div class="hi-p" style="margin-top:13px">תמיד תשאיר לפחות <b>יום מנוחה אחד בשבוע</b>, ואל תעשה שני אימונים קשים על אותם שרירים יום אחרי יום.</div>
       </div>
     </div>
   </div>
 </section>
 
-<!-- ================= LEVEL DETAIL (rendered by JS) ================= -->
+<!-- ================= LEVEL DETAIL ================= -->
 <section id="level" class="screen">
+  <header class="appbar" id="appbar">
+    <button class="back-btn" onclick="showHome()">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <span>חזרה לרמות</span>
+    </button>
+    <div class="appbar-ctx" id="appbarCtx"></div>
+  </header>
   <div id="levelContent"></div>
 </section>
 
 <script>
-const YT = {}; // reference: exercise -> url handled inline below
+/* ---------- icons ---------- */
+const IC = {
+  play:'<svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg>',
+  repeat:'<svg class="ic" viewBox="0 0 24 24"><path d="M17 2l4 4-4 4M3 11V9a4 4 0 0 1 4-4h14M7 22l-4-4 4-4M21 13v2a4 4 0 0 1-4 4H3"/></svg>',
+  zap:'<svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M13 2 4.6 12.6a.6.6 0 0 0 .47.98H11l-1 8.4a.5.5 0 0 0 .9.36L19.4 11.4a.6.6 0 0 0-.47-.98H13l1-8.1A.5.5 0 0 0 13 2Z"/></svg>',
+  hash:'<svg class="ic" viewBox="0 0 24 24"><path d="M10 3 8 21M16 3l-2 18M4 9h16M3 15h16"/></svg>',
+  spark:'<svg class="ic" viewBox="0 0 24 24"><path d="M12 3v4M12 17v4M5 12H3M21 12h-2M6 6 4.5 4.5M19.5 4.5 18 6M6 18l-1.5 1.5M19.5 19.5 18 18M12 8a4 4 0 1 0 0 8 4 4 0 0 0 0-8Z"/></svg>'
+};
 
-function openVid(url){ window.open(url, '_blank', 'noopener'); }
-
-// ---------- DATA ----------
+/* ---------- DATA ---------- */
 const LEVELS = {
   1: {
-    name:"מתחיל", color:"#39C16C", colorD:"#2AA457",
+    name:"מתחיל", color:"#33C98A", colorD:"#248F63",
     test:"0–3 מתח · 0–5 מקבילים · 0–15 שכיבות שמיכה",
     split:[
       { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
@@ -431,7 +499,7 @@ const LEVELS = {
     ]
   },
   2: {
-    name:"בינוני", color:"#FF6B35", colorD:"#E85826",
+    name:"בינוני", color:"#F5A524", colorD:"#B9791A",
     test:"4–10 מתח · 6–15 מקבילים · 16–29 שכיבות שמיכה",
     split:[
       { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
@@ -479,7 +547,7 @@ const LEVELS = {
     ]
   },
   3: {
-    name:"מתקדם", color:"#E63946", colorD:"#B71C2B",
+    name:"מתקדם", color:"#FB5063", colorD:"#B7303F",
     test:"11+ מתח · 16+ מקבילים · 30+ שכיבות שמיכה",
     split:[
       { badge:"A", name:"אימון A — דחיפה", focus:"יד אחורית + כתפיים", blocks:[
@@ -525,8 +593,6 @@ const LEVELS = {
   }
 };
 
-const PLAY = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>';
-
 let curLevel = 1;
 let curMode = 'split';
 
@@ -534,34 +600,39 @@ function renderLevel(n, mode){
   const L = LEVELS[n];
   mode = mode || 'split';
   const list = (mode === 'full') ? L.full : L.split;
+
+  document.getElementById('appbarCtx').innerHTML =
+    `<span class="ctx-badge" style="background:linear-gradient(135deg,${L.color},${L.colorD})">רמה ${n}</span>`+
+    `<span class="ctx-name">${L.name}</span>`;
+
   let html = `
     <div class="lv-hero">
       <div class="lv-hero-inner">
-        <button class="back" onclick="showHome()">‹ חזרה לכל הרמות</button>
-        <span class="lv-badge" style="background:linear-gradient(150deg,${L.color},${L.colorD})">רמה ${n} · ${L.name}</span>
+        <span class="lv-badge" style="background:linear-gradient(135deg,${L.color},${L.colorD})">רמה ${n} · ${L.name}</span>
         <div class="lv-title">תוכנית האימון שלך</div>
+        <div class="lv-testline">מבחן כניסה: <b>${L.test}</b></div>
       </div>
     </div>
     <div class="wrap">
 
       <div class="info">
-        <div class="it">🔁 מה זה סופרסט?</div>
+        <div class="it"><span class="iic">${IC.repeat}</span>מה זה סופרסט?</div>
         <div class="ip"><b>סופרסט = שני תרגילים אחד אחרי השני, בלי מנוחה באמצע.</b> רק לאחר סיום הסופרסט נחים 60–120 שניות — וזה סבב אחד. חוזרים לפי מספר הסבבים שכתוב.<br><br>
         צריך יותר זמן מנוחה? קח אותו — אפילו 3–4 דקות. מה שחשוב הוא להגיע לסבב הבא חזק ומוכן, לא להיצמד לשניות.</div>
       </div>
 
-      <div class="info rir">
-        <div class="it">💪 מה זה RIR?</div>
+      <div class="info">
+        <div class="it"><span class="iic">${IC.zap}</span>מה זה RIR?</div>
         <div class="ip"><b>RIR = כמה חזרות נשארו לך לפני כשל בסוף הסט.</b> "RIR 2" = עצרת 2 חזרות לפני כשל. ככל שהמספר נמוך יותר — קרוב יותר לכשל.</div>
-        <div class="rir-watch" onclick="openVid('https://youtu.be/bNP1c_PJ80E')">
-          <div class="rw-play"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></div>
+        <a class="rir-watch" href="https://youtu.be/bNP1c_PJ80E" target="_blank" rel="noopener noreferrer">
+          <div class="rw-play">${IC.play}</div>
           <span>צפה בסרטון הסבר על RIR</span>
           <span class="rw-arrow">‹</span>
-        </div>
+        </a>
       </div>
 
       <div class="info reps">
-        <div class="it">🔢 כמה חזרות לעשות?</div>
+        <div class="it"><span class="iic">${IC.hash}</span>כמה חזרות לעשות?</div>
         <div class="ip">מספר החזרות שכתוב ליד כל תרגיל הוא <b>רק כיוון</b>. מה שקובע זה ה־<b>RIR</b> שכתוב ליד התרגיל — תבצע חזרות עד שתגיע אליו, גם אם יצאת מהטווח שכתוב.<br><br>
         עשית יותר חזרות מהטווח? מצוין. פחות? גם בסדר. תבצע לפי הכוח שלך.</div>
       </div>
@@ -592,17 +663,19 @@ function renderLevel(n, mode){
           ? `<div class="ex-main-rir fail">עד כשל</div>`
           : `<div class="ex-main-rir">${e.rir}</div>${e.r ? `<div class="ex-sub-reps">${e.r} חזרות</div>` : ''}`;
         const altline = e.alt
-          ? `<div class="ex-altline" onclick="event.stopPropagation(); openVid('${e.alt.u}')"><span class="alt-ic">↺</span><span>לא מצליח? עשה <b>${e.alt.n}</b></span><span class="alt-play">▶</span></div>`
+          ? `<a class="ex-altline" href="${e.alt.u}" target="_blank" rel="noopener noreferrer"><span class="alt-ic">↺</span><span>לא מצליח? עשה <b>${e.alt.n}</b></span><span class="alt-play">▶</span></a>`
           : '';
         html += `
-          <div class="ex" onclick="openVid('${e.u}')">
-            <div class="ex-play">${PLAY}</div>
-            <div class="ex-body">
-              <div class="ex-name">${e.n}</div>
-              <div class="ex-sub">${e.s}</div>
-              ${altline}
-            </div>
-            <div class="ex-nums">${nums}</div>
+          <div class="ex">
+            <a class="ex-main" href="${e.u}" target="_blank" rel="noopener noreferrer">
+              <div class="ex-play">${IC.play}</div>
+              <div class="ex-body">
+                <div class="ex-name">${e.n}</div>
+                <div class="ex-sub">${e.s}</div>
+              </div>
+              <div class="ex-nums">${nums}</div>
+            </a>
+            ${altline}
           </div>`;
       });
       html += `</div>`;
@@ -610,15 +683,17 @@ function renderLevel(n, mode){
     html += `</div>`;
   });
 
-  // progression
   html += `
-    <div class="prog single">
-      <h3>מרגיש שהאימון קל מדי?</h3>
-      <p class="lead">הוסף סבב לכל סופרסט.</p>
+    <div class="prog">
+      <span class="pic">${IC.spark}</span>
+      <div>
+        <h3>מרגיש שהאימון קל מדי?</h3>
+        <p class="lead">הוסף סבב לכל סופרסט.</p>
+      </div>
     </div>
 
     <div class="foot">
-      <p>פעם בשבוע בצע מקסימום חזרות במתח, מקבילים ושכיבות שמיכה. עברת את הרף של הרמה הבאה בטכניקה נקייה? עבור לתוכנית הבאה.</p>
+      פעם בשבוע בצע מקסימום חזרות במתח, מקבילים ושכיבות שמיכה. עברת את הרף של הרמה הבאה בטכניקה נקייה? עבור לתוכנית הבאה.
     </div>
     </div>`;
 
@@ -632,6 +707,7 @@ function showLevel(n){
   document.getElementById('home').classList.remove('active');
   document.getElementById('level').classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
+  onScroll();
 }
 function setMode(m){
   curMode = m;
@@ -643,6 +719,14 @@ function showHome(){
   document.getElementById('home').classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
 }
+
+/* app bar shadow on scroll */
+const appbar = document.getElementById('appbar');
+function onScroll(){
+  if(window.scrollY > 6) appbar.classList.add('scrolled');
+  else appbar.classList.remove('scrolled');
+}
+window.addEventListener('scroll', onScroll, {passive:true});
 </script>
 </body>
 </html>
