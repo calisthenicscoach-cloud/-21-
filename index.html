@@ -328,6 +328,75 @@
   .cta-full .cf-s{font-size:12.5px;color:rgba(255,255,255,.86);font-weight:500;margin-top:3px}
   .cta-full .cf-chev{margin-inline-start:auto;color:#fff;font-size:22px;opacity:.85}
 
+  /* ===== FREE GUIDE — MILITARY THEME (scoped to #free) ===== */
+  #free{
+    /* recolor every reused component through the shared design tokens */
+    --ink:#F3ECCF; --ink2:#E0D8B6; --muted:#A9A184;
+    --orange:#E4C86E; --orange-2:#F3E09A; --orange-d:#B7913A;
+    --grad:linear-gradient(135deg,#F3E09A,#C89C3C 55%,#A87F2E);
+    --surface:#2C3120; --surface2:#363C25;
+    --line:rgba(228,200,110,.14); --line-2:rgba(228,200,110,.26);
+    --shadow:0 1px 2px rgba(0,0,0,.5), 0 16px 36px -18px rgba(0,0,0,.92);
+    --shadow-sm:0 1px 2px rgba(0,0,0,.5), 0 8px 18px -10px rgba(0,0,0,.82);
+    min-height:100vh;
+    background:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E") 0 0 / 160px 160px repeat,
+      radial-gradient(120% 70% at 80% -10%, rgba(150,140,80,.16), transparent 60%) no-repeat,
+      radial-gradient(100% 75% at 8% 116%, rgba(0,0,0,.5), transparent 55%) no-repeat,
+      linear-gradient(180deg,#3B4029,#262B1A 62%,#1C2012) no-repeat;
+    background-attachment:fixed;
+  }
+  #free .eyebrow{border-color:var(--line-2);background:rgba(228,200,110,.08);color:var(--orange-2)}
+  #free .eyebrow .dot{background:var(--orange);box-shadow:0 0 0 4px rgba(228,200,110,.18)}
+  #free .mil-brand{font-size:15px;font-weight:900;letter-spacing:.02em;
+    background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+  #free .mil-badge{background:var(--grad);color:#241F0C}
+
+  /* red/oxblood quote box — like the site's headline box */
+  #free .quote{margin-top:20px;background:linear-gradient(180deg,#7E2C22,#69221A);
+    border:1px solid rgba(232,150,120,.35);border-radius:14px;padding:15px 18px;
+    box-shadow:0 16px 32px -18px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.08)}
+  #free .quote p{font-size:16px;font-weight:800;color:#FBEEE9;line-height:1.5;text-align:center}
+
+  /* warmup as a dark tile with a gold play chip */
+  #free .warmup{background:var(--surface2);border:1px solid var(--line-2);box-shadow:var(--shadow-sm)}
+  #free .warmup .wt{color:var(--ink)} #free .warmup .ws{color:var(--ink2)}
+  #free .warmup .play{background:var(--grad);color:#241F0C}
+  #free .warmup .chev{color:var(--orange-2)}
+
+  /* recolor the hard-coded orange tints on the reused workout cards */
+  #free .gift{background:rgba(228,200,110,.06);border-color:rgba(228,200,110,.24)}
+  #free .gift .gic{background:rgba(228,200,110,.14);color:var(--orange)}
+  #free .wk-badge{background:rgba(228,200,110,.12);border-color:var(--line-2);color:var(--orange)}
+  #free .ss-lbl{background:rgba(228,200,110,.10);color:var(--orange-2)}
+  #free .ss-lbl.fin{background:rgba(126,44,34,.24);color:#EBA99D}
+  #free .ss-lbl.fin .dot{background:#B4483A}
+  #free .ex-play{background:rgba(228,200,110,.12);border-color:var(--line-2);color:var(--orange)}
+  #free .ex-main:hover .ex-play{background:rgba(228,200,110,.22)}
+  #free .ex-main-rir.fail{color:#EBA99D}
+  #free .note{background:rgba(228,200,110,.06);border-color:rgba(228,200,110,.22)}
+  #free .note-t{color:var(--orange-2)}
+  #free .note-t .nic{background:rgba(228,200,110,.14)}
+  #free .chk .ck{background:rgba(228,200,110,.14);color:var(--orange)}
+
+  /* olive translucent app bar */
+  #free .appbar{background:color-mix(in srgb,#20241A 82%, transparent)}
+  #free .appbar.scrolled{border-bottom-color:var(--line);box-shadow:0 6px 20px -14px rgba(0,0,0,.9)}
+
+  /* white pill CTA (primary action → the full soldiers' program) */
+  #free .cta-full{background:linear-gradient(180deg,#F6F2E7,#E9E3D1);
+    box-shadow:0 16px 36px -16px rgba(0,0,0,.85), inset 0 1px 0 rgba(255,255,255,.6)}
+  #free .cta-full:hover{box-shadow:0 22px 46px -18px rgba(0,0,0,.95)}
+  #free .cta-full .cf-ic{background:#20240F;color:#F3E09A}
+  #free .cta-full .cf-t{color:#1E2212}
+  #free .cta-full .cf-s{color:#6A6338}
+  #free .cta-full .cf-chev{color:#20240F}
+
+  /* gold dotted divider (like the site's dotted rule) */
+  #free .mil-divider{height:10px;margin:26px 0 2px;opacity:.8;
+    background-image:radial-gradient(circle, #C89C3C 1.6px, transparent 2px);
+    background-size:16px 10px;background-position:center;background-repeat:repeat-x}
+
   @media (max-width:380px){
     .lvl-stats .stat b{font-size:15px}
     .techs .tech{font-size:12px}
@@ -472,12 +541,9 @@
 <!-- ================= FREE GUIDE (lead magnet) ================= -->
 <section id="free" class="screen">
   <header class="appbar" id="appbarFree">
-    <button class="back-btn" onclick="goHome()">
-      <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
-      <span>לתוכנית המלאה</span>
-    </button>
+    <span class="mil-brand">יחידת הקליסטניקס</span>
     <div class="appbar-ctx">
-      <span class="ctx-badge" style="background:linear-gradient(135deg,#33C98A,#248F63)">חינם 🎁</span>
+      <span class="ctx-badge mil-badge">מתנה · חינם 🎁</span>
     </div>
   </header>
 
@@ -485,7 +551,8 @@
     <div class="hero-inner">
       <span class="eyebrow"><span class="dot"></span>מתנה בשבילך · חינם</span>
       <h1 class="title">המיני-אימון <span class="hl">החינמי</span> שלך</h1>
-      <p class="sub">תודה שאתה כאן! 🙌 הכנתי לך אימון ידיים וכתפיים קצר של ~15 דקות שאפשר לעשות כבר היום — בלי ציוד מיוחד, רק מוט מתח. תראה תוצאות תוך שבועיים.</p>
+      <div class="quote"><p>בלי חדר כושר. בלי תירוצים.<br>רק אתה, הגוף שלך — ותוצאות.</p></div>
+      <p class="sub">תודה שאתה כאן! 🙌 הכנתי לך מיני-אימון ידיים וכתפיים של ~15 דקות שאפשר לעשות כבר היום — בכל מקום, כמעט בלי ציוד. בדיוק כמו שחייל מתאמן בשטח. 💪</p>
 
       <a class="warmup" href="https://youtu.be/0Aeflpg7btQ" target="_blank" rel="noopener noreferrer">
         <span class="play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>
@@ -567,23 +634,25 @@
       <p><b>RIR = כמה חזרות נשארו לך לפני כשל.</b> "RIR 2" = עצור 2 חזרות לפני שאתה נשבר. "עד כשל" = עד שלא מצליח יותר. תבצע 2–3 אימונים כאלה בשבוע, עם יום מנוחה בין אימון לאימון.</p>
     </div>
 
-    <div class="seclabel"><span class="tick"></span><h2>רוצה את התוכנית המלאה?</h2><span class="rule"></span></div>
+    <div class="seclabel"><span class="tick"></span><h2>רוצה את התוכנית המלאה לחיילים?</h2><span class="rule"></span></div>
 
     <div class="checks">
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>3 רמות</b> לפי מבחן כניסה — מתחיל, בינוני, מתקדם</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>תוכנית מלאה של <b>21 יום</b> עם וידאו לכל תרגיל</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>אימון <b>מחולק (A/B)</b> או <b>אימון מלא</b> — אתה בוחר</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>הסבר מלא איך לבנות שבוע אימונים ולעבור רמה</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>תוכנית מלאה לכל הגוף</b> — כוח, שרירים וסיבולת</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>מותאם לחייל — <b>בלי ציוד, בכל מקום</b>, בכל שגרה</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>תוצאות גם בלי זמן, שינה מסודרת או תזונה מושלמת</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>ליווי והתקדמות מדורגת עד <b>היעד שלך</b></span></div>
     </div>
 
-    <button class="cta-full" onclick="goHome()">
+    <a class="cta-full" href="https://REPLACE-WITH-YOUR-SOLDIERS-PROGRAM-LINK" target="_blank" rel="noopener noreferrer">
       <span class="cf-ic"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M13 2 4.6 12.6a.6.6 0 0 0 .47.98H11l-1 8.4a.5.5 0 0 0 .9.36L19.4 11.4a.6.6 0 0 0-.47-.98H13l1-8.1A.5.5 0 0 0 13 2Z"/></svg></span>
       <span>
-        <span class="cf-t">לתוכנית המלאה — 21 יום</span>
-        <span class="cf-s">בחר את הרמה שלך והתחל עכשיו</span>
+        <span class="cf-t">אני רוצה להצטרף ליחידת הקליסטניקס</span>
+        <span class="cf-s">התוכנית המלאה לחיילים — בלי ציוד, בכל מקום</span>
       </span>
       <span class="cf-chev">‹</span>
-    </button>
+    </a>
+
+    <div class="mil-divider"></div>
 
     <div class="foot">
       שמור את הקישור הזה — האימון תמיד כאן בשבילך. יש שאלה? שלח לי הודעה באינסטגרם ואשמח לעזור. 💪
