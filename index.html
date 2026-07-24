@@ -407,8 +407,8 @@
 </head>
 <body>
 
-<!-- ================= HOME ================= -->
-<section id="home" class="screen active">
+<!-- ================= HOME (21-day program — now at #program) ================= -->
+<section id="home" class="screen">
   <div class="hero">
     <div class="hero-inner">
       <span class="eyebrow"><span class="dot"></span>האתגר שלך · 21 יום</span>
@@ -540,8 +540,8 @@
   <div id="levelContent"></div>
 </section>
 
-<!-- ================= FREE GUIDE (lead magnet) ================= -->
-<section id="free" class="screen">
+<!-- ================= FREE GIFT (landing / home) ================= -->
+<section id="free" class="screen active">
   <header class="appbar" id="appbarFree">
     <span class="mil-brand">יחידת הקליסטניקס</span>
     <div class="appbar-ctx">
@@ -968,10 +968,11 @@ function goHome(){
   if(location.hash) history.replaceState(null, '', location.pathname + location.search);
   showHome();
 }
-/* open the right screen based on the URL hash (#free / #guide / #gift) */
+/* the gift page is the home page; the 21-day program lives at #program */
 function routeFromHash(){
   const h = (location.hash || '').toLowerCase();
-  if(h === '#free' || h === '#guide' || h === '#gift') showFree();
+  if(h === '#program' || h === '#21' || h === '#full') showHome();
+  else showFree();
 }
 
 /* app bar shadow on scroll (level + free screens) */
