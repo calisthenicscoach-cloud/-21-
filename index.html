@@ -380,6 +380,9 @@
   #free .chk .ck{background:rgba(228,200,110,.14);color:var(--orange)}
   #free .info .iic{background:rgba(228,200,110,.14);color:var(--orange)}
   #free .rir-watch .rw-play{color:#241F0C;box-shadow:0 8px 18px -9px rgba(0,0,0,.6)}
+  #free .pitch-h{font-size:18px;font-weight:800;color:var(--ink);line-height:1.35;
+    margin:34px 2px 16px;text-align:center;text-wrap:balance}
+  #free .pitch-h b{color:var(--orange-2)}
 
   /* olive translucent app bar */
   #free .appbar{background:color-mix(in srgb,#20241A 82%, transparent)}
@@ -553,14 +556,13 @@
     <div class="hero-inner">
       <span class="eyebrow"><span class="dot"></span>אימון מתנה · שיפור במתח</span>
       <h1 class="title">יותר <span class="hl">מתח</span> — כבר מהאימונים הראשונים</h1>
-      <div class="quote"><p>כל אחד יכול לשלוט במתח.<br>צריך רק את התרגילים הנכונים.</p></div>
       <p class="sub">הכנתי לך אימון-מתנה ממוקד למתח — התרגילים המדויקים שיוסיפו לך עליות כבר מהאימונים הראשונים, גם אם אתה עוד לא עושה עלייה אחת מלאה. בכל מקום, צריך רק מוט. 💪</p>
 
       <a class="warmup" href="https://youtu.be/0Aeflpg7btQ" target="_blank" rel="noopener noreferrer">
         <span class="play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>
         <span>
           <span class="wt">חימום — התחל מכאן</span>
-          <span class="ws">2 דקות חימום לגב ולכתפיים לפני שאתה עולה על המוט.</span>
+          <span class="ws">10 דקות חימום חובה לפני האימון.</span>
         </span>
         <span class="chev">‹</span>
       </a>
@@ -572,7 +574,7 @@
       <span class="gic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg></span>
       <div>
         <div class="gt">איך עובדים עם האימון</div>
-        <div class="gs">כל תרגיל = לחיצה על סרטון קצר שמראה בדיוק איך לבצע. עשה את שני התרגילים בכל סופרסט אחד אחרי השני, נוח 60–120 שניות, וחזור לפי מספר הסבבים.</div>
+        <div class="gs">לחץ על כל תרגיל כדי לפתוח סרטון הדגמה והסבר. בצע את שני התרגילים בכל סופרסט אחד אחרי השני, תנוח 60–120 שניות, וחזור לפי מספר הסבבים.</div>
       </div>
     </div>
 
@@ -589,7 +591,7 @@
             <div class="ex-play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></div>
             <div class="ex-body">
               <div class="ex-name">מתח שלילי</div>
-              <div class="ex-sub">ירידה איטית 3–5 שנ' · בונה את כוח העלייה</div>
+              <div class="ex-sub">ירידה איטית 3–5 שנ'</div>
             </div>
             <div class="ex-nums"><div class="ex-main-rir fail">עד כשל</div></div>
           </a>
@@ -599,7 +601,6 @@
             <div class="ex-play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></div>
             <div class="ex-body">
               <div class="ex-name">מתח שכמות</div>
-              <div class="ex-sub">הפעלת השכמות · הבסיס לכל עלייה</div>
             </div>
             <div class="ex-nums"><div class="ex-main-rir">RIR 2</div><div class="ex-sub-reps">8–10 חזרות</div></div>
           </a>
@@ -623,7 +624,6 @@
             <div class="ex-play"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></div>
             <div class="ex-body">
               <div class="ex-name">מתח אוסטרלי</div>
-              <div class="ex-sub">נפח משיכה · מתאים לכל רמה</div>
             </div>
             <div class="ex-nums"><div class="ex-main-rir">RIR 1</div><div class="ex-sub-reps">8–12 חזרות</div></div>
           </a>
@@ -646,13 +646,13 @@
       <p>בצע את האימון <b>2–4 פעמים בשבוע</b>, עם יום מנוחה בין אימון לאימון.</p>
     </div>
 
-    <div class="seclabel"><span class="tick"></span><h2>רוצה את התוכנית המלאה לחיילים?</h2><span class="rule"></span></div>
+    <div class="pitch-h">חייל? רוצה להגיע ל<b>גוף שרירי וחזק</b> במהלך השירות?</div>
 
     <div class="checks">
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>תוכנית מלאה לכל הגוף</b> — כוח, שרירים וסיבולת</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>מותאם לחייל — <b>בלי ציוד, בכל מקום</b>, בכל שגרה</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>תוצאות גם בלי זמן, שינה מסודרת או תזונה מושלמת</span></div>
-      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>ליווי והתקדמות מדורגת עד <b>היעד שלך</b></span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>אין צורך במשקולות או חדר כושר</b> — אימוני משקל גוף בלבד</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>מתאמנים <b>בכל מקום</b> — בבית, בפארק וגם בבסיס</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span><b>שליטה מלאה בגוף</b> ותרגילים מטורפים — עמידת ידיים, דגל, פלאנש</span></div>
+      <div class="chk"><span class="ck"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span><span>גוף שרירי, חזק וחטוב שמחזיק אותך <b>לאורך כל השירות</b></span></div>
     </div>
 
     <a class="cta-full" href="https://matankopel.co.il" target="_blank" rel="noopener noreferrer">
