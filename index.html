@@ -301,6 +301,162 @@
     .lvl-stats .stat b{font-size:15px}
     .techs .tech{font-size:12px}
   }
+
+  /* ---------- SIGNATURE / ONBOARDING ---------- */
+  .signup-cta{
+    margin-top:20px;display:flex;align-items:center;gap:14px;width:100%;text-align:right;
+    background:var(--surface);border:1px solid rgba(255,107,53,.35);border-radius:16px;
+    padding:15px 16px;cursor:pointer;box-shadow:var(--shadow-sm);
+    transition:transform .16s ease,border-color .16s ease,background .16s ease;
+  }
+  .signup-cta:hover{transform:translateY(-2px);background:var(--surface2);border-color:rgba(255,107,53,.6)}
+  .signup-cta .sc-ic{flex:0 0 auto;width:44px;height:44px;border-radius:12px;background:rgba(255,107,53,.14);
+    display:grid;place-items:center;color:var(--orange);font-size:20px}
+  .signup-cta .sc-ic .ic{width:22px;height:22px}
+  .signup-cta .sc-t{font-weight:800;font-size:15.5px;color:var(--ink);line-height:1.2}
+  .signup-cta .sc-s{font-size:12.5px;color:var(--muted);font-weight:500;margin-top:3px}
+  .signup-cta .sc-chev{margin-inline-start:auto;color:var(--orange);font-size:22px;opacity:.85}
+
+  /* form */
+  .form-sec{margin-top:24px}
+  .fs-title{font-size:15px;font-weight:800;color:var(--ink);margin-bottom:13px;display:flex;align-items:center;gap:10px}
+  .fs-title .fs-ic{width:30px;height:30px;border-radius:9px;background:rgba(255,107,53,.12);color:var(--orange);
+    display:grid;place-items:center;flex:0 0 auto}
+  .fs-title .fs-ic .ic{width:17px;height:17px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:13.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+  .field label .req{color:var(--orange)}
+  .field input, .field textarea{
+    width:100%;background:var(--bg2);border:1px solid var(--line-2);border-radius:11px;
+    color:var(--ink);font-family:inherit;font-size:15px;padding:12px 14px;
+    transition:border-color .14s ease,background .14s ease;
+  }
+  .field input:focus, .field textarea:focus{outline:none;border-color:var(--orange);background:var(--surface)}
+  .field input::placeholder{color:var(--muted)}
+  .field.err input, .field.err textarea{border-color:var(--l3)}
+  .field .fmsg{font-size:12px;color:#FF8791;margin-top:6px;display:none}
+  .field.err .fmsg{display:block}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  @media(max-width:460px){.grid2{grid-template-columns:1fr}}
+
+  /* par-q */
+  .parq{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:2px 15px;box-shadow:var(--shadow-sm)}
+  .pq{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+  .pq:first-child{border-top:none}
+  .pq-q{flex:1;font-size:13px;line-height:1.5;color:var(--ink2)}
+  .pq-opts{display:flex;gap:6px;flex:0 0 auto}
+  .pq-opt{cursor:pointer}
+  .pq-opt input{position:absolute;opacity:0;pointer-events:none}
+  .pq-opt span{display:inline-grid;place-items:center;min-width:44px;padding:8px 10px;border-radius:9px;
+    font-size:13px;font-weight:700;color:var(--muted);background:var(--bg2);border:1px solid var(--line-2);transition:all .12s ease}
+  .pq-opt input:checked + span{color:#fff;background:var(--grad);border-color:transparent}
+  .parq-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding:0 2px}
+  .parq-note b{color:var(--ink2)}
+
+  /* declaration text */
+  .decl-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;
+    padding:16px 17px;box-shadow:var(--shadow-sm);max-height:290px;overflow-y:auto}
+  .decl-box h4{font-size:14px;font-weight:800;color:var(--orange-2);margin:16px 0 7px}
+  .decl-box h4:first-child{margin-top:0}
+  .decl-box p{font-size:13px;line-height:1.7;color:var(--ink2);margin-bottom:8px}
+  .decl-box ul{margin:0 18px 8px;padding:0}
+  .decl-box li{font-size:13px;line-height:1.7;color:var(--ink2);margin-bottom:4px}
+
+  /* agree checkbox */
+  .agree{display:flex;align-items:flex-start;gap:12px;margin-top:16px;cursor:pointer;
+    background:rgba(255,107,53,.06);border:1px solid rgba(255,107,53,.22);border-radius:12px;padding:14px 15px}
+  .agree.err{border-color:var(--l3)}
+  .agree input{position:absolute;opacity:0}
+  .agree .box{flex:0 0 auto;width:24px;height:24px;border-radius:7px;border:2px solid var(--line-2);
+    background:var(--bg2);display:grid;place-items:center;color:#fff;transition:all .14s ease;margin-top:1px}
+  .agree input:checked + .box{background:var(--grad);border-color:transparent}
+  .agree .box .ic{width:15px;height:15px;stroke-width:3;opacity:0;transition:opacity .1s}
+  .agree input:checked + .box .ic{opacity:1}
+  .agree .atx{font-size:13.5px;line-height:1.55;font-weight:600;color:var(--ink)}
+
+  /* signature pad */
+  .sig-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+  .sig-lbl{font-size:13.5px;font-weight:700;color:var(--ink2)}
+  .sig-clear{background:var(--surface);border:1px solid var(--line-2);color:var(--ink2);
+    font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 12px;border-radius:9px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:6px;transition:all .12s ease}
+  .sig-clear:hover{border-color:rgba(255,107,53,.5);color:var(--ink)}
+  .sig-clear .ic{width:14px;height:14px}
+  .sig-pad{position:relative;background:#fff;border:1px solid var(--line-2);border-radius:12px;overflow:hidden;
+    box-shadow:var(--shadow-sm)}
+  .sig-pad.err{border-color:var(--l3)}
+  .sig-pad canvas{display:block;width:100%;height:190px;touch-action:none;cursor:crosshair}
+  .sig-hint{position:absolute;inset:0;display:grid;place-items:center;pointer-events:none;
+    color:#AEB6C2;font-size:14px;font-weight:600}
+  .sig-pad.signed .sig-hint{display:none}
+  .sig-line{position:absolute;inset-inline:22px;bottom:34px;height:1px;background:#D6DBE3;pointer-events:none}
+  .sig-x{position:absolute;bottom:37px;inset-inline-start:22px;color:#C2C9D3;font-size:15px;font-weight:700;pointer-events:none}
+
+  /* submit + errors */
+  .submit-btn{margin-top:24px;width:100%;background:var(--grad);border:none;border-radius:14px;
+    color:#fff;font-family:inherit;font-size:16.5px;font-weight:800;padding:16px;cursor:pointer;
+    box-shadow:0 12px 30px -14px rgba(255,107,53,.75), inset 0 1px 0 rgba(255,255,255,.18);
+    transition:transform .16s ease,box-shadow .16s ease;display:flex;align-items:center;justify-content:center;gap:10px}
+  .submit-btn:hover{transform:translateY(-2px)}
+  .submit-btn:active{transform:translateY(0)}
+  .submit-btn .ic{width:20px;height:20px}
+  .form-err{display:none;margin-top:14px;background:rgba(251,80,99,.1);border:1px solid rgba(251,80,99,.3);
+    border-radius:11px;padding:12px 14px;font-size:13px;color:#FF8791;font-weight:600;text-align:center}
+  .form-err.show{display:block}
+
+  /* success */
+  .sig-success{display:none}
+  .sig-success.show{display:block;animation:fade .38s cubic-bezier(.2,.7,.3,1)}
+  .success-card{background:var(--surface);border:1px solid rgba(51,201,138,.3);border-radius:18px;
+    padding:28px 20px;text-align:center;box-shadow:var(--shadow);margin-top:10px}
+  .success-ic{width:66px;height:66px;border-radius:50%;background:rgba(51,201,138,.14);color:var(--l1);
+    display:grid;place-items:center;margin:0 auto 16px}
+  .success-ic .ic{width:32px;height:32px;stroke-width:2.4}
+  .success-card h3{font-size:21px;font-weight:900;margin-bottom:9px}
+  .success-card p{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:4px}
+  .success-card p b{color:var(--ink)}
+  .result-actions{display:flex;flex-direction:column;gap:11px;margin-top:24px}
+  .ra-btn{width:100%;border-radius:13px;font-family:inherit;font-size:15.5px;font-weight:800;padding:15px;
+    cursor:pointer;display:flex;align-items:center;justify-content:center;gap:10px;transition:transform .14s ease}
+  .ra-btn:active{transform:scale(.98)}
+  .ra-btn .ic{width:20px;height:20px}
+  .ra-wa{background:#25D366;border:none;color:#05331a}
+  .ra-wa .ic{stroke:#05331a}
+  .ra-pdf{background:var(--surface2);border:1px solid var(--line-2);color:var(--ink)}
+  .ra-new{background:transparent;border:none;color:var(--muted);font-size:13.5px;font-weight:700;padding:9px;cursor:pointer}
+  .ra-new:hover{color:var(--ink2)}
+
+  /* printable signed document */
+  #printArea{display:none}
+  .pd{font-family:'Rubik',Arial,sans-serif;max-width:720px;margin:0 auto;padding:26px 30px;color:#111;direction:rtl}
+  .pd-h{text-align:center;border-bottom:2px solid #FF6B35;padding-bottom:13px;margin-bottom:18px}
+  .pd-h h1{font-size:21px;font-weight:900;color:#111}
+  .pd-h .pd-sub{font-size:12.5px;color:#555;margin-top:5px}
+  .pd-sec{margin-bottom:15px}
+  .pd-sec h2{font-size:12.5px;font-weight:800;color:#E85826;letter-spacing:.03em;margin-bottom:8px;
+    border-bottom:1px solid #eee;padding-bottom:4px}
+  .pd-row{display:flex;gap:8px;font-size:13px;line-height:1.7;padding:1px 0}
+  .pd-row .k{font-weight:700;color:#333;min-width:120px}
+  .pd-row .v{color:#111}
+  .pd-decl p,.pd-decl li{font-size:11px;line-height:1.55;color:#333;margin-bottom:5px}
+  .pd-decl h4{font-size:12px;font-weight:800;color:#111;margin:9px 0 3px}
+  .pd-decl ul{margin:0 18px}
+  .pd-parq div{font-size:11.5px;line-height:1.85;color:#222}
+  .pd-parq .yes{color:#c0392b;font-weight:800}
+  .pd-confirm{font-size:12.5px;font-weight:700;color:#111;background:#f5f6f8;border-radius:6px;padding:9px 11px}
+  .pd-sign{display:flex;justify-content:space-between;align-items:flex-end;margin-top:22px;gap:20px}
+  .pd-sign .sig-col{text-align:center}
+  .pd-sign .sig-img{border-bottom:1.5px solid #111;padding:0 24px 3px;min-width:180px}
+  .pd-sign .sig-img img{height:78px;object-fit:contain}
+  .pd-sign .sig-cap{font-size:11.5px;color:#555;margin-top:5px}
+  .pd-meta{font-size:11px;color:#666;text-align:center;margin-top:20px;border-top:1px dashed #ccc;padding-top:10px}
+  @media print{
+    body{background:#fff}
+    body *{visibility:hidden}
+    #printArea, #printArea *{visibility:visible}
+    #printArea{display:block;position:absolute;inset:0;padding:0;background:#fff}
+    @page{margin:14mm}
+  }
 </style>
 </head>
 <body>
@@ -330,6 +486,15 @@
           <a class="tech" href="https://youtu.be/98NG8WCzmeM" target="_blank" rel="noopener noreferrer"><span class="tic"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>שכיבות שמיכה</a>
         </div>
       </div>
+
+      <button class="signup-cta" onclick="showSignature()">
+        <span class="sc-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/></svg></span>
+        <span>
+          <span class="sc-t">הצהרת בריאות וחתימה</span>
+          <span class="sc-s">חובה למילוי לפני תחילת התוכנית · לוקח דקה</span>
+        </span>
+        <span class="sc-chev">‹</span>
+      </button>
     </div>
   </div>
 
@@ -437,6 +602,132 @@
   </header>
   <div id="levelContent"></div>
 </section>
+
+<!-- ================= HEALTH DECLARATION + SIGNATURE ================= -->
+<section id="signature" class="screen">
+  <header class="appbar" id="sigAppbar">
+    <button class="back-btn" onclick="showHome()">
+      <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      <span>חזרה</span>
+    </button>
+    <div class="appbar-ctx"><span class="ctx-name">הצהרה וחתימה</span></div>
+  </header>
+
+  <div class="lv-hero">
+    <div class="lv-hero-inner">
+      <span class="lv-badge" style="background:var(--grad)">הרשמה לתוכנית</span>
+      <div class="lv-title">הצהרת בריאות וחתימה</div>
+      <div class="lv-testline">מלא/י את הפרטים, קרא/י את ההצהרה וחתום/מי. הטופס נשלח למאמן.</div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- ===== FORM ===== -->
+    <div id="sigForm">
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg></span>פרטים אישיים</div>
+        <div class="field" id="f-name">
+          <label>שם מלא <span class="req">*</span></label>
+          <input type="text" id="in-name" autocomplete="name" placeholder="שם פרטי ומשפחה">
+          <div class="fmsg">נא למלא שם מלא</div>
+        </div>
+        <div class="grid2">
+          <div class="field" id="f-id">
+            <label>תעודת זהות <span class="req">*</span></label>
+            <input type="text" inputmode="numeric" id="in-id" maxlength="9" placeholder="9 ספרות">
+            <div class="fmsg">מספר תעודת זהות לא תקין</div>
+          </div>
+          <div class="field" id="f-phone">
+            <label>טלפון <span class="req">*</span></label>
+            <input type="tel" inputmode="tel" id="in-phone" autocomplete="tel" placeholder="05X-XXXXXXX">
+            <div class="fmsg">נא למלא מספר טלפון תקין</div>
+          </div>
+        </div>
+        <div class="grid2">
+          <div class="field">
+            <label>תאריך לידה</label>
+            <input type="date" id="in-dob">
+          </div>
+          <div class="field">
+            <label>איש קשר לחירום (שם + טלפון)</label>
+            <input type="text" id="in-emg" placeholder="שם וטלפון">
+          </div>
+        </div>
+      </div>
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>שאלון בריאות (PAR-Q)</div>
+        <div class="parq" id="parq"></div>
+        <div class="parq-note">אם סימנת <b>"כן"</b> באחת מהשאלות — יש להציג אישור רופא לפני תחילת האימונים.</div>
+      </div>
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></span>ההצהרה</div>
+        <!-- ניתן לערוך את הטקסט הבא בחופשיות — הוא מופיע גם במסמך החתום -->
+        <div class="decl-box" id="declText">
+          <h4>1. הצהרת בריאות</h4>
+          <p>אני מצהיר/ה כי אני בריא/ה ואין לי מגבלה רפואית המונעת ממני להשתתף בפעילות גופנית מאומצת. ככל שסימנתי "כן" באחת משאלות הבריאות לעיל, אני מתחייב/ת להציג אישור רופא לפני תחילת האימונים.</p>
+          <h4>2. מודעות לסיכון</h4>
+          <p>ידוע לי כי אימוני כוח וקליסטניקס כרוכים במאמץ גופני ובסיכון לפציעה. אני משתתף/ת בתוכנית מרצוני החופשי ועל אחריותי, לאחר ששקלתי את הסיכונים הכרוכים בכך.</p>
+          <h4>3. כתב ויתור ופטור מאחריות</h4>
+          <p>אני פוטר/ת את המאמן ואת מי מטעמו מכל אחריות לנזק, פציעה או אובדן שעלולים להיגרם לי במהלך האימונים או עקב ביצוע התרגילים, למעט במקרה של רשלנות חמורה. אני מוותר/ת על כל טענה, תביעה או דרישה בקשר לכך.</p>
+          <h4>4. התחייבות המתאמן/ת</h4>
+          <ul>
+            <li>לבצע את התרגילים בטכניקה נכונה ובהתאם להנחיות.</li>
+            <li>להפסיק כל תרגיל ולפנות לעזרה במקרה של כאב, סחרחורת או חולשה.</li>
+            <li>ליידע את המאמן על כל שינוי במצב הבריאותי שלי.</li>
+          </ul>
+          <h4>5. הסכמה לשימוש בפרטים</h4>
+          <p>אני מסכים/ה כי הפרטים שמסרתי יישמרו אצל המאמן לצורך ניהול התוכנית ויצירת קשר, ולא יועברו לצד שלישי ללא הסכמתי.</p>
+        </div>
+
+        <label class="agree" id="f-agree">
+          <input type="checkbox" id="in-agree">
+          <span class="box"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+          <span class="atx">קראתי, הבנתי ואני מסכים/ה לכל האמור בהצהרה ובכתב הוויתור לעיל, והמידע שמסרתי נכון.</span>
+        </label>
+      </div>
+
+      <div class="form-sec">
+        <div class="sig-head">
+          <span class="sig-lbl">חתימה <span class="req">*</span></span>
+          <button type="button" class="sig-clear" onclick="clearSig()"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>נקה</button>
+        </div>
+        <div class="sig-pad" id="sigPad">
+          <canvas id="sigCanvas"></canvas>
+          <div class="sig-line"></div>
+          <div class="sig-x">✕</div>
+          <div class="sig-hint">חתום/מי כאן באצבע</div>
+        </div>
+      </div>
+
+      <div class="form-err" id="formErr">נא להשלים את כל שדות החובה, לאשר את ההצהרה ולחתום.</div>
+      <button class="submit-btn" onclick="submitSig()">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
+        אשר/י וחתום/מי
+      </button>
+      <div class="foot" style="margin-top:16px">בלחיצה על "אשר/י וחתום/מי" נוצר מסמך חתום עם חותמת תאריך ושעה. אין צורך בהתקנת אפליקציה.</div>
+    </div>
+
+    <!-- ===== SUCCESS ===== -->
+    <div id="sigSuccess" class="sig-success">
+      <div class="success-card">
+        <div class="success-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h3>הטופס נחתם בהצלחה!</h3>
+        <p><b id="succName"></b></p>
+        <p id="succTime"></p>
+        <div class="result-actions">
+          <button class="ra-btn ra-wa" onclick="sendWhatsApp()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>שלח/י למאמן בוואטסאפ</button>
+          <button class="ra-btn ra-pdf" onclick="printDoc()"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6Z"/></svg>שמור/י מסמך חתום (PDF)</button>
+          <button class="ra-new" onclick="resetSig()">חתימה חדשה למתאמן/ת נוסף/ת</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div id="printArea"></div>
 
 <script>
 /* ---------- icons ---------- */
@@ -700,11 +991,13 @@ function renderLevel(n, mode){
   document.getElementById('levelContent').innerHTML = html;
 }
 
+function hideScreens(){ document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active')); }
+
 function showLevel(n){
   curLevel = n;
   curMode = 'split';
   renderLevel(n, curMode);
-  document.getElementById('home').classList.remove('active');
+  hideScreens();
   document.getElementById('level').classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
   onScroll();
@@ -715,18 +1008,232 @@ function setMode(m){
   window.scrollTo({top:0,behavior:'instant'});
 }
 function showHome(){
-  document.getElementById('level').classList.remove('active');
+  hideScreens();
   document.getElementById('home').classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
 }
 
-/* app bar shadow on scroll */
-const appbar = document.getElementById('appbar');
+/* app bar shadow on scroll (applies to whichever app bar is visible) */
 function onScroll(){
-  if(window.scrollY > 6) appbar.classList.add('scrolled');
-  else appbar.classList.remove('scrolled');
+  const on = window.scrollY > 6;
+  document.querySelectorAll('.appbar').forEach(a=>a.classList.toggle('scrolled', on));
 }
 window.addEventListener('scroll', onScroll, {passive:true});
+
+/* ===================================================================
+   הצהרת בריאות + חתימה דיגיטלית
+   =================================================================== */
+
+/* ⬇⬇⬇  החלף/י כאן את מספר הוואטסאפ שלך  ⬇⬇⬇
+   פורמט בינלאומי, ספרות בלבד, בלי + ובלי 0 בהתחלה.
+   דוגמה: 0501234567  ➜  '972501234567'
+   אם משאירים ריק — ייפתח וואטסאפ ותבחר/י ידנית לאיזה איש קשר לשלוח.       */
+const COACH_WHATSAPP = '';
+const PROGRAM_NAME   = 'ידיים וכתפיים ב-21 יום';
+
+/* שאלון PAR-Q — ניתן לערוך/להוסיף/למחוק שאלות בחופשיות */
+const PARQ = [
+  'האם רופא אמר לך אי-פעם שיש לך בעיה בלב ושמותר לך לבצע פעילות גופנית רק בהמלצת רופא?',
+  'האם את/ה חש/ה כאב בחזה בזמן פעילות גופנית?',
+  'האם בחודש האחרון חשת כאב בחזה גם כשלא ביצעת פעילות גופנית?',
+  'האם את/ה מאבד/ת שיווי משקל עקב סחרחורת, או מאבד/ת הכרה?',
+  'האם יש לך בעיה בעצם או במפרק שעלולה להחמיר עקב פעילות גופנית?',
+  'האם את/ה נוטל/ת תרופה עקב לחץ דם או בעיית לב?',
+  'האם ידועה לך סיבה אחרת כלשהי שבגללה אסור לך לבצע פעילות גופנית?'
+];
+
+let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null;
+
+function buildParq(){
+  document.getElementById('parq').innerHTML = PARQ.map((q,i)=>`
+    <div class="pq">
+      <div class="pq-q">${i+1}. ${q}</div>
+      <div class="pq-opts">
+        <label class="pq-opt"><input type="radio" name="pq${i}" value="לא"><span>לא</span></label>
+        <label class="pq-opt"><input type="radio" name="pq${i}" value="כן"><span>כן</span></label>
+      </div>
+    </div>`).join('');
+}
+
+function initSigCanvas(){
+  sigCanvas = document.getElementById('sigCanvas');
+  const rect = sigCanvas.getBoundingClientRect();
+  const dpr = window.devicePixelRatio || 1;
+  sigCanvas.width  = Math.round(rect.width  * dpr);
+  sigCanvas.height = Math.round(rect.height * dpr);
+  sigCtx = sigCanvas.getContext('2d');
+  sigCtx.scale(dpr, dpr);
+  sigCtx.lineWidth = 2.4; sigCtx.lineCap = 'round'; sigCtx.lineJoin = 'round'; sigCtx.strokeStyle = '#111';
+  const pos = e => { const r = sigCanvas.getBoundingClientRect(); return { x:e.clientX-r.left, y:e.clientY-r.top }; };
+  sigCanvas.onpointerdown = e => {
+    e.preventDefault(); sigDrawing = true;
+    try{ sigCanvas.setPointerCapture(e.pointerId); }catch(_){}
+    const p = pos(e); sigCtx.beginPath(); sigCtx.moveTo(p.x, p.y);
+  };
+  sigCanvas.onpointermove = e => {
+    if(!sigDrawing) return; e.preventDefault();
+    const p = pos(e); sigCtx.lineTo(p.x, p.y); sigCtx.stroke();
+    if(!hasSig){ hasSig = true; const pad = document.getElementById('sigPad'); pad.classList.add('signed'); pad.classList.remove('err'); }
+  };
+  const end = () => { sigDrawing = false; };
+  sigCanvas.onpointerup = end; sigCanvas.onpointercancel = end; sigCanvas.onpointerleave = end;
+}
+
+function clearSig(){
+  if(sigCtx) sigCtx.clearRect(0, 0, sigCanvas.width, sigCanvas.height);
+  hasSig = false;
+  document.getElementById('sigPad').classList.remove('signed');
+}
+
+function showSignature(){
+  hideScreens();
+  document.getElementById('signature').classList.add('active');
+  document.getElementById('sigForm').style.display = '';
+  document.getElementById('sigSuccess').classList.remove('show');
+  buildParq();
+  window.scrollTo({top:0, behavior:'instant'});
+  onScroll();
+  requestAnimationFrame(initSigCanvas);
+}
+
+/* בדיקת תקינות תעודת זהות ישראלית (ספרת ביקורת) */
+function validID(id){
+  id = String(id).trim();
+  if(!/^\d{5,9}$/.test(id)) return false;
+  id = id.padStart(9, '0');
+  let sum = 0;
+  for(let i=0;i<9;i++){
+    let n = Number(id[i]) * ((i % 2) + 1);
+    if(n > 9) n -= 9;
+    sum += n;
+  }
+  return sum % 10 === 0;
+}
+
+function markField(id, ok){ document.getElementById(id).classList.toggle('err', !ok); }
+
+function submitSig(){
+  let ok = true;
+  const name = document.getElementById('in-name').value.trim();
+  const id   = document.getElementById('in-id').value.trim();
+  const phoneRaw = document.getElementById('in-phone').value.trim();
+  const phone = phoneRaw.replace(/\D/g, '');
+
+  markField('f-name', !!name);          if(!name) ok = false;
+  const idOk = validID(id);             markField('f-id', idOk);        if(!idOk) ok = false;
+  const phoneOk = /^0?\d{8,9}$/.test(phone) && phone.length >= 9;
+  markField('f-phone', phoneOk);        if(!phoneOk) ok = false;
+
+  const agreed = document.getElementById('in-agree').checked;
+  document.getElementById('f-agree').classList.toggle('err', !agreed); if(!agreed) ok = false;
+
+  document.getElementById('sigPad').classList.toggle('err', !hasSig);  if(!hasSig) ok = false;
+
+  const fe = document.getElementById('formErr');
+  if(!ok){ fe.classList.add('show'); return; }
+  fe.classList.remove('show');
+
+  const dob = document.getElementById('in-dob').value;
+  const emg = document.getElementById('in-emg').value.trim();
+  const parq = PARQ.map((q,i)=>{ const c = document.querySelector(`input[name="pq${i}"]:checked`); return { q, a: c ? c.value : '—' }; });
+  const now = new Date();
+  const record = {
+    name, id, phone: phoneRaw, dob, emg, parq,
+    sigData: sigCanvas.toDataURL('image/png'),
+    time: now.toLocaleString('he-IL'), ts: now.toISOString()
+  };
+  lastRecord = record;
+
+  /* גיבוי מקומי בדפדפן (רשת ביטחון) */
+  try{
+    const arr = JSON.parse(localStorage.getItem('signedForms') || '[]');
+    arr.push({ name, id, phone: phoneRaw, time: record.time });
+    localStorage.setItem('signedForms', JSON.stringify(arr));
+  }catch(_){}
+
+  buildPrintDoc(record);
+  document.getElementById('succName').textContent = name;
+  document.getElementById('succTime').textContent = 'נחתם בתאריך ' + record.time;
+  document.getElementById('sigForm').style.display = 'none';
+  document.getElementById('sigSuccess').classList.add('show');
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function buildPrintDoc(r){
+  const parqHtml = r.parq.map((p,i)=>`<div>${i+1}. ${esc(p.q)} — <span class="${p.a==='כן'?'yes':''}">${esc(p.a)}</span></div>`).join('');
+  const decl = document.getElementById('declText').innerHTML;
+  document.getElementById('printArea').innerHTML = `
+    <div class="pd">
+      <div class="pd-h">
+        <h1>הצהרת בריאות וכתב ויתור</h1>
+        <div class="pd-sub">תוכנית "${esc(PROGRAM_NAME)}"</div>
+      </div>
+      <div class="pd-sec">
+        <h2>פרטי המתאמן/ת</h2>
+        <div class="pd-row"><span class="k">שם מלא</span><span class="v">${esc(r.name)}</span></div>
+        <div class="pd-row"><span class="k">תעודת זהות</span><span class="v">${esc(r.id)}</span></div>
+        <div class="pd-row"><span class="k">טלפון</span><span class="v">${esc(r.phone)}</span></div>
+        ${r.dob ? `<div class="pd-row"><span class="k">תאריך לידה</span><span class="v">${esc(r.dob)}</span></div>` : ''}
+        ${r.emg ? `<div class="pd-row"><span class="k">איש קשר לחירום</span><span class="v">${esc(r.emg)}</span></div>` : ''}
+      </div>
+      <div class="pd-sec">
+        <h2>שאלון בריאות (PAR-Q)</h2>
+        <div class="pd-parq">${parqHtml}</div>
+      </div>
+      <div class="pd-sec pd-decl">
+        <h2>ההצהרה</h2>
+        ${decl}
+      </div>
+      <div class="pd-sec">
+        <div class="pd-confirm">☑ המתאמן/ת אישר/ה: "קראתי, הבנתי ואני מסכים/ה לכל האמור לעיל, והמידע שמסרתי נכון."</div>
+      </div>
+      <div class="pd-sign">
+        <div class="sig-col">
+          <div class="sig-img"><img src="${r.sigData}" alt="חתימה"></div>
+          <div class="sig-cap">חתימת המתאמן/ת</div>
+        </div>
+        <div style="font-size:12px;color:#555;text-align:center">
+          <div>${esc(r.name)}</div>
+          <div style="margin-top:4px">${esc(r.time)}</div>
+        </div>
+      </div>
+      <div class="pd-meta">נחתם אלקטרונית בתאריך ${esc(r.time)} · המסמך נוצר אוטומטית לאחר אישור וחתימה דיגיטלית.</div>
+    </div>`;
+}
+
+function printDoc(){ window.print(); }
+
+function sendWhatsApp(){
+  const r = lastRecord; if(!r) return;
+  const answers = r.parq.map((p,i)=>`${i+1}.${p.a}`).join(' ');
+  const msg =
+    `שלום, מילאתי הצהרת בריאות וחתימה לתוכנית "${PROGRAM_NAME}".\n\n` +
+    `שם: ${r.name}\n` +
+    `ת.ז.: ${r.id}\n` +
+    `טלפון: ${r.phone}\n` +
+    (r.dob ? `תאריך לידה: ${r.dob}\n` : '') +
+    (r.emg ? `איש קשר לחירום: ${r.emg}\n` : '') +
+    `\nשאלון בריאות: ${answers}\n` +
+    `\nאישרתי וחתמתי דיגיטלית בתאריך ${r.time}.\n` +
+    `(מצרף/ת את מסמך ה-PDF החתום)`;
+  const num = COACH_WHATSAPP.replace(/\D/g, '');
+  const url = num
+    ? `https://wa.me/${num}?text=${encodeURIComponent(msg)}`
+    : `https://wa.me/?text=${encodeURIComponent(msg)}`;
+  window.open(url, '_blank', 'noopener');
+}
+
+function resetSig(){
+  ['in-name','in-id','in-phone','in-dob','in-emg'].forEach(i=>document.getElementById(i).value='');
+  document.getElementById('in-agree').checked = false;
+  document.getElementById('f-agree').classList.remove('err');
+  ['f-name','f-id','f-phone'].forEach(i=>document.getElementById(i).classList.remove('err'));
+  document.getElementById('formErr').classList.remove('show');
+  lastRecord = null;
+  showSignature();
+}
 </script>
 </body>
 </html>
