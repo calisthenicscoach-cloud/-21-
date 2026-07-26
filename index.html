@@ -465,7 +465,7 @@
 
   /* printable signed document */
   #printArea{display:none}
-  .pd{font-family:'Rubik',Arial,sans-serif;max-width:720px;margin:0 auto;padding:26px 30px;color:#111;direction:rtl}
+  .pd{font-family:'Rubik',Arial,sans-serif;max-width:720px;margin:0 auto;padding:26px 30px;color:#111;direction:rtl;word-spacing:1.4px}
   .pd-h{text-align:center;border-bottom:2px solid #FF6B35;padding-bottom:13px;margin-bottom:18px}
   .pd-h h1{font-size:21px;font-weight:900;color:#111}
   .pd-h .pd-sub{font-size:12.5px;color:#555;margin-top:5px}
@@ -1559,6 +1559,9 @@ async function generatePdf(r){
   document.body.appendChild(wrap);
   el.style.cssText = 'display:block;position:static;width:760px;background:#fff';
   wrap.appendChild(el);
+  /* html2canvas מפיל רווחים בטקסט קצר ומודגש (RTL) — מחליפים לרווח קשיח (nbsp) בשדות הקצרים */
+  el.querySelectorAll('.pd-h h1, .pd-sub, .pd-sec h2, .pd-decl h4, .pd-row .k, .pd-row .v, .sig-cap, .sig-name')
+    .forEach(n => { n.innerHTML = n.innerHTML.replace(/ /g, '\u00A0'); });
   await new Promise(res => setTimeout(res, 60));   /* לתת ל-layout להתייצב */
   try {
     const opt = {
@@ -1701,7 +1704,7 @@ function buildPrintDoc(r){
           <div class="sig-cap">${signCap}</div>
         </div>
         <div style="font-size:12px;color:#555;text-align:center">
-          <div>${esc(signerName)}</div>
+          <div class="sig-name">${esc(signerName)}</div>
           <div style="margin-top:4px">${esc(r.time)}</div>
         </div>
       </div>
