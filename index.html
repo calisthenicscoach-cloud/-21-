@@ -794,7 +794,7 @@
 <!-- ================= HEALTH DECLARATION + SIGNATURE ================= -->
 <section id="signature" class="screen">
   <header class="appbar" id="sigAppbar">
-    <button class="back-btn" onclick="showHome()">
+    <button class="back-btn" id="sigBack" onclick="showHome()">
       <svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       <span>חזרה</span>
     </button>
@@ -1402,17 +1402,20 @@ function showSignature(){
   const trackSection = document.getElementById('trackSection');
   const lockedTrack  = document.getElementById('lockedTrack');
   if(locked){
-    /* קישור ייעודי — נעילה למסלול אחד, בלי בורר ובלי מסלולים אחרים */
+    /* קישור ייעודי — נעילה למסלול אחד, בלי בורר, בלי מסלולים אחרים,
+       ובלי כפתור "חזרה" (שהחייל לא יגיע לאפליקציית האימונים) */
     curTrack = locked;
     trackSection.style.display = 'none';
     lockedTrack.style.display = '';
+    document.getElementById('sigBack').style.display = 'none';
     document.getElementById('lockedTrackName').textContent = TRACKS[locked].name;
     applyTrack(locked);
   } else {
-    /* בלי פרמטר — מציג בורר מסלולים (לשימושך/לבדיקה) */
+    /* בלי פרמטר — מציג בורר מסלולים וכפתור חזרה (לשימושך/לבדיקה) */
     curTrack = null;
     trackSection.style.display = '';
     lockedTrack.style.display = 'none';
+    document.getElementById('sigBack').style.display = '';
     buildTracks();
     const link = document.getElementById('termsLink');
     link.classList.add('disabled'); link.removeAttribute('href');
