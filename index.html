@@ -957,6 +957,7 @@
 </section>
 
 <div id="printArea"></div>
+<iframe id="driveSink" name="driveSink" style="display:none" title="drive"></iframe>
 
 <script src="assets/html2pdf.bundle.min.js"></script>
 <script>
@@ -1565,23 +1566,34 @@ async function generatePdf(r){
   }
 }
 
-async function uploadToDrive(r, uri){
-  const payload = {
-    pdfBase64: (uri.split(',')[1] || ''),
-    filename: makeFilename(r),
-    name:r.name, id:r.id, track:r.track, dob:r.dob, addr:r.addr,
-    email:r.email, phone:r.phone, minor:!!r.minor, pname:r.pname||'', pid:r.pid||'',
-    flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time
-  };
-  /* no-cors: Apps Script לא מחזיר כותרות CORS, לכן אי-אפשר לקרוא את התשובה בדפדפן.
-     בשליחת no-cors, אם הבקשה נשלחה בהצלחה — ה-fetch נפתר; רק כשל רשת אמיתי יזרוק. */
-  await fetch(DRIVE_ENDPOINT, {
-    method:'POST',
-    mode:'no-cors',
-    headers:{'Content-Type':'text/plain;charset=utf-8'},
-    body: JSON.stringify(payload)
+/* שליחה דרך טופס נסתר אל iframe — השיטה האמינה מול Google Apps Script.
+   (fetch עם no-cors לא מגיע ל-doPost בגלל ההפניה של Apps Script; טופס כן.) */
+function uploadToDrive(r, uri){
+  return new Promise(resolve => {
+    const payload = {
+      pdfBase64: (uri.split(',')[1] || ''),
+      filename: makeFilename(r),
+      name:r.name, id:r.id, track:r.track, dob:r.dob, addr:r.addr,
+      email:r.email, phone:r.phone, minor:!!r.minor, pname:r.pname||'', pid:r.pid||'',
+      flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time
+    };
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = DRIVE_ENDPOINT;
+    form.target = 'driveSink';
+    form.style.display = 'none';
+    const inp = document.createElement('input');
+    inp.type = 'hidden'; inp.name = 'payload'; inp.value = JSON.stringify(payload);
+    form.appendChild(inp);
+    document.body.appendChild(form);
+
+    const iframe = document.getElementById('driveSink');
+    let done = false;
+    const finish = () => { if(done) return; done = true; if(iframe) iframe.onload = null; setTimeout(()=>form.remove(), 0); resolve({ ok:true }); };
+    if(iframe) iframe.onload = finish;   /* נפתר כשהתשובה חוזרת ל-iframe */
+    setTimeout(finish, 8000);            /* גיבוי אם onload לא נורה */
+    form.submit();
   });
-  return { ok:true };
 }
 
 function downloadPdf(){

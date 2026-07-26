@@ -14,7 +14,10 @@ const SHEET_ID  = 'PASTE_SPREADSHEET_ID_HERE';    // ה-ID של ה-Google Sheet 
 
 function doPost(e) {
   try {
-    const d = JSON.parse(e.postData.contents);
+    // הנתונים מגיעים כשדה טופס 'payload' (שליחה דרך iframe), עם נפילה חזרה ל-body גולמי
+    const raw = (e && e.parameter && e.parameter.payload) ? e.parameter.payload
+              : (e && e.postData && e.postData.contents) ? e.postData.contents : '{}';
+    const d = JSON.parse(raw);
 
     // 1) שמירת ה-PDF החתום בתיקייה
     const folder = DriveApp.getFolderById(FOLDER_ID);
