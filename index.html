@@ -634,6 +634,17 @@
   .pd-h h1{color:#3a3e26}
   .pd-sec h2{color:#9A7B22}
   .pd-confirm{background:#f6f3ea}
+
+  /* auto-send success states */
+  .succ-status{font-size:13px;line-height:1.6;margin-top:12px}
+  #signature .succ-status{color:var(--mink2)}
+  #signature .succ-status.ok{color:#8CD9AF}
+  #signature .succ-status.warn{color:#F0C46A}
+  .spinner{width:30px;height:30px;border-radius:50%;border:3px solid rgba(230,205,124,.22);
+    border-top-color:#E6CD7C;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #signature .success-ic.warn{background:rgba(240,196,106,.14);color:#F0C46A}
+  #signature .success-ic.warn .ic{stroke:#F0C46A}
 </style>
 </head>
 <body>
@@ -934,15 +945,12 @@
     <!-- ===== SUCCESS ===== -->
     <div id="sigSuccess" class="sig-success">
       <div class="success-card">
-        <div class="success-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
-        <h3>הטופס נחתם בהצלחה!</h3>
+        <div class="success-ic" id="succIcon"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+        <h3 id="succTitle">הטופס נחתם בהצלחה!</h3>
         <p><b id="succName"></b></p>
         <p id="succTime"></p>
-        <div class="result-actions">
-          <button class="ra-btn ra-wa" onclick="sendWhatsApp()"><svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>שלח/י למאמן בוואטסאפ</button>
-          <button class="ra-btn ra-pdf" onclick="printDoc()"><svg class="ic" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6Z"/></svg>שמור/י מסמך חתום (PDF)</button>
-          <button class="ra-new" onclick="resetSig()">חתימה חדשה למתאמן/ת נוסף/ת</button>
-        </div>
+        <div class="succ-status" id="succStatus"></div>
+        <div class="result-actions" id="resultActions"></div>
       </div>
     </div>
   </div>
@@ -950,6 +958,7 @@
 
 <div id="printArea"></div>
 
+<script src="assets/html2pdf.bundle.min.js"></script>
 <script>
 /* ---------- icons ---------- */
 const IC = {
@@ -1250,6 +1259,11 @@ window.addEventListener('scroll', onScroll, {passive:true});
    דוגמה: 0501234567  ➜  '972501234567'
    אם משאירים ריק — ייפתח וואטסאפ ותבחר/י ידנית לאיזה איש קשר לשלוח.       */
 const COACH_WHATSAPP = '';
+
+/* ⬇ שמירה אוטומטית ל-Google Drive + Google Sheet.
+   הדבק/י כאן את כתובת ה-Web App מ-Google Apps Script (ראה/י apps-script/README.md).
+   כל עוד ריק — הטופס עדיין עובד עם שמירת PDF / וואטסאפ ידני. */
+let DRIVE_ENDPOINT = '';
 /* ⬇ המסלולים — הלקוח רואה רק את שם המסלול (בלי מחיר).
    המחירים לעיונך בלבד: חודש 450 ₪ · 4 חודשים 1,600 ₪ · 10 חודשים 3,000 ₪ · מנוי חודשי 450 ₪/חודש.
    כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/). */
@@ -1289,7 +1303,10 @@ const PARQ = [
   'אובחנת כסובל/ת מהפרעה נפשית?'
 ];
 
-let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null, curTrack = null;
+let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null, curTrack = null, lastPdfUri = null;
+
+const IC_PDF = '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6Z"/></svg>';
+const IC_WA  = '<svg class="ic" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>';
 
 function buildTracks(){
   document.getElementById('tracks').innerHTML = TRACK_ORDER.map(k=>
@@ -1497,11 +1514,126 @@ function submitSig(){
   }catch(_){}
 
   buildPrintDoc(record);
-  g('succName').textContent = name + ' · ' + t.name;
-  g('succTime').textContent = 'נחתם בתאריך ' + record.time;
   g('sigForm').style.display = 'none';
   g('sigSuccess').classList.add('show');
   window.scrollTo({top:0, behavior:'smooth'});
+  finishSubmit(record);
+}
+
+/* מייצר את ה-PDF החתום, שולח לדרייב (אם מוגדר), ומעדכן את מסך ההצלחה */
+async function finishSubmit(r){
+  showProcessing(r);
+  let pdfUri = null;
+  try { pdfUri = await generatePdf(r); } catch(e){ pdfUri = null; }
+  lastPdfUri = pdfUri;
+
+  if(DRIVE_ENDPOINT && pdfUri){
+    try {
+      const res = await uploadToDrive(r, pdfUri);
+      showDone(r, (res && res.ok) ? 'drive' : 'fail');
+    } catch(e){ showDone(r, 'fail'); }
+  } else if(pdfUri){
+    showDone(r, 'manual');
+  } else {
+    showDone(r, 'nopdf');
+  }
+}
+
+function makeFilename(r){
+  const d = (r.ts || '').slice(0,10) || new Date().toISOString().slice(0,10);
+  const safe = s => String(s || '').replace(/[\\/:*?"<>|]+/g, ' ').trim();
+  return `הצהרת בריאות - ${safe(r.name)} - ${safe(r.track)} - ${d}`;
+}
+
+async function generatePdf(r){
+  if(typeof html2pdf === 'undefined') return null;
+  const el = document.getElementById('printArea');
+  el.style.cssText = 'display:block;position:fixed;left:-10000px;top:0;width:760px;background:#fff;z-index:-1';
+  try {
+    const opt = {
+      margin: [8,8,8,8],
+      image: { type:'jpeg', quality:0.95 },
+      html2canvas: { scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:820 },
+      jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
+    };
+    return await html2pdf().set(opt).from(el).outputPdf('datauristring');
+  } finally {
+    el.style.cssText = '';   /* חוזר ל-display:none מה-CSS */
+  }
+}
+
+async function uploadToDrive(r, uri){
+  const payload = {
+    pdfBase64: (uri.split(',')[1] || ''),
+    filename: makeFilename(r),
+    name:r.name, id:r.id, track:r.track, dob:r.dob, addr:r.addr,
+    email:r.email, phone:r.phone, minor:!!r.minor, pname:r.pname||'', pid:r.pid||'',
+    flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time
+  };
+  /* no-cors: Apps Script לא מחזיר כותרות CORS, לכן אי-אפשר לקרוא את התשובה בדפדפן.
+     בשליחת no-cors, אם הבקשה נשלחה בהצלחה — ה-fetch נפתר; רק כשל רשת אמיתי יזרוק. */
+  await fetch(DRIVE_ENDPOINT, {
+    method:'POST',
+    mode:'no-cors',
+    headers:{'Content-Type':'text/plain;charset=utf-8'},
+    body: JSON.stringify(payload)
+  });
+  return { ok:true };
+}
+
+function downloadPdf(){
+  if(!lastPdfUri){ printDoc(); return; }
+  const a = document.createElement('a');
+  a.href = lastPdfUri;
+  a.download = (lastRecord ? makeFilename(lastRecord) : 'signed') + '.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+
+function showProcessing(r){
+  const g = id => document.getElementById(id);
+  g('succName').textContent = r.name + ' · ' + r.track;
+  g('succTime').textContent = 'נחתם בתאריך ' + r.time;
+  g('succIcon').className = 'success-ic';
+  g('succIcon').innerHTML = '<div class="spinner"></div>';
+  g('succTitle').textContent = 'רגע, שולחים את הטופס…';
+  const st = g('succStatus'); st.className = 'succ-status'; st.textContent = 'מייצרים מסמך חתום ושומרים בדרייב…';
+  g('resultActions').innerHTML = '';
+}
+
+function showDone(r, mode){
+  const g = id => document.getElementById(id);
+  const check = '<svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+  const warn  = '<svg class="ic" viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+  const bCopy  = `<button class="ra-btn ra-pdf" onclick="downloadPdf()">${IC_PDF}שמור/י עותק PDF</button>`;
+  const bPrint = `<button class="ra-btn ra-pdf" onclick="printDoc()">${IC_PDF}שמור/י מסמך (PDF)</button>`;
+  const bWa    = `<button class="ra-btn ra-wa" onclick="sendWhatsApp()">${IC_WA}שלח/י למאמן בוואטסאפ</button>`;
+  const bNew   = `<button class="ra-new" onclick="resetSig()">חתימה חדשה למתאמן/ת נוסף/ת</button>`;
+  const st = g('succStatus');
+
+  if(mode === 'drive'){
+    g('succIcon').className = 'success-ic'; g('succIcon').innerHTML = check;
+    g('succTitle').textContent = 'נשלח בהצלחה! ✓';
+    st.className = 'succ-status ok';
+    st.textContent = 'המסמך החתום נשמר אוטומטית אצל המאמן. אין צורך לעשות דבר נוסף.';
+    g('resultActions').innerHTML = bCopy + bNew;
+  } else if(mode === 'manual'){
+    g('succIcon').className = 'success-ic'; g('succIcon').innerHTML = check;
+    g('succTitle').textContent = 'הטופס נחתם בהצלחה!';
+    st.className = 'succ-status'; st.textContent = '';
+    g('resultActions').innerHTML = bWa + (lastPdfUri ? bCopy : bPrint) + bNew;
+  } else if(mode === 'fail'){
+    g('succIcon').className = 'success-ic warn'; g('succIcon').innerHTML = warn;
+    g('succTitle').textContent = 'נחתם — אך השליחה האוטומטית נכשלה';
+    st.className = 'succ-status warn';
+    st.textContent = 'שמור/י את המסמך ושלח/י למאמן בוואטסאפ כדי שלא לאבד את החתימה.';
+    g('resultActions').innerHTML = bWa + (lastPdfUri ? bCopy : bPrint) + bNew;
+  } else {
+    g('succIcon').className = 'success-ic warn'; g('succIcon').innerHTML = warn;
+    g('succTitle').textContent = 'הטופס נחתם';
+    st.className = 'succ-status warn';
+    st.textContent = 'לא הצלחנו לייצר PDF אוטומטית — שמור/י ושלח/י ידנית.';
+    g('resultActions').innerHTML = bWa + bPrint + bNew;
+  }
 }
 
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -1589,6 +1721,7 @@ function resetSig(){
   document.getElementById('parq').style.borderColor = '';
   document.getElementById('formErr').classList.remove('show');
   lastRecord = null;
+  lastPdfUri = null;
   showSignature();
 }
 
