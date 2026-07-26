@@ -960,6 +960,7 @@
 <iframe id="driveSink" name="driveSink" style="display:none" title="drive"></iframe>
 
 <script src="assets/html2pdf.bundle.min.js"></script>
+<script src="assets/pdf-lib.min.js"></script>
 <script>
 /* ---------- icons ---------- */
 const IC = {
@@ -1549,7 +1550,8 @@ function makeFilename(r){
   return `הצהרת בריאות - ${safe(r.name)} - ${safe(r.track)} - ${d}`;
 }
 
-async function generatePdf(r){
+/* מייצר את עמוד הצהרת הבריאות החתום כ-Uint8Array */
+async function generateHealthPdf(r){
   if(typeof html2pdf === 'undefined') return null;
   const el = document.getElementById('printArea');
   /* עטיפה מחוץ למסך (fixed) עם האלמנט עצמו ב-flow רגיל (static) — כך ל-clone של html2pdf
@@ -1570,12 +1572,43 @@ async function generatePdf(r){
       html2canvas: { scale:2, backgroundColor:'#ffffff', useCORS:true },
       jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
     };
-    return await html2pdf().set(opt).from(el).outputPdf('datauristring');
+    const buf = await html2pdf().set(opt).from(el).outputPdf('arraybuffer');
+    return new Uint8Array(buf);
   } finally {
     el.style.cssText = '';            /* חוזר ל-display:none מה-CSS */
     document.body.appendChild(el);    /* מחזירים את האלמנט החוצה מהעטיפה */
     wrap.remove();
   }
+}
+
+function u8ToBase64(u8){
+  let bin = ''; const chunk = 0x8000;
+  for(let i=0; i<u8.length; i+=chunk){ bin += String.fromCharCode.apply(null, u8.subarray(i, i+chunk)); }
+  return btoa(bin);
+}
+
+/* מייצר את ה-PDF הסופי: הצהרת בריאות חתומה + התקנון המלא של המסלול (מהמסמך המקורי).
+   מחזיר data URI. אם המיזוג נכשל — מחזיר את הצהרת הבריאות בלבד. */
+async function generatePdf(r){
+  const health = await generateHealthPdf(r);
+  if(!health) return null;
+  let finalU8 = health;
+  try {
+    const t = curTrack && TRACKS[curTrack];
+    if(typeof PDFLib !== 'undefined' && t && t.pdf){
+      const termsBuf = await fetch(t.pdf).then(x => { if(!x.ok) throw new Error('terms fetch'); return x.arrayBuffer(); });
+      const { PDFDocument } = PDFLib;
+      const merged = await PDFDocument.create();
+      const hDoc = await PDFDocument.load(health);
+      (await merged.copyPages(hDoc, hDoc.getPageIndices())).forEach(p => merged.addPage(p));
+      const tDoc = await PDFDocument.load(termsBuf);
+      const idx = tDoc.getPageIndices();
+      const termsIdx = idx.length > 1 ? idx.slice(1) : idx;   /* מדלגים על עמוד הצהרת הבריאות הריק שבמקור */
+      (await merged.copyPages(tDoc, termsIdx)).forEach(p => merged.addPage(p));
+      finalU8 = await merged.save();
+    }
+  } catch(e){ finalU8 = health; }   /* נפילה חזרה: הצהרת בריאות בלבד */
+  return 'data:application/pdf;base64,' + u8ToBase64(finalU8);
 }
 
 /* שליחה דרך טופס נסתר אל iframe — השיטה האמינה מול Google Apps Script.
