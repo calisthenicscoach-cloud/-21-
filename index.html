@@ -1552,17 +1552,26 @@ function makeFilename(r){
 async function generatePdf(r){
   if(typeof html2pdf === 'undefined') return null;
   const el = document.getElementById('printArea');
-  el.style.cssText = 'display:block;position:fixed;left:-10000px;top:0;width:760px;background:#fff;z-index:-1';
+  /* עטיפה מחוץ למסך (fixed) עם האלמנט עצמו ב-flow רגיל (static) — כך ל-clone של html2pdf
+     יש גובה אמיתי (position:absolute/fixed על האלמנט עצמו מקריס אותו לגובה 0 → PDF ריק). */
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:760px;background:#fff;z-index:-1';
+  document.body.appendChild(wrap);
+  el.style.cssText = 'display:block;position:static;width:760px;background:#fff';
+  wrap.appendChild(el);
+  await new Promise(res => setTimeout(res, 60));   /* לתת ל-layout להתייצב */
   try {
     const opt = {
       margin: [8,8,8,8],
       image: { type:'jpeg', quality:0.95 },
-      html2canvas: { scale:2, backgroundColor:'#ffffff', useCORS:true, windowWidth:820 },
+      html2canvas: { scale:2, backgroundColor:'#ffffff', useCORS:true },
       jsPDF: { unit:'mm', format:'a4', orientation:'portrait' }
     };
     return await html2pdf().set(opt).from(el).outputPdf('datauristring');
   } finally {
-    el.style.cssText = '';   /* חוזר ל-display:none מה-CSS */
+    el.style.cssText = '';            /* חוזר ל-display:none מה-CSS */
+    document.body.appendChild(el);    /* מחזירים את האלמנט החוצה מהעטיפה */
+    wrap.remove();
   }
 }
 
