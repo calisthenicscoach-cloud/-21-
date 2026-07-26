@@ -339,10 +339,47 @@
   .grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
   @media(max-width:460px){.grid2{grid-template-columns:1fr}}
 
+  /* track picker */
+  .tracks{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  @media(max-width:460px){.tracks{grid-template-columns:1fr}}
+  .track{text-align:right;cursor:pointer;background:var(--surface);border:1px solid var(--line-2);
+    border-radius:13px;padding:14px 15px;transition:all .14s ease}
+  .track:hover{border-color:rgba(255,107,53,.5);background:var(--surface2)}
+  .track.sel{border-color:var(--orange);background:rgba(255,107,53,.09);box-shadow:inset 0 0 0 1px var(--orange)}
+  .track .tk-n{font-size:15px;font-weight:800;color:var(--ink)}
+  .track .tk-s{font-size:12.5px;color:var(--muted);font-weight:600;margin-top:4px}
+  .track.sel .tk-s{color:var(--orange-2)}
+  .trackErr{font-size:12px;color:#FF8791;margin-top:9px;display:none}
+  .trackErr.show{display:block}
+
+  /* terms PDF link */
+  .terms-link{display:flex;align-items:center;gap:12px;margin-top:4px;background:var(--surface);
+    border:1px solid var(--line-2);border-radius:12px;padding:14px 15px;cursor:pointer;transition:all .14s ease}
+  .terms-link:hover{border-color:rgba(255,107,53,.55);background:var(--surface2)}
+  .terms-link.disabled{opacity:.45;pointer-events:none}
+  .terms-link .tl-ic{width:38px;height:38px;border-radius:10px;background:rgba(255,107,53,.13);color:var(--orange);
+    display:grid;place-items:center;flex:0 0 auto}
+  .terms-link .tl-ic .ic{width:19px;height:19px}
+  .terms-link .tl-t{font-weight:800;font-size:14px;color:var(--ink)}
+  .terms-link .tl-s{font-size:12px;color:var(--muted);margin-top:2px}
+  .terms-link .tl-arrow{margin-inline-start:auto;color:var(--orange);font-size:20px}
+
+  /* minor toggle + hidden section */
+  .minor-toggle{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13.5px;font-weight:700;
+    color:var(--ink2);margin-top:6px}
+  .minor-toggle input{width:18px;height:18px;accent-color:var(--orange)}
+  .hidden-sec{display:none}
+  .hidden-sec.show{display:block}
+
   /* par-q */
   .parq{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:2px 15px;box-shadow:var(--shadow-sm)}
-  .pq{display:flex;align-items:center;gap:12px;padding:13px 0;border-top:1px solid var(--line)}
+  .pq{padding:13px 0;border-top:1px solid var(--line)}
   .pq:first-child{border-top:none}
+  .pq-main{display:flex;align-items:center;gap:12px}
+  .pq-comment{margin-top:9px;display:none}
+  .pq-comment.show{display:block}
+  .pq-comment input{width:100%;background:var(--bg2);border:1px solid var(--line-2);border-radius:9px;
+    color:var(--ink);font-family:inherit;font-size:13.5px;padding:9px 12px}
   .pq-q{flex:1;font-size:13px;line-height:1.5;color:var(--ink2)}
   .pq-opts{display:flex;gap:6px;flex:0 0 auto}
   .pq-opt{cursor:pointer}
@@ -615,15 +652,21 @@
 
   <div class="lv-hero">
     <div class="lv-hero-inner">
-      <span class="lv-badge" style="background:var(--grad)">הרשמה לתוכנית</span>
-      <div class="lv-title">הצהרת בריאות וחתימה</div>
-      <div class="lv-testline">מלא/י את הפרטים, קרא/י את ההצהרה וחתום/מי. הטופס נשלח למאמן.</div>
+      <span class="lv-badge" style="background:var(--grad)">Matan Kopel · הרשמה</span>
+      <div class="lv-title">דף מידע והצהרת בריאות</div>
+      <div class="lv-testline">בחר/י מסלול, מלא/י את הפרטים, קרא/י את התקנון וחתום/מי. הטופס נשלח למאמן.</div>
     </div>
   </div>
 
   <div class="wrap">
     <!-- ===== FORM ===== -->
     <div id="sigForm">
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6H4M20 12H4M14 18H4"/></svg></span>בחר/י מסלול</div>
+        <div class="tracks" id="tracks"></div>
+        <div class="trackErr" id="trackErr">נא לבחור מסלול</div>
+      </div>
 
       <div class="form-sec">
         <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 21a8 8 0 0 0-16 0M12 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8Z"/></svg></span>פרטים אישיים</div>
@@ -634,9 +677,26 @@
         </div>
         <div class="grid2">
           <div class="field" id="f-id">
-            <label>תעודת זהות <span class="req">*</span></label>
+            <label>ת"ז <span class="req">*</span></label>
             <input type="text" inputmode="numeric" id="in-id" maxlength="9" placeholder="9 ספרות">
             <div class="fmsg">מספר תעודת זהות לא תקין</div>
+          </div>
+          <div class="field" id="f-dob">
+            <label>תאריך לידה <span class="req">*</span></label>
+            <input type="date" id="in-dob">
+            <div class="fmsg">נא למלא תאריך לידה</div>
+          </div>
+        </div>
+        <div class="field" id="f-addr">
+          <label>כתובת מלאה <span class="req">*</span></label>
+          <input type="text" id="in-addr" autocomplete="street-address" placeholder="רחוב, מספר, עיר">
+          <div class="fmsg">נא למלא כתובת מלאה</div>
+        </div>
+        <div class="grid2">
+          <div class="field" id="f-email">
+            <label>מייל <span class="req">*</span></label>
+            <input type="email" id="in-email" inputmode="email" autocomplete="email" placeholder="name@email.com">
+            <div class="fmsg">כתובת מייל לא תקינה</div>
           </div>
           <div class="field" id="f-phone">
             <label>טלפון <span class="req">*</span></label>
@@ -644,54 +704,68 @@
             <div class="fmsg">נא למלא מספר טלפון תקין</div>
           </div>
         </div>
-        <div class="grid2">
-          <div class="field">
-            <label>תאריך לידה</label>
-            <input type="date" id="in-dob">
-          </div>
-          <div class="field">
-            <label>איש קשר לחירום (שם + טלפון)</label>
-            <input type="text" id="in-emg" placeholder="שם וטלפון">
+        <label class="minor-toggle"><input type="checkbox" id="in-minor" onchange="toggleMinor()"><span>המתאמן/ת מתחת לגיל 18 (חתימת הורה/אפוטרופוס)</span></label>
+        <div class="hidden-sec" id="minorFields">
+          <div class="grid2" style="margin-top:12px">
+            <div class="field" id="f-pname">
+              <label>שם ההורה/אפוטרופוס <span class="req">*</span></label>
+              <input type="text" id="in-pname" placeholder="שם מלא">
+              <div class="fmsg">נא למלא שם ההורה</div>
+            </div>
+            <div class="field" id="f-pid">
+              <label>ת"ז הורה <span class="req">*</span></label>
+              <input type="text" inputmode="numeric" id="in-pid" maxlength="9" placeholder="9 ספרות">
+              <div class="fmsg">מספר תעודת זהות לא תקין</div>
+            </div>
           </div>
         </div>
       </div>
 
       <div class="form-sec">
-        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>שאלון בריאות (PAR-Q)</div>
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 1 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8Z"/></svg></span>שאלון רפואי והצהרת בריאות</div>
+        <div class="parq-note" style="margin:0 2px 12px">אם התשובה על אחת או יותר מהשאלות היא <b>חיובית ("כן")</b> — יש להביא תעודה רפואית מרופא (שלא עברו 3 חודשים מהנפקתה) לפני תחילת התוכנית.</div>
         <div class="parq" id="parq"></div>
-        <div class="parq-note">אם סימנת <b>"כן"</b> באחת מהשאלות — יש להציג אישור רופא לפני תחילת האימונים.</div>
+        <div class="field" id="f-notes" style="margin-top:14px">
+          <label>14. הערות לקוח</label>
+          <textarea id="in-notes" rows="2" placeholder="פירוט (רשות)"></textarea>
+        </div>
       </div>
 
       <div class="form-sec">
         <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></span>ההצהרה</div>
-        <!-- ניתן לערוך את הטקסט הבא בחופשיות — הוא מופיע גם במסמך החתום -->
         <div class="decl-box" id="declText">
-          <h4>1. הצהרת בריאות</h4>
-          <p>אני מצהיר/ה כי אני בריא/ה ואין לי מגבלה רפואית המונעת ממני להשתתף בפעילות גופנית מאומצת. ככל שסימנתי "כן" באחת משאלות הבריאות לעיל, אני מתחייב/ת להציג אישור רופא לפני תחילת האימונים.</p>
-          <h4>2. מודעות לסיכון</h4>
-          <p>ידוע לי כי אימוני כוח וקליסטניקס כרוכים במאמץ גופני ובסיכון לפציעה. אני משתתף/ת בתוכנית מרצוני החופשי ועל אחריותי, לאחר ששקלתי את הסיכונים הכרוכים בכך.</p>
-          <h4>3. כתב ויתור ופטור מאחריות</h4>
-          <p>אני פוטר/ת את המאמן ואת מי מטעמו מכל אחריות לנזק, פציעה או אובדן שעלולים להיגרם לי במהלך האימונים או עקב ביצוע התרגילים, למעט במקרה של רשלנות חמורה. אני מוותר/ת על כל טענה, תביעה או דרישה בקשר לכך.</p>
-          <h4>4. התחייבות המתאמן/ת</h4>
-          <ul>
-            <li>לבצע את התרגילים בטכניקה נכונה ובהתאם להנחיות.</li>
-            <li>להפסיק כל תרגיל ולפנות לעזרה במקרה של כאב, סחרחורת או חולשה.</li>
-            <li>ליידע את המאמן על כל שינוי במצב הבריאותי שלי.</li>
-          </ul>
-          <h4>5. הסכמה לשימוש בפרטים</h4>
-          <p>אני מסכים/ה כי הפרטים שמסרתי יישמרו אצל המאמן לצורך ניהול התוכנית ויצירת קשר, ולא יועברו לצד שלישי ללא הסכמתי.</p>
+          <p>אני, החתום/ה מטה, מצהיר/ה כי קראתי והבנתי את כל השאלון הרפואי שבטופס זה וכל התשובות לשאלות בטופס זה הן שליליות. אני מצהיר/ה כי מסרתי ידיעות מלאות ונכונות אודות מצבי הרפואי בעבר ובהווה לפי השאלות שנשאלתי בשאלון האמור. ידוע לי כי לאחר שנתיים מיום חתימתי על הצהרת בריאות זו אדרש להמציא הצהרת בריאות חדשה.</p>
+          <h4>הצהרה אישית</h4>
+          <p>הנני מצהיר/ה כי אני במצב פיזי טוב וכי אינני סובל/ת מבעיות רפואיות העלולות לסכן אותי כתוצאה מאימון כושר ו/או ייעוץ תזונתי, וכי אני מסוגל/ת לעסוק באימון פאסיבי או אקטיבי, וכי האימון כאמור לא יפגע בבריאותי, ביטחוני, נוחיותי או מצבי הפיזי. אם קיים ספק כלשהו הנוגע לבריאותי — בין לפני יישום התכנית ובין במהלכה — הנני נדרש/ת להודיע על כך ללא דיחוי ולפני כל פעילות הקשורה לעסק.</p>
         </div>
 
-        <label class="agree" id="f-agree">
-          <input type="checkbox" id="in-agree">
+        <label class="agree" id="f-agreeH">
+          <input type="checkbox" id="in-agreeH">
           <span class="box"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
-          <span class="atx">קראתי, הבנתי ואני מסכים/ה לכל האמור בהצהרה ובכתב הוויתור לעיל, והמידע שמסרתי נכון.</span>
+          <span class="atx">אני מאשר/ת את הצהרת הבריאות לעיל ואת נכונות כל הפרטים שמסרתי.</span>
+        </label>
+      </div>
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 12h6M9 16h6M9 8h2M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6"/></svg></span>תקנון ותנאי ההתקשרות</div>
+        <a class="terms-link disabled" id="termsLink" target="_blank" rel="noopener noreferrer">
+          <span class="tl-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8Z"/><path d="M14 2v6h6M9 15h6M9 11h6"/></svg></span>
+          <span>
+            <span class="tl-t">קרא/י את התקנון המלא (PDF)</span>
+            <span class="tl-s" id="termsSub">בחר/י מסלול כדי לפתוח את התקנון</span>
+          </span>
+          <span class="tl-arrow">‹</span>
+        </a>
+        <label class="agree" id="f-agreeT">
+          <input type="checkbox" id="in-agreeT">
+          <span class="box"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+          <span class="atx" id="agreeTtx">קראתי את התקנון ותנאי ההתקשרות המלאים ואני מסכים/ה להם.</span>
         </label>
       </div>
 
       <div class="form-sec">
         <div class="sig-head">
-          <span class="sig-lbl">חתימה <span class="req">*</span></span>
+          <span class="sig-lbl" id="sigLbl">חתימה <span class="req">*</span></span>
           <button type="button" class="sig-clear" onclick="clearSig()"><svg class="ic" viewBox="0 0 24 24"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M6 6l1 14a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2l1-14"/></svg>נקה</button>
         </div>
         <div class="sig-pad" id="sigPad">
@@ -702,7 +776,7 @@
         </div>
       </div>
 
-      <div class="form-err" id="formErr">נא להשלים את כל שדות החובה, לאשר את ההצהרה ולחתום.</div>
+      <div class="form-err" id="formErr">נא להשלים את כל שדות החובה, לאשר את ההצהרה והתקנון, ולחתום.</div>
       <button class="submit-btn" onclick="submitSig()">
         <svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>
         אשר/י וחתום/מי
@@ -1029,30 +1103,84 @@ window.addEventListener('scroll', onScroll, {passive:true});
    דוגמה: 0501234567  ➜  '972501234567'
    אם משאירים ריק — ייפתח וואטסאפ ותבחר/י ידנית לאיזה איש קשר לשלוח.       */
 const COACH_WHATSAPP = '';
-const PROGRAM_NAME   = 'ידיים וכתפיים ב-21 יום';
+/* ⬇ המסלולים — כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/).
+   ניתן לעדכן שם/מחיר/קובץ בחופשיות. */
+const TRACKS = {
+  chodesh: { name: 'מסלול חודש',        sub: 'ליווי חודש · 450 ₪',         pdf: 'terms/maslul-chodesh.pdf' },
+  m4:      { name: 'מסלול 4 חודשים',    sub: '4 חודשים · 1,600 ₪',         pdf: 'terms/maslul-4-chodashim.pdf' },
+  m10:     { name: 'מסלול 10 חודשים',   sub: '10 חודשים · 3,000 ₪',        pdf: 'terms/maslul-10-chodashim.pdf' },
+  minui:   { name: 'מנוי חודשי מתחדש',  sub: 'ללא התחייבות · 450 ₪ לחודש', pdf: 'terms/maslul-minui-chodshi.pdf' },
+};
+const TRACK_ORDER = ['chodesh', 'm4', 'm10', 'minui'];
 
-/* שאלון PAR-Q — ניתן לערוך/להוסיף/למחוק שאלות בחופשיות */
+/* שאלון רפואי — 13 השאלות מהצהרת הבריאות. ניתן לערוך בחופשיות. */
 const PARQ = [
-  'האם רופא אמר לך אי-פעם שיש לך בעיה בלב ושמותר לך לבצע פעילות גופנית רק בהמלצת רופא?',
-  'האם את/ה חש/ה כאב בחזה בזמן פעילות גופנית?',
-  'האם בחודש האחרון חשת כאב בחזה גם כשלא ביצעת פעילות גופנית?',
-  'האם את/ה מאבד/ת שיווי משקל עקב סחרחורת, או מאבד/ת הכרה?',
-  'האם יש לך בעיה בעצם או במפרק שעלולה להחמיר עקב פעילות גופנית?',
-  'האם את/ה נוטל/ת תרופה עקב לחץ דם או בעיית לב?',
-  'האם ידועה לך סיבה אחרת כלשהי שבגללה אסור לך לבצע פעילות גופנית?'
+  'האם את/ה אלרגי/ת?',
+  'האם את/ה סובל/ת מסכרת?',
+  'האם את/ה נוטל/ת תרופות כלשהן?',
+  'האם את/ה סובל/ת מלחץ דם גבוה?',
+  'האם את/ה סובל/ת מסחרחורות או התעלפויות?',
+  'האם את/ה חש/ה לחץ בחזה בזמן מאמץ?',
+  'האם את/ה סובל/ת מבעיה אורתופדית כלשהי?',
+  'האם אושפזת ב-5 השנים האחרונות בבית חולים?',
+  'האם עברת ניתוחים כלשהם?',
+  'האם את/ה סובל/ת מבעיות לב?',
+  'האם את/ה סובל/ת מבעיות נוירולוגיות כלשהן?',
+  'האם את/ה סובל/ת ממחלה כלשהי?',
+  'אובחנת כסובל/ת מהפרעה נפשית?'
 ];
 
-let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null;
+let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null, curTrack = null;
+
+function buildTracks(){
+  document.getElementById('tracks').innerHTML = TRACK_ORDER.map(k=>{
+    const t = TRACKS[k];
+    return `<button type="button" class="track" data-k="${k}" onclick="selectTrack('${k}')">
+      <div class="tk-n">${t.name}</div><div class="tk-s">${t.sub}</div></button>`;
+  }).join('');
+}
+
+function selectTrack(k){
+  curTrack = k;
+  document.querySelectorAll('.track').forEach(b=>b.classList.toggle('sel', b.dataset.k===k));
+  document.getElementById('trackErr').classList.remove('show');
+  const t = TRACKS[k];
+  const link = document.getElementById('termsLink');
+  link.href = t.pdf; link.classList.remove('disabled');
+  document.getElementById('termsSub').textContent = t.name + ' · ' + t.sub;
+  document.getElementById('agreeTtx').textContent =
+    `קראתי את התקנון ותנאי ההתקשרות המלאים של "${t.name}" ואני מסכים/ה להם.`;
+}
 
 function buildParq(){
   document.getElementById('parq').innerHTML = PARQ.map((q,i)=>`
     <div class="pq">
-      <div class="pq-q">${i+1}. ${q}</div>
-      <div class="pq-opts">
-        <label class="pq-opt"><input type="radio" name="pq${i}" value="לא"><span>לא</span></label>
-        <label class="pq-opt"><input type="radio" name="pq${i}" value="כן"><span>כן</span></label>
+      <div class="pq-main">
+        <div class="pq-q">${i+1}. ${q}</div>
+        <div class="pq-opts">
+          <label class="pq-opt"><input type="radio" name="pq${i}" value="לא" onchange="pqChange(${i},false)"><span>לא</span></label>
+          <label class="pq-opt"><input type="radio" name="pq${i}" value="כן" onchange="pqChange(${i},true)"><span>כן</span></label>
+        </div>
       </div>
+      <div class="pq-comment" id="pqc${i}"><input type="text" id="pqcin${i}" placeholder="פירוט / הערות"></div>
     </div>`).join('');
+}
+
+function pqChange(i, isYes){
+  document.getElementById('pqc'+i).classList.toggle('show', isYes);
+  if(!isYes) document.getElementById('pqcin'+i).value = '';
+}
+
+function toggleMinor(){
+  const on = document.getElementById('in-minor').checked;
+  document.getElementById('minorFields').classList.toggle('show', on);
+  document.getElementById('sigLbl').innerHTML = on
+    ? 'חתימת הורה/אפוטרופוס <span class="req">*</span>'
+    : 'חתימה <span class="req">*</span>';
+  if(!on){
+    ['in-pname','in-pid'].forEach(x=>document.getElementById(x).value='');
+    ['f-pname','f-pid'].forEach(x=>document.getElementById(x).classList.remove('err'));
+  }
 }
 
 function initSigCanvas(){
@@ -1090,7 +1218,13 @@ function showSignature(){
   document.getElementById('signature').classList.add('active');
   document.getElementById('sigForm').style.display = '';
   document.getElementById('sigSuccess').classList.remove('show');
+  curTrack = null;
+  buildTracks();
   buildParq();
+  const link = document.getElementById('termsLink');
+  link.classList.add('disabled'); link.removeAttribute('href');
+  document.getElementById('termsSub').textContent = 'בחר/י מסלול כדי לפתוח את התקנון';
+  document.getElementById('agreeTtx').textContent = 'קראתי את התקנון ותנאי ההתקשרות המלאים ואני מסכים/ה להם.';
   window.scrollTo({top:0, behavior:'instant'});
   onScroll();
   requestAnimationFrame(initSigCanvas);
@@ -1114,31 +1248,65 @@ function markField(id, ok){ document.getElementById(id).classList.toggle('err', 
 
 function submitSig(){
   let ok = true;
-  const name = document.getElementById('in-name').value.trim();
-  const id   = document.getElementById('in-id').value.trim();
-  const phoneRaw = document.getElementById('in-phone').value.trim();
+  const g = id => document.getElementById(id);
+  const name  = g('in-name').value.trim();
+  const id    = g('in-id').value.trim();
+  const dob   = g('in-dob').value;
+  const addr  = g('in-addr').value.trim();
+  const email = g('in-email').value.trim();
+  const phoneRaw = g('in-phone').value.trim();
   const phone = phoneRaw.replace(/\D/g, '');
 
-  markField('f-name', !!name);          if(!name) ok = false;
-  const idOk = validID(id);             markField('f-id', idOk);        if(!idOk) ok = false;
+  if(!curTrack){ ok = false; g('trackErr').classList.add('show'); }
+
+  markField('f-name', !!name);                       if(!name) ok = false;
+  const idOk = validID(id);   markField('f-id', idOk);   if(!idOk) ok = false;
+  markField('f-dob', !!dob);                          if(!dob) ok = false;
+  markField('f-addr', !!addr);                        if(!addr) ok = false;
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+  markField('f-email', emailOk);                      if(!emailOk) ok = false;
   const phoneOk = /^0?\d{8,9}$/.test(phone) && phone.length >= 9;
-  markField('f-phone', phoneOk);        if(!phoneOk) ok = false;
+  markField('f-phone', phoneOk);                      if(!phoneOk) ok = false;
 
-  const agreed = document.getElementById('in-agree').checked;
-  document.getElementById('f-agree').classList.toggle('err', !agreed); if(!agreed) ok = false;
+  const minor = g('in-minor').checked;
+  let pname = '', pid = '';
+  if(minor){
+    pname = g('in-pname').value.trim();
+    pid   = g('in-pid').value.trim();
+    markField('f-pname', !!pname);                    if(!pname) ok = false;
+    const pidOk = validID(pid);  markField('f-pid', pidOk);  if(!pidOk) ok = false;
+  }
 
-  document.getElementById('sigPad').classList.toggle('err', !hasSig);  if(!hasSig) ok = false;
+  const parq = PARQ.map((q,i)=>{
+    const c  = document.querySelector(`input[name="pq${i}"]:checked`);
+    const cm = g('pqcin'+i);
+    return { q, a: c ? c.value : '', c: cm ? cm.value.trim() : '' };
+  });
+  const allAnswered = parq.every(p=>p.a);
+  g('parq').style.borderColor = allAnswered ? '' : 'var(--l3)';
+  if(!allAnswered) ok = false;
 
-  const fe = document.getElementById('formErr');
-  if(!ok){ fe.classList.add('show'); return; }
+  const aH = g('in-agreeH').checked; g('f-agreeH').classList.toggle('err', !aH); if(!aH) ok = false;
+  const aT = g('in-agreeT').checked; g('f-agreeT').classList.toggle('err', !aT); if(!aT) ok = false;
+
+  g('sigPad').classList.toggle('err', !hasSig);       if(!hasSig) ok = false;
+
+  const fe = g('formErr');
+  if(!ok){
+    fe.classList.add('show');
+    const first = document.querySelector('.trackErr.show, .field.err, .agree.err, .sig-pad.err');
+    if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
+    return;
+  }
   fe.classList.remove('show');
 
-  const dob = document.getElementById('in-dob').value;
-  const emg = document.getElementById('in-emg').value.trim();
-  const parq = PARQ.map((q,i)=>{ const c = document.querySelector(`input[name="pq${i}"]:checked`); return { q, a: c ? c.value : '—' }; });
+  const notes = g('in-notes').value.trim();
   const now = new Date();
+  const t = TRACKS[curTrack];
   const record = {
-    name, id, phone: phoneRaw, dob, emg, parq,
+    track: t.name, trackSub: t.sub,
+    name, id, dob, addr, email, phone: phoneRaw,
+    minor, pname, pid, parq, notes,
     sigData: sigCanvas.toDataURL('image/png'),
     time: now.toLocaleString('he-IL'), ts: now.toISOString()
   };
@@ -1147,59 +1315,64 @@ function submitSig(){
   /* גיבוי מקומי בדפדפן (רשת ביטחון) */
   try{
     const arr = JSON.parse(localStorage.getItem('signedForms') || '[]');
-    arr.push({ name, id, phone: phoneRaw, time: record.time });
+    arr.push({ track: t.name, name, id, phone: phoneRaw, time: record.time });
     localStorage.setItem('signedForms', JSON.stringify(arr));
   }catch(_){}
 
   buildPrintDoc(record);
-  document.getElementById('succName').textContent = name;
-  document.getElementById('succTime').textContent = 'נחתם בתאריך ' + record.time;
-  document.getElementById('sigForm').style.display = 'none';
-  document.getElementById('sigSuccess').classList.add('show');
+  g('succName').textContent = name + ' · ' + t.name;
+  g('succTime').textContent = 'נחתם בתאריך ' + record.time;
+  g('sigForm').style.display = 'none';
+  g('sigSuccess').classList.add('show');
   window.scrollTo({top:0, behavior:'smooth'});
 }
 
 function esc(s){ return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 
 function buildPrintDoc(r){
-  const parqHtml = r.parq.map((p,i)=>`<div>${i+1}. ${esc(p.q)} — <span class="${p.a==='כן'?'yes':''}">${esc(p.a)}</span></div>`).join('');
+  const parqHtml = r.parq.map((p,i)=>`<div>${i+1}. ${esc(p.q)} — <span class="${p.a==='כן'?'yes':''}">${esc(p.a||'—')}</span>${p.c?` <span style="color:#555">(${esc(p.c)})</span>`:''}</div>`).join('');
   const decl = document.getElementById('declText').innerHTML;
+  const signerName = r.minor ? r.pname : r.name;
+  const signCap = r.minor ? 'חתימת ההורה/אפוטרופוס' : 'חתימת המתאמן/ת';
   document.getElementById('printArea').innerHTML = `
     <div class="pd">
       <div class="pd-h">
-        <h1>הצהרת בריאות וכתב ויתור</h1>
-        <div class="pd-sub">תוכנית "${esc(PROGRAM_NAME)}"</div>
+        <h1>דף מידע והצהרת בריאות — Matan Kopel</h1>
+        <div class="pd-sub">מסלול: ${esc(r.track)} · ${esc(r.trackSub)}</div>
       </div>
       <div class="pd-sec">
         <h2>פרטי המתאמן/ת</h2>
         <div class="pd-row"><span class="k">שם מלא</span><span class="v">${esc(r.name)}</span></div>
-        <div class="pd-row"><span class="k">תעודת זהות</span><span class="v">${esc(r.id)}</span></div>
+        <div class="pd-row"><span class="k">ת&quot;ז</span><span class="v">${esc(r.id)}</span></div>
+        <div class="pd-row"><span class="k">תאריך לידה</span><span class="v">${esc(r.dob)}</span></div>
+        <div class="pd-row"><span class="k">כתובת</span><span class="v">${esc(r.addr)}</span></div>
+        <div class="pd-row"><span class="k">מייל</span><span class="v">${esc(r.email)}</span></div>
         <div class="pd-row"><span class="k">טלפון</span><span class="v">${esc(r.phone)}</span></div>
-        ${r.dob ? `<div class="pd-row"><span class="k">תאריך לידה</span><span class="v">${esc(r.dob)}</span></div>` : ''}
-        ${r.emg ? `<div class="pd-row"><span class="k">איש קשר לחירום</span><span class="v">${esc(r.emg)}</span></div>` : ''}
+        ${r.minor ? `<div class="pd-row"><span class="k">הורה/אפוטרופוס</span><span class="v">${esc(r.pname)} · ת&quot;ז ${esc(r.pid)}</span></div>` : ''}
       </div>
       <div class="pd-sec">
-        <h2>שאלון בריאות (PAR-Q)</h2>
+        <h2>שאלון רפואי והצהרת בריאות</h2>
         <div class="pd-parq">${parqHtml}</div>
+        ${r.notes ? `<div style="font-size:11.5px;line-height:1.6;margin-top:6px"><b>14. הערות לקוח:</b> ${esc(r.notes)}</div>` : ''}
       </div>
       <div class="pd-sec pd-decl">
-        <h2>ההצהרה</h2>
+        <h2>הצהרה</h2>
         ${decl}
       </div>
       <div class="pd-sec">
-        <div class="pd-confirm">☑ המתאמן/ת אישר/ה: "קראתי, הבנתי ואני מסכים/ה לכל האמור לעיל, והמידע שמסרתי נכון."</div>
+        <div class="pd-confirm">☑ אישור הצהרת בריאות: "אני מאשר/ת את הצהרת הבריאות לעיל ואת נכונות כל הפרטים שמסרתי."<br>☑ אישור תקנון: "קראתי את התקנון ותנאי ההתקשרות המלאים של '${esc(r.track)}' ואני מסכים/ה להם."</div>
       </div>
       <div class="pd-sign">
         <div class="sig-col">
           <div class="sig-img"><img src="${r.sigData}" alt="חתימה"></div>
-          <div class="sig-cap">חתימת המתאמן/ת</div>
+          <div class="sig-cap">${signCap}</div>
         </div>
         <div style="font-size:12px;color:#555;text-align:center">
-          <div>${esc(r.name)}</div>
+          <div>${esc(signerName)}</div>
           <div style="margin-top:4px">${esc(r.time)}</div>
         </div>
       </div>
-      <div class="pd-meta">נחתם אלקטרונית בתאריך ${esc(r.time)} · המסמך נוצר אוטומטית לאחר אישור וחתימה דיגיטלית.</div>
+      <div class="pd-meta">נחתם אלקטרונית בתאריך ${esc(r.time)} · המסמך נוצר אוטומטית לאחר אישור וחתימה דיגיטלית · Matan Kopel מ.ע 212739486.</div>
     </div>`;
 }
 
@@ -1207,16 +1380,20 @@ function printDoc(){ window.print(); }
 
 function sendWhatsApp(){
   const r = lastRecord; if(!r) return;
-  const answers = r.parq.map((p,i)=>`${i+1}.${p.a}`).join(' ');
+  const flagged = r.parq.filter(p=>p.a==='כן').length;
   const msg =
-    `שלום, מילאתי הצהרת בריאות וחתימה לתוכנית "${PROGRAM_NAME}".\n\n` +
+    `שלום, מילאתי הצהרת בריאות וחתימה — Matan Kopel.\n\n` +
+    `מסלול: ${r.track} (${r.trackSub})\n` +
     `שם: ${r.name}\n` +
     `ת.ז.: ${r.id}\n` +
+    `תאריך לידה: ${r.dob}\n` +
     `טלפון: ${r.phone}\n` +
-    (r.dob ? `תאריך לידה: ${r.dob}\n` : '') +
-    (r.emg ? `איש קשר לחירום: ${r.emg}\n` : '') +
-    `\nשאלון בריאות: ${answers}\n` +
-    `\nאישרתי וחתמתי דיגיטלית בתאריך ${r.time}.\n` +
+    `מייל: ${r.email}\n` +
+    `כתובת: ${r.addr}\n` +
+    (r.minor ? `הורה/אפוטרופוס: ${r.pname} (ת.ז. ${r.pid})\n` : '') +
+    `\nשאלון בריאות: ${flagged ? 'סימן/ה "כן" ב-' + flagged + ' שאלות (ראה/י PDF)' : 'הכל שלילי'}\n` +
+    (r.notes ? `הערות: ${r.notes}\n` : '') +
+    `\nאישרתי הצהרת בריאות + תקנון וחתמתי דיגיטלית בתאריך ${r.time}.\n` +
     `(מצרף/ת את מסמך ה-PDF החתום)`;
   const num = COACH_WHATSAPP.replace(/\D/g, '');
   const url = num
@@ -1226,10 +1403,13 @@ function sendWhatsApp(){
 }
 
 function resetSig(){
-  ['in-name','in-id','in-phone','in-dob','in-emg'].forEach(i=>document.getElementById(i).value='');
-  document.getElementById('in-agree').checked = false;
-  document.getElementById('f-agree').classList.remove('err');
-  ['f-name','f-id','f-phone'].forEach(i=>document.getElementById(i).classList.remove('err'));
+  ['in-name','in-id','in-dob','in-addr','in-email','in-phone','in-pname','in-pid','in-notes']
+    .forEach(i=>{ const e=document.getElementById(i); if(e) e.value=''; });
+  ['in-agreeH','in-agreeT','in-minor'].forEach(i=>document.getElementById(i).checked=false);
+  ['f-name','f-id','f-dob','f-addr','f-email','f-phone','f-pname','f-pid','f-agreeH','f-agreeT']
+    .forEach(i=>document.getElementById(i).classList.remove('err'));
+  document.getElementById('minorFields').classList.remove('show');
+  document.getElementById('parq').style.borderColor = '';
   document.getElementById('formErr').classList.remove('show');
   lastRecord = null;
   showSignature();
