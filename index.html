@@ -1605,10 +1605,87 @@ async function generatePdf(r){
       const idx = tDoc.getPageIndices();
       const termsIdx = idx.length > 1 ? idx.slice(1) : idx;   /* מדלגים על עמוד הצהרת הבריאות הריק שבמקור */
       (await merged.copyPages(tDoc, termsIdx)).forEach(p => merged.addPage(p));
+      await stampTerms(merged, r);                            /* ממלא את שדות + חתימות בעמוד החתימה של התקנון */
       finalU8 = await merged.save();
     }
   } catch(e){ finalU8 = health; }   /* נפילה חזרה: הצהרת בריאות בלבד */
   return 'data:application/pdf;base64,' + u8ToBase64(finalU8);
+}
+
+/* ===== מילוי אוטומטי של שדות + חתימות בעמוד החתימה של התקנון =====
+   כל השדות נמדדו מהמסמכים המקוריים. בלוק החתימה תמיד בעמוד 4 של הממוזג (index 3).
+   הקואורדינטות ב-pt, מערכת pdf-lib (מקור בפינה שמאלית-תחתונה). [x0, x1, yBottom] */
+const STAMP = {
+  chodesh: { name:[194.6,494.9,252.9], parent:[100.3,381.2,235.2], id:[234.7,428.0,217.4], dob:[366.5,540.0,199.7], date:[323.5,503.6,182.0], sign:[81.0,281.1,182.0], biz:[400.1,470.1,146.6] },
+  minui:   { name:[194.6,494.9,341.4], parent:[100.3,381.2,323.7], id:[234.7,428.0,306.0], dob:[366.5,540.0,288.3], date:[323.5,503.6,270.6], sign:[81.0,281.1,270.6], biz:[400.1,470.1,235.2] },
+  m4:      { name:[194.6,494.9,182.0], parent:[100.3,381.2,164.3], id:[234.7,428.0,146.6], dob:[366.5,540.0,128.9], date:[323.5,503.6,111.2], sign:[81.0,281.1,111.2], biz:[400.1,470.1,75.8] }
+};
+STAMP.m10 = STAMP.m4;                      /* אותו פריסה */
+const STAMP_PAGE = 3;                       /* עמוד בלוק החתימה במסמך הממוזג */
+
+let BIZ_SIG_URL = null;
+async function loadBizSig(){
+  if(BIZ_SIG_URL !== null) return BIZ_SIG_URL;
+  try{
+    const blob = await fetch('assets/business-signature.png').then(x => { if(!x.ok) throw 0; return x.blob(); });
+    BIZ_SIG_URL = await new Promise(res => { const fr = new FileReader(); fr.onload = () => res(fr.result); fr.readAsDataURL(blob); });
+  }catch(e){ BIZ_SIG_URL = ''; }
+  return BIZ_SIG_URL;
+}
+
+function fmtDate(iso){ const p = String(iso||'').split('-'); return p.length===3 ? `${p[2]}/${p[1]}/${p[0]}` : (iso||''); }
+
+/* מצייר טקסט (עברית, RTL) לתמונת PNG שקופה — עוקף את מגבלות הגופן של pdf-lib */
+function textToPng(text, fontPx){
+  fontPx = fontPx || 44;
+  const font = `600 ${fontPx}px Rubik, Arial, sans-serif`;
+  const m = document.createElement('canvas').getContext('2d'); m.font = font;
+  const w = Math.max(4, Math.ceil(m.measureText(String(text)).width) + 10);
+  const h = Math.ceil(fontPx * 1.35);
+  const cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+  const c = cv.getContext('2d');
+  c.font = font; c.textBaseline = 'middle'; c.textAlign = 'right'; c.direction = 'rtl'; c.fillStyle = '#111';
+  c.fillText(String(text), w - 5, h / 2);
+  return { url: cv.toDataURL('image/png'), w, h };
+}
+
+function dataUrlToU8(u){ const b = atob(u.split(',')[1]); const a = new Uint8Array(b.length); for(let i=0;i<b.length;i++) a[i]=b.charCodeAt(i); return a; }
+
+async function stampTerms(merged, r){
+  const co = STAMP[curTrack];
+  if(!co || merged.getPageCount() <= STAMP_PAGE) return;
+  const page = merged.getPage(STAMP_PAGE);
+  const embed = async url => await merged.embedPng(dataUrlToU8(url));
+
+  async function textField(box, value){
+    if(!value) return;
+    const t = textToPng(value, 44);
+    const img = await embed(t.url);
+    const [x0, x1, yBot] = box;
+    const H = 11;
+    let W = H * (t.w / t.h);
+    const maxW = (x1 - x0) - 4;
+    if(W > maxW){ W = maxW; }
+    page.drawImage(img, { x: x1 - W, y: yBot + 2, width: W, height: H });
+  }
+  async function sigField(box, url){
+    if(!url) return;
+    const img = await embed(url);
+    const [x0, x1, yBot] = box;
+    let H = 24, W = H * (img.width / img.height);
+    const maxW = (x1 - x0);
+    if(W > maxW){ H = H * (maxW / W); W = maxW; }
+    page.drawImage(img, { x: (x0 + x1) / 2 - W / 2, y: yBot - 3, width: W, height: H });
+  }
+
+  await textField(co.name, r.name);
+  if(r.minor && r.pname) await textField(co.parent, r.pname);
+  await textField(co.id, r.id);
+  await textField(co.dob, fmtDate(r.dob));
+  await textField(co.date, new Date().toLocaleDateString('he-IL'));
+  await sigField(co.sign, r.sigData);
+  const biz = await loadBizSig();
+  if(biz) await sigField(co.biz, biz);
 }
 
 /* שליחה דרך טופס נסתר אל iframe — השיטה האמינה מול Google Apps Script.
