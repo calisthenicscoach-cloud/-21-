@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>תוכניות אימון — ידיים וכתפיים ב-21 יום</title>
+<script>/* קישור מסלול (?maslul=) — מסתירים מיד את הדף הראשי כדי שלא יהבהב לפני מעבר לטופס */
+if(new URLSearchParams(location.search).get('maslul'))document.documentElement.classList.add('ds');</script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -54,6 +56,7 @@
 
   /* screens */
   .screen{display:none}
+  html.ds #home{display:none !important}   /* כניסה דרך קישור מסלול — בלי הבהוב של הדף הראשי */
   .screen.active{display:block;animation:fade .38s cubic-bezier(.2,.7,.3,1)}
   @keyframes fade{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
   @media (prefers-reduced-motion:reduce){
@@ -959,8 +962,8 @@
 <div id="printArea"></div>
 <iframe id="driveSink" name="driveSink" style="display:none" title="drive"></iframe>
 
-<script src="assets/html2pdf.bundle.min.js"></script>
-<script src="assets/pdf-lib.min.js"></script>
+<script src="assets/html2pdf.bundle.min.js" defer></script>
+<script src="assets/pdf-lib.min.js" defer></script>
 <script>
 /* ---------- icons ---------- */
 const IC = {
@@ -1270,10 +1273,10 @@ let DRIVE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5_j9pHH8hQcU0l-f
    המחירים לעיונך בלבד: חודש 450 ₪ · 4 חודשים 1,600 ₪ · 10 חודשים 3,000 ₪ · מנוי חודשי 450 ₪/חודש.
    כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/). */
 const TRACKS = {
-  chodesh: { name: 'מסלול חודש',       pdf: 'terms/maslul-chodesh.pdf' },
-  m4:      { name: 'מסלול 4 חודשים',   pdf: 'terms/maslul-4-chodashim.pdf' },
-  m10:     { name: 'מסלול 10 חודשים',  pdf: 'terms/maslul-10-chodashim.pdf' },
-  minui:   { name: 'מנוי חודשי מתחדש', pdf: 'terms/maslul-minui-chodshi.pdf' },
+  chodesh: { name: 'חודש ניסיון',         pdf: 'terms/maslul-chodesh.pdf' },
+  m4:      { name: 'מסלול 4 חודשים',      pdf: 'terms/maslul-4-chodashim.pdf' },
+  m10:     { name: 'מסלול 10 חודשים',     pdf: 'terms/maslul-10-chodashim.pdf' },
+  minui:   { name: 'מסלול ללא התחייבות',  pdf: 'terms/maslul-minui-chodshi.pdf' },
 };
 const TRACK_ORDER = ['chodesh', 'm4', 'm10', 'minui'];
 
@@ -1600,12 +1603,14 @@ async function generatePdf(r){
       const { PDFDocument } = PDFLib;
       const merged = await PDFDocument.create();
       const hDoc = await PDFDocument.load(health);
+      const healthCount = hDoc.getPageCount();               /* כמה עמודים תפסה הצהרת הבריאות (1 או יותר) */
       (await merged.copyPages(hDoc, hDoc.getPageIndices())).forEach(p => merged.addPage(p));
       const tDoc = await PDFDocument.load(termsBuf);
       const idx = tDoc.getPageIndices();
       const termsIdx = idx.length > 1 ? idx.slice(1) : idx;   /* מדלגים על עמוד הצהרת הבריאות הריק שבמקור */
       (await merged.copyPages(tDoc, termsIdx)).forEach(p => merged.addPage(p));
-      await stampTerms(merged, r);                            /* ממלא את שדות + חתימות בעמוד החתימה של התקנון */
+      /* בלוק החתימה = עמוד התקנון המקורי index 3 → במסמך הממוזג: אחרי עמודי הבריאות */
+      await stampTerms(merged, r, healthCount + 2);
       finalU8 = await merged.save();
     }
   } catch(e){ finalU8 = health; }   /* נפילה חזרה: הצהרת בריאות בלבד */
@@ -1621,7 +1626,6 @@ const STAMP = {
   m4:      { name:[194.6,494.9,182.0], parent:[100.3,381.2,164.3], id:[234.7,428.0,146.6], dob:[366.5,540.0,128.9], date:[323.5,503.6,111.2], sign:[81.0,281.1,111.2], biz:[400.1,470.1,75.8] }
 };
 STAMP.m10 = STAMP.m4;                      /* אותו פריסה */
-const STAMP_PAGE = 3;                       /* עמוד בלוק החתימה במסמך הממוזג */
 
 let BIZ_SIG_URL = null;
 async function loadBizSig(){
@@ -1651,10 +1655,10 @@ function textToPng(text, fontPx){
 
 function dataUrlToU8(u){ const b = atob(u.split(',')[1]); const a = new Uint8Array(b.length); for(let i=0;i<b.length;i++) a[i]=b.charCodeAt(i); return a; }
 
-async function stampTerms(merged, r){
+async function stampTerms(merged, r, blockIdx){
   const co = STAMP[curTrack];
-  if(!co || merged.getPageCount() <= STAMP_PAGE) return;
-  const page = merged.getPage(STAMP_PAGE);
+  if(!co || merged.getPageCount() <= blockIdx) return;
+  const page = merged.getPage(blockIdx);
   const embed = async url => await merged.embedPng(dataUrlToU8(url));
 
   async function textField(box, value){
