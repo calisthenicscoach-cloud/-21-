@@ -494,6 +494,146 @@
     #printArea{display:block;position:absolute;inset:0;padding:0;background:#fff}
     @page{margin:14mm}
   }
+
+  /* =====================================================================
+     MILITARY THEME — מסך החתימה בלבד (scoped to #signature). שאר האפליקציה לא מושפעת.
+     ===================================================================== */
+  #signature{
+    --mg:#E6CD7C; --mg2:#C6963A; --mgrad:linear-gradient(135deg,#F1DC92,#C6963A);
+    --mred:#7C1F16; --mink:#F5EFDE; --mink2:#DAD2BB; --mmut:#A8A585;
+    --msurf:rgba(13,15,7,.52); --mline:rgba(230,205,124,.20); --mline2:rgba(230,205,124,.46);
+    --minput:rgba(0,0,0,.30);
+    color:var(--mink);
+    background-color:#2f3320;
+    background-image:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px),
+      radial-gradient(38% 30% at 18% 22%, rgba(92,96,60,.40), transparent 60%),
+      radial-gradient(34% 26% at 78% 34%, rgba(74,78,46,.34), transparent 60%),
+      radial-gradient(42% 34% at 60% 82%, rgba(22,25,13,.55), transparent 62%),
+      radial-gradient(28% 22% at 32% 68%, rgba(96,100,62,.22), transparent 60%),
+      radial-gradient(120% 80% at 82% -8%, rgba(150,150,90,.15), transparent 55%),
+      linear-gradient(158deg,#3a3e26,#2b2f1c 62%,#232614);
+    background-attachment:fixed;
+    min-height:100vh;
+  }
+  #signature .mk-logo{display:block;width:128px;max-width:52%;height:auto;margin:2px 0 15px;
+    filter:drop-shadow(0 5px 12px rgba(0,0,0,.55))}
+
+  /* hero */
+  #signature .lv-hero{border-bottom:2px dotted rgba(230,205,124,.55);
+    background:linear-gradient(180deg,rgba(0,0,0,.18),transparent)}
+  #signature .lv-badge{background:var(--mgrad);color:#2a2410;letter-spacing:.06em;
+    box-shadow:0 6px 16px -8px rgba(198,150,58,.7)}
+  #signature .lv-title{background:var(--mgrad);-webkit-background-clip:text;background-clip:text;
+    color:transparent;text-shadow:none}
+  #signature .lv-testline{color:var(--mink2)}
+  #signature .lv-testline b{color:var(--mink)}
+
+  /* app bar */
+  #signature #sigAppbar{background:rgba(28,31,18,.74);
+    -webkit-backdrop-filter:blur(14px) saturate(1.3);backdrop-filter:blur(14px) saturate(1.3);
+    border-bottom-color:transparent}
+  #signature #sigAppbar.scrolled{border-bottom-color:rgba(230,205,124,.30);
+    box-shadow:0 6px 20px -14px rgba(0,0,0,.9)}
+  #signature #sigAppbar .back-btn{background:rgba(0,0,0,.28);border-color:var(--mline2);color:var(--mink)}
+  #signature #sigAppbar .back-btn:hover{background:rgba(0,0,0,.4);border-color:var(--mg)}
+  #signature #sigAppbar .back-btn .ic{color:var(--mg)}
+  #signature #sigAppbar .ctx-name{color:var(--mink2)}
+
+  /* section titles */
+  #signature .fs-title{color:var(--mink)}
+  #signature .fs-title .fs-ic{background:rgba(230,205,124,.14);color:var(--mg)}
+  #signature .req{color:var(--mg)}
+  #signature .foot{color:var(--mmut)}
+  #signature .foot b{color:var(--mink2)}
+
+  /* fields */
+  #signature .field label{color:var(--mink2)}
+  #signature .field input, #signature .field textarea{background:var(--minput);
+    border-color:var(--mline);color:var(--mink)}
+  #signature .field input::placeholder, #signature .field textarea::placeholder{color:var(--mmut)}
+  #signature .field input:focus, #signature .field textarea:focus{border-color:var(--mg);
+    background:rgba(0,0,0,.45)}
+  #signature .field.err input, #signature .field.err textarea{border-color:#C0503E}
+  #signature .field .fmsg{color:#F0AE9F}
+
+  /* track picker */
+  #signature .track{background:var(--msurf);border-color:var(--mline2);text-align:center}
+  #signature .track:hover{background:rgba(0,0,0,.3);border-color:var(--mg)}
+  #signature .track.sel{border-color:var(--mg);background:rgba(230,205,124,.12);
+    box-shadow:inset 0 0 0 1px var(--mg)}
+  #signature .track .tk-n{color:var(--mink)}
+  #signature .trackErr{color:#F0AE9F}
+
+  /* locked-track banner */
+  #signature .locked-badge{background:rgba(230,205,124,.08);border-color:var(--mline2)}
+  #signature .locked-badge .lb-ic{background:rgba(230,205,124,.15);color:var(--mg)}
+  #signature .locked-badge .lb-l{color:var(--mmut)}
+  #signature .locked-badge .lb-n{color:var(--mink)}
+
+  /* minor toggle */
+  #signature .minor-toggle{color:var(--mink2)}
+  #signature .minor-toggle input{accent-color:var(--mg2)}
+
+  /* health questionnaire */
+  #signature .parq{background:var(--msurf);border-color:var(--mline)}
+  #signature .pq{border-top-color:rgba(230,205,124,.14)}
+  #signature .pq-q{color:var(--mink2)}
+  #signature .pq-opt span{background:var(--minput);border-color:var(--mline2);color:var(--mmut)}
+  #signature .pq-opt input:checked + span{background:var(--mgrad);color:#2a2410;border-color:transparent}
+  #signature .pq-comment input{background:var(--minput);border-color:var(--mline2);color:var(--mink)}
+  #signature .parq-note{color:var(--mmut)}
+  #signature .parq-note b{color:var(--mg)}
+
+  /* declaration */
+  #signature .decl-box{background:var(--msurf);border-color:var(--mline)}
+  #signature .decl-box h4{color:var(--mg)}
+  #signature .decl-box p, #signature .decl-box li{color:var(--mink2)}
+
+  /* agree checkboxes */
+  #signature .agree{background:rgba(230,205,124,.07);border-color:var(--mline2)}
+  #signature .agree.err{border-color:#C0503E}
+  #signature .agree .box{background:var(--minput);border-color:var(--mline2)}
+  #signature .agree input:checked + .box{background:var(--mgrad);border-color:transparent}
+  #signature .agree input:checked + .box .ic{stroke:#2a2410}
+  #signature .agree .atx{color:var(--mink)}
+
+  /* terms link */
+  #signature .terms-link{background:var(--msurf);border-color:var(--mline2)}
+  #signature .terms-link:hover{background:rgba(0,0,0,.3);border-color:var(--mg)}
+  #signature .terms-link .tl-ic{background:rgba(230,205,124,.14);color:var(--mg)}
+  #signature .terms-link .tl-t{color:var(--mink)}
+  #signature .terms-link .tl-s{color:var(--mmut)}
+  #signature .terms-link .tl-arrow{color:var(--mg)}
+
+  /* signature pad */
+  #signature .sig-lbl{color:var(--mink2)}
+  #signature .sig-clear{background:rgba(0,0,0,.28);border-color:var(--mline2);color:var(--mink2)}
+  #signature .sig-clear:hover{border-color:var(--mg);color:var(--mink)}
+  #signature .sig-pad{border-color:var(--mline2)}
+  #signature .sig-pad.err{border-color:#C0503E}
+
+  /* submit + errors */
+  #signature .submit-btn{background:var(--mgrad);color:#2a2410;
+    box-shadow:0 12px 30px -14px rgba(198,150,58,.75), inset 0 1px 0 rgba(255,255,255,.35)}
+  #signature .form-err{background:rgba(124,31,22,.35);border-color:rgba(124,31,22,.7);color:#F3B4AB}
+
+  /* success */
+  #signature .success-card{background:var(--msurf);border-color:var(--mline2)}
+  #signature .success-ic{background:rgba(230,205,124,.14);color:var(--mg)}
+  #signature .success-ic .ic{stroke:var(--mg)}
+  #signature .success-card h3{color:var(--mink)}
+  #signature .success-card p{color:var(--mink2)}
+  #signature .success-card p b{color:var(--mg)}
+  #signature .ra-pdf{background:rgba(0,0,0,.3);border-color:var(--mline2);color:var(--mink)}
+  #signature .ra-new{color:var(--mmut)}
+  #signature .ra-new:hover{color:var(--mink2)}
+
+  /* signed document (print) — military accents, print-friendly */
+  .pd-h{border-bottom-color:#C6963A}
+  .pd-h h1{color:#3a3e26}
+  .pd-sec h2{color:#9A7B22}
+  .pd-confirm{background:#f6f3ea}
 </style>
 </head>
 <body>
@@ -652,9 +792,10 @@
 
   <div class="lv-hero">
     <div class="lv-hero-inner">
-      <span class="lv-badge" style="background:var(--grad)">Matan Kopel · הרשמה</span>
+      <img class="mk-logo" src="assets/mk-logo.png" alt="Matan Kopel">
+      <span class="lv-badge">Matan Kopel · הרשמה</span>
       <div class="lv-title">דף מידע והצהרת בריאות</div>
-      <div class="lv-testline">בחר/י מסלול, מלא/י את הפרטים, קרא/י את התקנון וחתום/מי. הטופס נשלח למאמן.</div>
+      <div class="lv-testline">מלא/י את הפרטים, קרא/י את התקנון וחתום/מי. הטופס נשלח למאמן.</div>
     </div>
   </div>
 
@@ -662,10 +803,16 @@
     <!-- ===== FORM ===== -->
     <div id="sigForm">
 
-      <div class="form-sec">
+      <div class="form-sec" id="trackSection">
         <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6H4M20 12H4M14 18H4"/></svg></span>בחר/י מסלול</div>
         <div class="tracks" id="tracks"></div>
         <div class="trackErr" id="trackErr">נא לבחור מסלול</div>
+      </div>
+      <div class="form-sec" id="lockedTrack" style="display:none">
+        <div class="locked-badge">
+          <span class="lb-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <div><div class="lb-l">המסלול שלך</div><div class="lb-n" id="lockedTrackName"></div></div>
+        </div>
       </div>
 
       <div class="form-sec">
@@ -1103,15 +1250,27 @@ window.addEventListener('scroll', onScroll, {passive:true});
    דוגמה: 0501234567  ➜  '972501234567'
    אם משאירים ריק — ייפתח וואטסאפ ותבחר/י ידנית לאיזה איש קשר לשלוח.       */
 const COACH_WHATSAPP = '';
-/* ⬇ המסלולים — כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/).
-   ניתן לעדכן שם/מחיר/קובץ בחופשיות. */
+/* ⬇ המסלולים — הלקוח רואה רק את שם המסלול (בלי מחיר).
+   המחירים לעיונך בלבד: חודש 450 ₪ · 4 חודשים 1,600 ₪ · 10 חודשים 3,000 ₪ · מנוי חודשי 450 ₪/חודש.
+   כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/). */
 const TRACKS = {
-  chodesh: { name: 'מסלול חודש',        sub: 'ליווי חודש · 450 ₪',         pdf: 'terms/maslul-chodesh.pdf' },
-  m4:      { name: 'מסלול 4 חודשים',    sub: '4 חודשים · 1,600 ₪',         pdf: 'terms/maslul-4-chodashim.pdf' },
-  m10:     { name: 'מסלול 10 חודשים',   sub: '10 חודשים · 3,000 ₪',        pdf: 'terms/maslul-10-chodashim.pdf' },
-  minui:   { name: 'מנוי חודשי מתחדש',  sub: 'ללא התחייבות · 450 ₪ לחודש', pdf: 'terms/maslul-minui-chodshi.pdf' },
+  chodesh: { name: 'מסלול חודש',       pdf: 'terms/maslul-chodesh.pdf' },
+  m4:      { name: 'מסלול 4 חודשים',   pdf: 'terms/maslul-4-chodashim.pdf' },
+  m10:     { name: 'מסלול 10 חודשים',  pdf: 'terms/maslul-10-chodashim.pdf' },
+  minui:   { name: 'מנוי חודשי מתחדש', pdf: 'terms/maslul-minui-chodshi.pdf' },
 };
 const TRACK_ORDER = ['chodesh', 'm4', 'm10', 'minui'];
+
+/* קישור ייעודי לכל מסלול: שלח ללקוח קישור עם הפרמטר ?maslul=
+   ?maslul=chodesh · ?maslul=4 · ?maslul=10 · ?maslul=minui
+   הטופס ייפתח נעול למסלול שלו, בלי בורר ובלי מסלולים אחרים. */
+const TRACK_ALIAS = { chodesh:'chodesh', '1':'chodesh', '4':'m4', '10':'m10', minui:'minui' };
+function getTrackParam(){
+  const p = new URLSearchParams(location.search).get('maslul');
+  if(!p) return null;
+  const k = TRACK_ALIAS[p.trim().toLowerCase()];
+  return TRACKS[k] ? k : null;
+}
 
 /* שאלון רפואי — 13 השאלות מהצהרת הבריאות. ניתן לערוך בחופשיות. */
 const PARQ = [
@@ -1133,23 +1292,25 @@ const PARQ = [
 let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null, curTrack = null;
 
 function buildTracks(){
-  document.getElementById('tracks').innerHTML = TRACK_ORDER.map(k=>{
-    const t = TRACKS[k];
-    return `<button type="button" class="track" data-k="${k}" onclick="selectTrack('${k}')">
-      <div class="tk-n">${t.name}</div><div class="tk-s">${t.sub}</div></button>`;
-  }).join('');
+  document.getElementById('tracks').innerHTML = TRACK_ORDER.map(k=>
+    `<button type="button" class="track" data-k="${k}" onclick="selectTrack('${k}')">
+      <div class="tk-n">${TRACKS[k].name}</div></button>`).join('');
+}
+
+function applyTrack(k){
+  const t = TRACKS[k];
+  const link = document.getElementById('termsLink');
+  link.href = t.pdf; link.classList.remove('disabled');
+  document.getElementById('termsSub').textContent = 'התקנון המלא של ' + t.name;
+  document.getElementById('agreeTtx').textContent =
+    `קראתי את התקנון ותנאי ההתקשרות המלאים של "${t.name}" ואני מסכים/ה להם.`;
 }
 
 function selectTrack(k){
   curTrack = k;
   document.querySelectorAll('.track').forEach(b=>b.classList.toggle('sel', b.dataset.k===k));
   document.getElementById('trackErr').classList.remove('show');
-  const t = TRACKS[k];
-  const link = document.getElementById('termsLink');
-  link.href = t.pdf; link.classList.remove('disabled');
-  document.getElementById('termsSub').textContent = t.name + ' · ' + t.sub;
-  document.getElementById('agreeTtx').textContent =
-    `קראתי את התקנון ותנאי ההתקשרות המלאים של "${t.name}" ואני מסכים/ה להם.`;
+  applyTrack(k);
 }
 
 function buildParq(){
@@ -1218,13 +1379,29 @@ function showSignature(){
   document.getElementById('signature').classList.add('active');
   document.getElementById('sigForm').style.display = '';
   document.getElementById('sigSuccess').classList.remove('show');
-  curTrack = null;
-  buildTracks();
   buildParq();
-  const link = document.getElementById('termsLink');
-  link.classList.add('disabled'); link.removeAttribute('href');
-  document.getElementById('termsSub').textContent = 'בחר/י מסלול כדי לפתוח את התקנון';
-  document.getElementById('agreeTtx').textContent = 'קראתי את התקנון ותנאי ההתקשרות המלאים ואני מסכים/ה להם.';
+
+  const locked = getTrackParam();
+  const trackSection = document.getElementById('trackSection');
+  const lockedTrack  = document.getElementById('lockedTrack');
+  if(locked){
+    /* קישור ייעודי — נעילה למסלול אחד, בלי בורר ובלי מסלולים אחרים */
+    curTrack = locked;
+    trackSection.style.display = 'none';
+    lockedTrack.style.display = '';
+    document.getElementById('lockedTrackName').textContent = TRACKS[locked].name;
+    applyTrack(locked);
+  } else {
+    /* בלי פרמטר — מציג בורר מסלולים (לשימושך/לבדיקה) */
+    curTrack = null;
+    trackSection.style.display = '';
+    lockedTrack.style.display = 'none';
+    buildTracks();
+    const link = document.getElementById('termsLink');
+    link.classList.add('disabled'); link.removeAttribute('href');
+    document.getElementById('termsSub').textContent = 'בחר/י מסלול כדי לפתוח את התקנון';
+    document.getElementById('agreeTtx').textContent = 'קראתי את התקנון ותנאי ההתקשרות המלאים ואני מסכים/ה להם.';
+  }
   window.scrollTo({top:0, behavior:'instant'});
   onScroll();
   requestAnimationFrame(initSigCanvas);
@@ -1304,7 +1481,7 @@ function submitSig(){
   const now = new Date();
   const t = TRACKS[curTrack];
   const record = {
-    track: t.name, trackSub: t.sub,
+    track: t.name,
     name, id, dob, addr, email, phone: phoneRaw,
     minor, pname, pid, parq, notes,
     sigData: sigCanvas.toDataURL('image/png'),
@@ -1338,7 +1515,7 @@ function buildPrintDoc(r){
     <div class="pd">
       <div class="pd-h">
         <h1>דף מידע והצהרת בריאות — Matan Kopel</h1>
-        <div class="pd-sub">מסלול: ${esc(r.track)} · ${esc(r.trackSub)}</div>
+        <div class="pd-sub">מסלול: ${esc(r.track)}</div>
       </div>
       <div class="pd-sec">
         <h2>פרטי המתאמן/ת</h2>
@@ -1383,7 +1560,7 @@ function sendWhatsApp(){
   const flagged = r.parq.filter(p=>p.a==='כן').length;
   const msg =
     `שלום, מילאתי הצהרת בריאות וחתימה — Matan Kopel.\n\n` +
-    `מסלול: ${r.track} (${r.trackSub})\n` +
+    `מסלול: ${r.track}\n` +
     `שם: ${r.name}\n` +
     `ת.ז.: ${r.id}\n` +
     `תאריך לידה: ${r.dob}\n` +
@@ -1414,6 +1591,9 @@ function resetSig(){
   lastRecord = null;
   showSignature();
 }
+
+/* קישור ייעודי למסלול (?maslul=...) — פותח ישירות את טופס ההרשמה, נעול למסלול */
+if(getTrackParam()) showSignature();
 </script>
 </body>
 </html>
