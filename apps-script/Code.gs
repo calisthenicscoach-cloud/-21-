@@ -26,19 +26,43 @@ function doPost(e) {
     const file   = folder.createFile(blob);
     file.setDescription('חתימה דיגיטלית — ' + (d.name || '') + ' — ' + (d.track || ''));
 
-    // 2) רישום שורה בגיליון
+    // 2) שמירת תמונת ה"לפני" (אם צורפה) — כקובץ נפרד באותה תיקייה
+    let photoUrl = '';
+    if (d.photoBase64) {
+      const pblob = Utilities.newBlob(Utilities.base64Decode(d.photoBase64),
+                                      'image/jpeg', (d.photoFilename || 'תמונת לפני') + '.jpg');
+      photoUrl = folder.createFile(pblob).getUrl();
+    }
+
+    // 3) רישום שורה בגיליון — כולל תשובות שאלון הפתיחה + קישור לתמונה
     if (SHEET_ID) {
-      const sheet = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+      const sheet  = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
+      const intake = Array.isArray(d.intake) ? d.intake : [];
+
+      // כותרות: העמודות הקבועות + שאלה לכל שאלה בשאלון + תמונה + הערות
+      const baseHead = ['תאריך ושעה', 'שם', 'ת"ז', 'מסלול', 'תאריך לידה',
+                        'טלפון', 'מייל', 'כתובת', 'קטין / הורה', 'דגלי בריאות', 'קישור למסמך'];
+      const head = baseHead
+        .concat(intake.map(function (x) { return x.q; }))
+        .concat(['תמונת "לפני"', 'הערות לקוח']);
+
+      // כתיבת/הרחבת שורת הכותרת (בטוח גם על גיליון קיים — רק מוסיף עמודות מימין)
       if (sheet.getLastRow() === 0) {
-        sheet.appendRow(['תאריך ושעה', 'שם', 'ת"ז', 'מסלול', 'תאריך לידה',
-                         'טלפון', 'מייל', 'כתובת', 'קטין / הורה', 'דגלי בריאות', 'קישור למסמך']);
+        sheet.getRange(1, 1, 1, head.length).setValues([head]);
+      } else if (sheet.getLastColumn() < head.length) {
+        sheet.getRange(1, 1, 1, head.length).setValues([head]);
       }
-      sheet.appendRow([
+
+      const baseVals = [
         d.time || new Date(), d.name, d.id, d.track, d.dob, d.phone, d.email, d.addr,
         d.minor ? ('קטין — ' + d.pname + ' (ת"ז ' + d.pid + ')') : '',
         d.flagged ? ('כן ×' + d.flagged) : 'הכל שלילי',
         file.getUrl()
-      ]);
+      ];
+      const row = baseVals
+        .concat(intake.map(function (x) { return x.a; }))
+        .concat([photoUrl, d.notes || '']);
+      sheet.appendRow(row);
     }
 
     // 3) (אופציונלי) מייל אליך עם ה-PDF — הסר/י את הסימון // כדי להפעיל, ומלא/י את הכתובת:
@@ -47,7 +71,7 @@ function doPost(e) {
     //   body: 'התקבל טופס חתום. מצורף ה-PDF.\nקישור: ' + file.getUrl(),
     //   attachments: [file.getAs('application/pdf')] });
 
-    return json({ ok: true, url: file.getUrl() });
+    return json({ ok: true, url: file.getUrl(), photoUrl: photoUrl });
   } catch (err) {
     return json({ ok: false, error: String(err) });
   }

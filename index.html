@@ -393,6 +393,48 @@ if(new URLSearchParams(location.search).get('maslul'))document.documentElement.c
   .parq-note{font-size:12px;color:var(--muted);line-height:1.6;margin-top:10px;padding:0 2px}
   .parq-note b{color:var(--ink2)}
 
+  /* intake questionnaire (שאלון פתיחה) */
+  .intake{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:4px 16px;box-shadow:var(--shadow-sm)}
+  .iq{padding:16px 0;border-top:1px solid var(--line)}
+  .iq:first-child{border-top:none}
+  .iq-q{font-size:13.5px;font-weight:700;line-height:1.5;color:var(--ink2);margin-bottom:10px}
+  .iq-q .req{color:var(--orange)}
+  .iq-hint{font-size:12px;color:var(--muted);line-height:1.55;margin:-4px 0 10px}
+  .iq-input{width:100%;background:var(--bg2);border:1px solid var(--line-2);border-radius:10px;
+    color:var(--ink);font-family:inherit;font-size:14.5px;padding:11px 13px;transition:border-color .14s ease,background .14s ease}
+  textarea.iq-input{resize:vertical;min-height:64px}
+  .iq-input:focus{outline:none;border-color:var(--orange);background:var(--surface)}
+  .iq-input::placeholder{color:var(--muted)}
+  .iq-opts{display:flex;flex-direction:column;gap:8px}
+  .iq-opt{display:flex;align-items:center;gap:11px;cursor:pointer;background:var(--bg2);
+    border:1px solid var(--line-2);border-radius:10px;padding:11px 13px;transition:all .12s ease}
+  .iq-opt:hover{border-color:rgba(255,107,53,.4)}
+  .iq-opt input{position:absolute;opacity:0;pointer-events:none}
+  .iq-box{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid var(--line-2);
+    background:var(--surface);display:grid;place-items:center;color:#fff;transition:all .12s ease}
+  .iq-opt input[type=radio] + .iq-box{border-radius:50%}
+  .iq-box .ic{width:13px;height:13px;stroke-width:3;opacity:0;transition:opacity .1s}
+  .iq-opt input:checked + .iq-box{background:var(--grad);border-color:transparent}
+  .iq-opt input:checked + .iq-box .ic{opacity:1}
+  .iq-opt input:checked ~ .iq-otx{color:var(--ink);font-weight:700}
+  .iq-otx{font-size:13.5px;font-weight:600;color:var(--ink2)}
+  .iq-other-in{width:100%;margin-top:8px;background:var(--bg2);border:1px solid var(--line-2);border-radius:10px;
+    color:var(--ink);font-family:inherit;font-size:14px;padding:10px 13px}
+  .iq-other-in:focus{outline:none;border-color:var(--orange)}
+  .iq-file-btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;background:var(--bg2);
+    border:1px dashed var(--line-2);border-radius:11px;padding:13px 16px;font-size:13.5px;font-weight:700;color:var(--ink2);transition:all .12s ease}
+  .iq-file-btn:hover{border-color:var(--orange);color:var(--ink)}
+  .iq-file-btn .ic{width:18px;height:18px;color:var(--orange)}
+  .iq-photo-preview{margin-top:12px}
+  .iq-photo-preview:empty{display:none}
+  .iq-photo-preview img{max-width:150px;max-height:190px;border-radius:11px;border:1px solid var(--line-2);display:block}
+  .iq-photo-x{margin-top:9px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink2);
+    font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:9px;cursor:pointer}
+  .iq-photo-x:hover{border-color:var(--l3);color:var(--l3)}
+  .iq-err{display:none;font-size:12px;color:#FF8791;margin-top:8px}
+  .iq.err .iq-err{display:block}
+  .iq.err .iq-input,.iq.err .iq-opts .iq-opt{border-color:var(--l3)}
+
   /* declaration text */
   .decl-box{background:var(--surface);border:1px solid var(--line);border-radius:14px;
     padding:16px 17px;box-shadow:var(--shadow-sm);max-height:290px;overflow-y:auto}
@@ -587,6 +629,29 @@ if(new URLSearchParams(location.search).get('maslul'))document.documentElement.c
   #signature .pq-comment input{background:var(--minput);border-color:var(--mline2);color:var(--mink)}
   #signature .parq-note{color:var(--mmut)}
   #signature .parq-note b{color:var(--mg)}
+
+  /* intake questionnaire */
+  #signature .intake{background:var(--msurf);border-color:var(--mline)}
+  #signature .iq{border-top-color:rgba(230,205,124,.14)}
+  #signature .iq-q{color:var(--mink2)}
+  #signature .iq-q .req{color:var(--mg)}
+  #signature .iq-hint{color:var(--mmut)}
+  #signature .iq-input,#signature .iq-other-in{background:var(--minput);border-color:var(--mline2);color:var(--mink)}
+  #signature .iq-input::placeholder{color:var(--mmut)}
+  #signature .iq-input:focus,#signature .iq-other-in:focus{border-color:var(--mg);background:rgba(0,0,0,.45)}
+  #signature .iq-opt{background:var(--minput);border-color:var(--mline2)}
+  #signature .iq-opt:hover{border-color:var(--mg)}
+  #signature .iq-box{background:var(--msurf);border-color:var(--mline2)}
+  #signature .iq-opt input:checked + .iq-box{background:var(--mgrad);border-color:transparent}
+  #signature .iq-opt input:checked + .iq-box .ic{stroke:#2a2410}
+  #signature .iq-otx{color:var(--mink2)}
+  #signature .iq-opt input:checked ~ .iq-otx{color:var(--mink)}
+  #signature .iq-file-btn{background:var(--minput);border-color:var(--mline2);color:var(--mink2)}
+  #signature .iq-file-btn:hover{border-color:var(--mg);color:var(--mink)}
+  #signature .iq-file-btn .ic{color:var(--mg)}
+  #signature .iq-photo-preview img{border-color:var(--mline2)}
+  #signature .iq-photo-x{background:var(--msurf);border-color:var(--mline2);color:var(--mink2)}
+  #signature .iq-err{color:#F0AE9F}
 
   /* declaration */
   #signature .decl-box{background:var(--msurf);border-color:var(--mline)}
@@ -880,6 +945,12 @@ if(new URLSearchParams(location.search).get('maslul'))document.documentElement.c
             </div>
           </div>
         </div>
+      </div>
+
+      <div class="form-sec">
+        <div class="fs-title"><span class="fs-ic"><svg class="ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg></span>שאלון פתיחה</div>
+        <div class="parq-note" style="margin:0 2px 14px">כמה שאלות קצרות שיעזרו לי להכיר אותך ולהתאים לך את התוכנית בצורה הטובה ביותר. שדות המסומנים ב-<span class="req">*</span> הם חובה.</div>
+        <div class="intake" id="intake"></div>
       </div>
 
       <div class="form-sec">
@@ -1308,6 +1379,30 @@ const PARQ = [
   'אובחנת כסובל/ת מהפרעה נפשית?'
 ];
 
+/* שאלון פתיחה — השאלות שהיו בגוגל-פורמז, כעת מובנות בטופס. ניתן לערוך בחופשיות.
+   type: 'text' (שורה) | 'longtext' (פסקה) | 'choice' (בחירה) | 'file' (תמונה).
+   choice: multi=true לבחירה מרובה (צ'ק-בוקס), multi=false לבחירה יחידה (רדיו); other=true מוסיף "אחר" עם שדה טקסט.
+   optional=true — שאלת רשות (לא חובה). */
+const INTAKE = [
+  { key:'q1',  type:'choice',   multi:true,  other:true,  q:'האם התאמנת בקליסטניקס בעבר?', options:['כן','לא'] },
+  { key:'q2',  type:'longtext', q:'האם את/ה מתאמן/ת כרגע? אם כן — תאר/י אילו אימונים וכמה פעמים בשבוע' },
+  { key:'q3',  type:'longtext', q:'מהי שגרת היום שלך? (עבודה, לימודים, שעות פנאי, השגרה בצבא)' },
+  { key:'q4',  type:'choice',   multi:true,  q:'אילו אמצעי אימון זמינים לך כרגע / לרוב?', options:['מתח','מקבילים','גומיות התנגדות'] },
+  { key:'q5',  type:'choice',   multi:false, q:'כמה שעות שינה בממוצע את/ה ישן/ה בלילה?', options:['3–4','5–6','7–8','9+'] },
+  { key:'q6',  type:'choice',   multi:false, q:'האם יש לך מטרה תזונתית ברורה?', options:['לעלות במסה','לרדת באחוזי שומן','לשמור על המצב'] },
+  { key:'q7',  type:'choice',   multi:false, q:'האם את/ה מעוניין/ת בתפריט תזונה מותאם אליך?', options:['כן','לא צריך'] },
+  { key:'q8',  type:'choice',   multi:true,  other:true,  q:'מה המטרות הכי חשובות לך בתוכנית?', options:['מסת שריר','להתחטב','סקילים','שגרה טובה'] },
+  { key:'q9',  type:'longtext', q:'למה בחרת להצטרף ליחידת הקליסטניקס?' },
+  { key:'q10', type:'longtext', q:'מה את/ה מרגיש/ה שמעכב אותך הכי הרבה מלהתקדם?' },
+  { key:'q11', type:'longtext', optional:true, q:'מה הציפיות שלך מהתוכנית?' },
+  { key:'q12', type:'file',     optional:true, q:'תמונת גוף ("לפני")', hint:'למעקב התקדמות. לא חובה — אפשר להעלות עכשיו, או לשלוח לי בהמשך.' },
+  { key:'q13', type:'text',     q:'האם קיימות בעיות רפואיות או פציעות נוכחיות שצריך לדעת עליהן?', hint:'אם אין — כתוב/כתבי "אין".' },
+  { key:'q14', type:'longtext', q:'האם היו לך פציעות בעבר? אם כן, תאר/י את סוג הפציעה ואיך היא טופלה.' },
+  { key:'q15', type:'text',     q:'האם יש מגבלות פיזיות כלשהן שצריך לקחת בחשבון באימונים?', hint:'אם אין — כתוב/כתבי "אין".' }
+];
+
+let photoData = null, photoName = '';
+
 let sigCtx, sigCanvas, sigDrawing = false, hasSig = false, lastRecord = null, curTrack = null, lastPdfUri = null;
 
 const IC_PDF = '<svg class="ic" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2M6 14h12v8H6Z"/></svg>';
@@ -1352,6 +1447,128 @@ function buildParq(){
 function pqChange(i, isYes){
   document.getElementById('pqc'+i).classList.toggle('show', isYes);
   if(!isYes) document.getElementById('pqcin'+i).value = '';
+}
+
+function buildIntake(){
+  document.getElementById('intake').innerHTML = INTAKE.map((it, idx)=>{
+    const n = idx + 1;
+    const req = it.optional ? '' : ' <span class="req">*</span>';
+    const hint = it.hint ? `<div class="iq-hint">${it.hint}</div>` : '';
+    let body = '';
+    if(it.type === 'longtext'){
+      body = `<textarea class="iq-input" id="iq-${it.key}" rows="3" placeholder="${it.optional ? 'רשות' : 'התשובה שלך'}" oninput="iqTouch('${it.key}')"></textarea>`;
+    } else if(it.type === 'text'){
+      body = `<input type="text" class="iq-input" id="iq-${it.key}" placeholder="${it.optional ? 'רשות' : 'התשובה שלך'}" oninput="iqTouch('${it.key}')">`;
+    } else if(it.type === 'choice'){
+      const inp = it.multi ? 'checkbox' : 'radio';
+      const nm  = 'iq_' + it.key;
+      const opts = it.options.map(o=>`
+        <label class="iq-opt">
+          <input type="${inp}" name="${nm}" value="${esc(o)}" onchange="iqTouch('${it.key}');iqSyncOther('${it.key}')">
+          <span class="iq-box"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+          <span class="iq-otx">${esc(o)}</span>
+        </label>`).join('');
+      let other = '';
+      if(it.other){
+        other = `
+        <label class="iq-opt">
+          <input type="${inp}" name="${nm}" value="__other__" onchange="iqTouch('${it.key}');iqSyncOther('${it.key}')">
+          <span class="iq-box"><svg class="ic" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg></span>
+          <span class="iq-otx">אחר</span>
+        </label>
+        <input type="text" class="iq-other-in" id="iqo-${it.key}" placeholder="פירוט" style="display:none" oninput="iqTouch('${it.key}')">`;
+      }
+      body = `<div class="iq-opts">${opts}${other}</div>`;
+    } else if(it.type === 'file'){
+      body = `
+        <input type="file" id="iq-${it.key}" accept="image/*" onchange="handlePhoto(this)" style="display:none">
+        <label for="iq-${it.key}" class="iq-file-btn">
+          <svg class="ic" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>בחר/י תמונה מהמכשיר</span>
+        </label>
+        <div class="iq-photo-preview" id="iqPrev-${it.key}"></div>`;
+    }
+    return `<div class="iq" id="iqf-${it.key}">
+      <div class="iq-q">${n}. ${esc(it.q)}${req}</div>
+      ${hint}
+      ${body}
+      <div class="iq-err">שדה חובה</div>
+    </div>`;
+  }).join('');
+}
+
+function iqTouch(key){ const f = document.getElementById('iqf-'+key); if(f) f.classList.remove('err'); }
+
+function iqSyncOther(key){
+  const box = document.getElementById('iqo-'+key);
+  if(!box) return;
+  const on = !!document.querySelector(`input[name="iq_${key}"][value="__other__"]:checked`);
+  box.style.display = on ? 'block' : 'none';
+  if(!on) box.value = '';
+}
+
+/* קורא תמונה, מקטין אותה בצד-לקוח (עד 1280px, JPEG) כדי לחסוך משקל, ומציג תצוגה מקדימה */
+function handlePhoto(input){
+  const file = input.files && input.files[0];
+  const prev = document.getElementById('iqPrev-q12');
+  if(!file){ clearPhoto(); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const max = 1280;
+      let w = img.width, h = img.height;
+      if(w > max || h > max){ const s = Math.min(max/w, max/h); w = Math.round(w*s); h = Math.round(h*s); }
+      const cv = document.createElement('canvas');
+      cv.width = w; cv.height = h;
+      cv.getContext('2d').drawImage(img, 0, 0, w, h);
+      photoData = cv.toDataURL('image/jpeg', 0.82);
+      photoName = file.name || 'photo';
+      prev.innerHTML = `<img src="${photoData}" alt="תצוגה מקדימה"><button type="button" class="iq-photo-x" onclick="clearPhoto()">הסר/י תמונה</button>`;
+    };
+    img.onerror = () => { clearPhoto(); alert('לא הצלחנו לטעון את התמונה. נסה/י תמונה אחרת.'); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhoto(){
+  photoData = null; photoName = '';
+  const f = document.getElementById('iq-q12'); if(f) f.value = '';
+  const p = document.getElementById('iqPrev-q12'); if(p) p.innerHTML = '';
+}
+
+/* אוסף את תשובות שאלון הפתיחה, מסמן שגיאות בשדות חובה חסרים.
+   מחזיר {answers:[{q,a}], ok:boolean}. תמונת ה"לפני" נשמרת בנפרד ב-photoData. */
+function collectIntake(){
+  const answers = [];
+  let ok = true;
+  INTAKE.forEach(it=>{
+    const f = document.getElementById('iqf-'+it.key);
+    let a = '';
+    if(it.type === 'longtext' || it.type === 'text'){
+      const el = document.getElementById('iq-'+it.key);
+      a = el ? el.value.trim() : '';
+    } else if(it.type === 'choice'){
+      const checked = [...document.querySelectorAll(`input[name="iq_${it.key}"]:checked`)];
+      const parts = [];
+      let otherEmpty = false;
+      checked.forEach(c=>{
+        if(c.value === '__other__'){
+          const ot = (document.getElementById('iqo-'+it.key).value || '').trim();
+          if(ot) parts.push('אחר: ' + ot); else { parts.push('אחר'); otherEmpty = true; }
+        } else parts.push(c.value);
+      });
+      a = parts.join(', ');
+      if(otherEmpty && !it.optional){ ok = false; if(f) f.classList.add('err'); return; }
+    } else if(it.type === 'file'){
+      return;   /* התמונה נשלחת בנפרד; לא נכנסת למערך התשובות */
+    }
+    if(!it.optional && !a){ ok = false; if(f) f.classList.add('err'); return; }
+    if(f) f.classList.remove('err');
+    answers.push({ q: it.q, a });
+  });
+  return { answers, ok };
 }
 
 function toggleMinor(){
@@ -1402,6 +1619,7 @@ function showSignature(){
   document.getElementById('sigForm').style.display = '';
   document.getElementById('sigSuccess').classList.remove('show');
   buildParq();
+  buildIntake();
 
   const locked = getTrackParam();
   const trackSection = document.getElementById('trackSection');
@@ -1488,6 +1706,9 @@ function submitSig(){
   g('parq').style.borderColor = allAnswered ? '' : 'var(--l3)';
   if(!allAnswered) ok = false;
 
+  const intakeRes = collectIntake();
+  if(!intakeRes.ok) ok = false;
+
   const aH = g('in-agreeH').checked; g('f-agreeH').classList.toggle('err', !aH); if(!aH) ok = false;
   const aT = g('in-agreeT').checked; g('f-agreeT').classList.toggle('err', !aT); if(!aT) ok = false;
 
@@ -1496,7 +1717,7 @@ function submitSig(){
   const fe = g('formErr');
   if(!ok){
     fe.classList.add('show');
-    const first = document.querySelector('.trackErr.show, .field.err, .agree.err, .sig-pad.err');
+    const first = document.querySelector('.trackErr.show, .field.err, .iq.err, .agree.err, .sig-pad.err');
     if(first) first.scrollIntoView({behavior:'smooth', block:'center'});
     return;
   }
@@ -1509,6 +1730,7 @@ function submitSig(){
     track: t.name,
     name, id, dob, addr, email, phone: phoneRaw,
     minor, pname, pid, parq, notes,
+    intake: intakeRes.answers, photoData, photoName,
     sigData: sigCanvas.toDataURL('image/png'),
     time: now.toLocaleString('he-IL'), ts: now.toISOString()
   };
@@ -1551,6 +1773,12 @@ function makeFilename(r){
   const d = (r.ts || '').slice(0,10) || new Date().toISOString().slice(0,10);
   const safe = s => String(s || '').replace(/[\\/:*?"<>|]+/g, ' ').trim();
   return `הצהרת בריאות - ${safe(r.name)} - ${safe(r.track)} - ${d}`;
+}
+
+function photoFilenameFor(r){
+  const d = (r.ts || '').slice(0,10) || new Date().toISOString().slice(0,10);
+  const safe = s => String(s || '').replace(/[\\/:*?"<>|]+/g, ' ').trim();
+  return `תמונת לפני - ${safe(r.name)} - ${d}`;
 }
 
 /* מייצר את עמוד הצהרת הבריאות החתום כ-Uint8Array */
@@ -1701,7 +1929,10 @@ function uploadToDrive(r, uri){
       filename: makeFilename(r),
       name:r.name, id:r.id, track:r.track, dob:r.dob, addr:r.addr,
       email:r.email, phone:r.phone, minor:!!r.minor, pname:r.pname||'', pid:r.pid||'',
-      flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time
+      flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time,
+      intake: r.intake || [],
+      photoBase64: r.photoData ? (r.photoData.split(',')[1] || '') : '',
+      photoFilename: r.photoData ? photoFilenameFor(r) : ''
     };
     const form = document.createElement('form');
     form.method = 'POST';
@@ -1843,6 +2074,10 @@ function sendWhatsApp(){
     (r.minor ? `הורה/אפוטרופוס: ${r.pname} (ת.ז. ${r.pid})\n` : '') +
     `\nשאלון בריאות: ${flagged ? 'סימן/ה "כן" ב-' + flagged + ' שאלות (ראה/י PDF)' : 'הכל שלילי'}\n` +
     (r.notes ? `הערות: ${r.notes}\n` : '') +
+    ((r.intake && r.intake.length)
+      ? `\n— שאלון פתיחה —\n` + r.intake.filter(x=>x.a).map(x=>`• ${x.q}\n  ${x.a}`).join('\n') + '\n'
+      : '') +
+    (r.photoData ? `\n(צירפתי גם תמונת "לפני")\n` : '') +
     `\nאישרתי הצהרת בריאות + תקנון וחתמתי דיגיטלית בתאריך ${r.time}.\n` +
     `(מצרף/ת את מסמך ה-PDF החתום)`;
   const num = COACH_WHATSAPP.replace(/\D/g, '');
@@ -1861,6 +2096,7 @@ function resetSig(){
   document.getElementById('minorFields').classList.remove('show');
   document.getElementById('parq').style.borderColor = '';
   document.getElementById('formErr').classList.remove('show');
+  clearPhoto();
   lastRecord = null;
   lastPdfUri = null;
   showSignature();
