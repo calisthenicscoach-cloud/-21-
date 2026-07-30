@@ -26,12 +26,13 @@ function doPost(e) {
     const file   = folder.createFile(blob);
     file.setDescription('חתימה דיגיטלית — ' + (d.name || '') + ' — ' + (d.track || ''));
 
-    // 2) שמירת תמונת ה"לפני" (אם צורפה) — כקובץ נפרד באותה תיקייה
+    // 2) שמירת תמונת ה"לפני" (אם צורפה) — בתוך תיקיית משנה "תמונות לפני", כדי לא לפזר תמונות בין ה-PDF-ים
     let photoUrl = '';
     if (d.photoBase64) {
+      const photosFolder = getOrCreateSubfolder(folder, 'תמונות לפני');
       const pblob = Utilities.newBlob(Utilities.base64Decode(d.photoBase64),
                                       'image/jpeg', (d.photoFilename || 'תמונת לפני') + '.jpg');
-      photoUrl = folder.createFile(pblob).getUrl();
+      photoUrl = photosFolder.createFile(pblob).getUrl();
     }
 
     // 3) רישום שורה בגיליון — כולל תשובות שאלון הפתיחה + קישור לתמונה
@@ -65,7 +66,7 @@ function doPost(e) {
       sheet.appendRow(row);
     }
 
-    // 3) (אופציונלי) מייל אליך עם ה-PDF — הסר/י את הסימון // כדי להפעיל, ומלא/י את הכתובת:
+    // 4) (אופציונלי) מייל אליך עם ה-PDF — הסר/י את הסימון // כדי להפעיל, ומלא/י את הכתובת:
     // MailApp.sendEmail({ to: 'your@email.com',
     //   subject: 'טופס חתום חדש — ' + d.name + ' (' + d.track + ')',
     //   body: 'התקבל טופס חתום. מצורף ה-PDF.\nקישור: ' + file.getUrl(),
@@ -80,6 +81,12 @@ function doPost(e) {
 /* בדיקת חיים — פתיחת כתובת ה-Web App בדפדפן צריכה להחזיר {"ok":true} */
 function doGet() {
   return json({ ok: true, msg: 'Matan Kopel endpoint is live' });
+}
+
+/* מחזיר תיקיית משנה בשם הנתון בתוך התיקייה ההורה — יוצר אותה רק אם עוד לא קיימת */
+function getOrCreateSubfolder(parent, name) {
+  const it = parent.getFoldersByName(name);
+  return it.hasNext() ? it.next() : parent.createFolder(name);
 }
 
 function json(obj) {

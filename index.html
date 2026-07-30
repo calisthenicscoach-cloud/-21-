@@ -1772,7 +1772,7 @@ async function finishSubmit(r){
 function makeFilename(r){
   const d = (r.ts || '').slice(0,10) || new Date().toISOString().slice(0,10);
   const safe = s => String(s || '').replace(/[\\/:*?"<>|]+/g, ' ').trim();
-  return `הצהרת בריאות - ${safe(r.name)} - ${safe(r.track)} - ${d}`;
+  return `הצהרת בריאות ותקנון חתום - ${safe(r.name)} - ${safe(r.track)} - ${d}`;
 }
 
 function photoFilenameFor(r){
