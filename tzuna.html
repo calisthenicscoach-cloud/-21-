@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>שאלון תזונה — יחידת הקליסטניקס</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  html,body{background-color:#2b2f1c}
+  body{
+    font-family:'Rubik','Segoe UI',system-ui,-apple-system,Arial,sans-serif;
+    direction:rtl; color:#F5EFDE; line-height:1.5; min-height:100vh;
+    --mg:#E6CD7C; --mg2:#C6963A; --mgrad:linear-gradient(135deg,#F1DC92,#C6963A);
+    --mink:#F5EFDE; --mink2:#DAD2BB; --mmut:#A8A585;
+    --msurf:rgba(13,15,7,.52); --mline:rgba(230,205,124,.20); --mline2:rgba(230,205,124,.46);
+    --minput:rgba(0,0,0,.30); --l3:#C0503E;
+    background-color:#2f3320;
+    background-image:
+      repeating-linear-gradient(118deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px),
+      radial-gradient(38% 30% at 18% 22%, rgba(92,96,60,.40), transparent 60%),
+      radial-gradient(34% 26% at 78% 34%, rgba(74,78,46,.34), transparent 60%),
+      radial-gradient(42% 34% at 60% 82%, rgba(22,25,13,.55), transparent 62%),
+      radial-gradient(120% 80% at 82% -8%, rgba(150,150,90,.15), transparent 55%),
+      linear-gradient(158deg,#3a3e26,#2b2f1c 62%,#232614);
+    background-attachment:fixed;
+  }
+  .wrap{max-width:640px;margin:0 auto;padding:26px 18px 60px}
+  .head{text-align:center;margin-bottom:8px}
+  .mk-logo{display:block;width:120px;max-width:46%;height:auto;margin:2px auto 14px;
+    filter:drop-shadow(0 5px 12px rgba(0,0,0,.55))}
+  .badge{display:inline-block;background:var(--mgrad);color:#2a2410;font-weight:800;font-size:12px;
+    letter-spacing:.06em;padding:6px 15px;border-radius:999px;box-shadow:0 6px 18px -8px rgba(0,0,0,.6)}
+  h1{font-size:23px;font-weight:900;margin:14px 0 8px;line-height:1.25;
+    background:var(--mgrad);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .lead{font-size:13.5px;color:var(--mink2);line-height:1.65;max-width:440px;margin:0 auto 6px}
+  .divider{height:1px;background:var(--mline2);opacity:.5;margin:20px 0 6px;
+    -webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);
+    mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+
+  .card{background:var(--msurf);border:1px solid var(--mline);border-radius:16px;padding:6px 16px;margin-top:16px;
+    box-shadow:0 18px 46px -30px rgba(0,0,0,.9)}
+  .q{padding:16px 0;border-top:1px solid rgba(230,205,124,.14)}
+  .q:first-child{border-top:none}
+  .q-t{font-size:14px;font-weight:700;line-height:1.5;color:var(--mink2);margin-bottom:10px}
+  .q-t .req{color:var(--mg)}
+  .q-hint{font-size:12px;color:var(--mmut);line-height:1.55;margin:-4px 0 10px}
+  .in{width:100%;background:var(--minput);border:1px solid var(--mline2);border-radius:10px;
+    color:var(--mink);font-family:inherit;font-size:15px;padding:12px 13px;transition:border-color .14s ease,background .14s ease}
+  textarea.in{resize:vertical;min-height:70px}
+  .in:focus{outline:none;border-color:var(--mg);background:rgba(0,0,0,.45)}
+  .in::placeholder{color:var(--mmut)}
+  .opts{display:flex;flex-direction:column;gap:8px}
+  .opt{display:flex;align-items:center;gap:11px;cursor:pointer;background:var(--minput);
+    border:1px solid var(--mline2);border-radius:10px;padding:11px 13px;transition:all .12s ease}
+  .opt:hover{border-color:var(--mg)}
+  .opt input{position:absolute;opacity:0;pointer-events:none}
+  .box{flex:0 0 auto;width:22px;height:22px;border-radius:6px;border:2px solid var(--mline2);
+    background:var(--msurf);display:grid;place-items:center;transition:all .12s ease}
+  .opt input[type=radio] + .box{border-radius:50%}
+  .box svg{width:13px;height:13px;stroke:#2a2410;stroke-width:3;fill:none;opacity:0;transition:opacity .1s}
+  .opt input:checked + .box{background:var(--mgrad);border-color:transparent}
+  .opt input:checked + .box svg{opacity:1}
+  .otx{font-size:14px;font-weight:600;color:var(--mink2)}
+  .opt input:checked ~ .otx{color:var(--mink);font-weight:700}
+  .extra{width:100%;margin-top:8px;background:var(--minput);border:1px solid var(--mline2);border-radius:10px;
+    color:var(--mink);font-family:inherit;font-size:14px;padding:10px 13px}
+  .extra:focus{outline:none;border-color:var(--mg)}
+  .file-btn{display:inline-flex;align-items:center;gap:9px;cursor:pointer;background:var(--minput);
+    border:1px dashed var(--mline2);border-radius:11px;padding:13px 16px;font-size:13.5px;font-weight:700;color:var(--mink2);transition:all .12s ease}
+  .file-btn:hover{border-color:var(--mg);color:var(--mink)}
+  .file-btn svg{width:18px;height:18px;stroke:var(--mg);fill:none;stroke-width:2}
+  .prev{margin-top:12px}
+  .prev:empty{display:none}
+  .prev img{max-width:150px;max-height:190px;border-radius:11px;border:1px solid var(--mline2);display:block}
+  .prev button{margin-top:9px;background:var(--msurf);border:1px solid var(--mline2);color:var(--mink2);
+    font-family:inherit;font-size:12.5px;font-weight:700;padding:7px 13px;border-radius:9px;cursor:pointer}
+  .qerr{display:none;font-size:12px;color:#F0AE9F;margin-top:8px}
+  .q.err .qerr{display:block}
+  .q.err .in,.q.err .opt{border-color:var(--l3)}
+
+  .submit{margin-top:22px;width:100%;background:var(--mgrad);border:none;border-radius:14px;
+    color:#2a2410;font-family:inherit;font-size:16.5px;font-weight:800;padding:16px;cursor:pointer;
+    box-shadow:0 14px 34px -16px rgba(230,205,124,.7);transition:transform .16s ease;display:flex;align-items:center;justify-content:center;gap:10px}
+  .submit:hover{transform:translateY(-2px)}
+  .submit svg{width:20px;height:20px;stroke:#2a2410;fill:none;stroke-width:2.4}
+  .formErr{display:none;margin-top:14px;background:rgba(192,80,62,.14);border:1px solid rgba(192,80,62,.5);
+    border-radius:11px;padding:12px 14px;font-size:13px;color:#F0AE9F;font-weight:600;text-align:center}
+  .formErr.show{display:block}
+  .foot{margin-top:16px;font-size:11.5px;color:var(--mmut);text-align:center;line-height:1.6}
+
+  .success{display:none}
+  .success.show{display:block}
+  .form.hide{display:none}
+  .sc-card{background:var(--msurf);border:1px solid rgba(230,205,124,.4);border-radius:18px;
+    padding:30px 22px;text-align:center;margin-top:20px;box-shadow:0 18px 46px -30px rgba(0,0,0,.9)}
+  .sc-ic{width:66px;height:66px;border-radius:50%;background:rgba(230,205,124,.16);
+    display:grid;place-items:center;margin:0 auto 16px}
+  .sc-ic svg{width:32px;height:32px;stroke:var(--mg);fill:none;stroke-width:2.4}
+  .sc-ic.warn{background:rgba(192,80,62,.18)} .sc-ic.warn svg{stroke:#E7A08F}
+  .sc-card h3{font-size:20px;font-weight:800;color:var(--mink);margin-bottom:8px}
+  .sc-card p{font-size:13.5px;color:var(--mink2);line-height:1.6;margin-bottom:5px}
+  .sc-card .nm{color:var(--mg);font-weight:800}
+  .sc-actions{margin-top:18px;display:flex;flex-direction:column;gap:10px}
+  .sc-btn{background:var(--minput);border:1px solid var(--mline2);color:var(--mink);font-family:inherit;
+    font-size:14px;font-weight:700;padding:12px;border-radius:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+  .sc-btn svg{width:17px;height:17px;stroke:var(--mg);fill:none;stroke-width:2}
+  .spinner{width:30px;height:30px;border:3px solid rgba(230,205,124,.25);border-top-color:var(--mg);
+    border-radius:50%;animation:spin .8s linear infinite;margin:0 auto}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ---- PDF print area ---- */
+  #printArea{display:none}
+  .pd{font-family:'Rubik',Arial,sans-serif;max-width:720px;margin:0 auto;padding:26px 30px;color:#111;direction:rtl;word-spacing:1.4px;background:#fff}
+  .pd .pd-h{text-align:center;border-bottom:2px solid #2f3320;padding-bottom:14px;margin-bottom:18px}
+  .pd .pd-h h1{font-size:22px;font-weight:900;color:#2f3320;-webkit-text-fill-color:#2f3320;background:none;margin:0}
+  .pd .pd-sub{font-size:13px;color:#555;margin-top:6px;font-weight:600}
+  .pd .pd-q{padding:9px 0;border-bottom:1px solid #eee;page-break-inside:avoid}
+  .pd .pd-q .k{font-size:12.5px;font-weight:800;color:#2f3320;display:block;margin-bottom:2px}
+  .pd .pd-q .v{font-size:13px;color:#222;line-height:1.6;white-space:pre-wrap;overflow-wrap:break-word;word-break:break-word}
+  .pd .pd-meta{margin-top:18px;font-size:10.5px;color:#888;text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="form" id="form">
+    <div class="head">
+      <img class="mk-logo" src="assets/mk-logo.png" alt="Matan Kopel">
+      <span class="badge">שאלון תזונה · MATAN KOPEL</span>
+      <h1>שאלון להכנת תפריט תזונה</h1>
+      <p class="lead">על מנת שנוכל להכין לך את התפריט הכי טוב ומדויק — פרט/י כמה שאתה יכול. לוקח כמה דקות, ונשלח ישירות ליועץ התזונה. שדות עם <span style="color:var(--mg)">*</span> הם חובה.</p>
+      <div class="divider"></div>
+    </div>
+
+    <div class="card" id="questions"></div>
+
+    <div class="formErr" id="formErr">נא להשלים את כל שדות החובה המסומנים.</div>
+    <button class="submit" onclick="submitForm()">
+      <svg viewBox="0 0 24 24"><path d="M22 2 11 13M22 2l-7 20-4-9-9-4 20-7Z"/></svg>
+      שליחת השאלון
+    </button>
+    <div class="foot">השאלון נשלח ישירות ליועץ התזונה של היחידה. אין צורך בהתקנת אפליקציה.</div>
+  </div>
+
+  <div class="success" id="success">
+    <div class="sc-card">
+      <div class="sc-ic" id="scIc"><svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg></div>
+      <h3 id="scTitle">השאלון נשלח בהצלחה!</h3>
+      <p class="nm" id="scName"></p>
+      <p id="scMsg"></p>
+      <div class="sc-actions" id="scActions"></div>
+    </div>
+  </div>
+</div>
+
+<div id="printArea"></div>
+<iframe id="sink" name="sink" style="display:none" title="sink"></iframe>
+
+<script src="assets/html2pdf.bundle.min.js" defer></script>
+<script>
+/* ====== כתובת ה-Web App (אותה של מערכת החתימות) ====== */
+let DRIVE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5_j9pHH8hQcU0l-fZXn7r0v5p_KmfzK2vaW1ylRdOUf0LoqimlijI_ejrQWjSXisc-A/exec';
+const COACH_WHATSAPP = '972587979678';
+
+/* ====== שאלות השאלון — ניתן לערוך בחופשיות ======
+   type: 'text' (שורה) | 'longtext' (פסקה) | 'choice' (בחירה) | 'file' (תמונה)
+   choice: multi=true בחירה מרובה; other=true מוסיף "אחר" עם טקסט;
+           followOn='ערך' + followLabel — מציג שדה טקסט כשנבחר הערך הזה. */
+const NUTRITION = [
+  { key:'name',   type:'text', q:'שם ושם משפחה' },
+  { key:'age',    type:'text', num:true, q:'גיל' },
+  { key:'height', type:'text', num:true, q:'גובה (ס״מ)' },
+  { key:'weight', type:'text', num:true, q:'משקל (ק״ג)' },
+  { key:'service',type:'choice', multi:false, other:true, q:'סוג שירות', options:["ג'ובניק","תומך לחימה","לוחם","בסיס פתוח"] },
+  { key:'exits',  type:'text', q:'מה היציאות שלך בצבא בדרך כלל?', hint:'למשל: שבוע/שבוע, חמשושים, 3-11 וכו׳' },
+  { key:'load',   type:'longtext', q:'האם יש תקופות של עומס פיזי (שטח, ניווטים, שמירות)? אם כן — אחת לכמה זמן (בערך)?' },
+  { key:'sleep',  type:'text', q:'כמה שעות אתה ישן בלילה, והאם אתה ישן טוב?' },
+  { key:'water',  type:'text', q:'כמה מים אתה שותה ביום? (בערך, בליטרים)' },
+  { key:'cardio', type:'longtext', q:'האם אתה מבצע עוד פעילות ספורטיבית בשבוע חוץ מאימוני כוח? (ריצות, הליכות, אופניים וכו׳)', hint:'אם כן — פרט כמה פעמים בשבוע וכמה זמן כל אימון. אם לא — כתוב "לא".' },
+  { key:'where',  type:'choice', multi:true, q:'איפה אתה אוכל רוב השבוע?', options:["חדר אוכל","בית","שטח","מכין אוכל בבסיס","שקם"] },
+  { key:'access', type:'choice', multi:false, q:'יש לך גישה לקירור/חימום אוכל אישי בבסיס?', options:["כן","לא"] },
+  { key:'meals',  type:'longtext', q:'כמה ארוחות ביום אתה מצליח לאכול בצבא? מרגיש שובע או רעב במהלך היום?' },
+  { key:'diet',   type:'longtext', q:'פרט/י בבקשה את התפריט התזונתי היומי שלך כרגע', hint:'מה אתה אוכל ביומיום בדרך כלל — ארוחות, נשנושים.' },
+  { key:'fav',    type:'text', q:'יש לך מאכל שאתה מאוד אוהב, או נשנוש קבוע שקשה לך לוותר עליו?' },
+  { key:'avoid',  type:'choice', multi:true, other:true, q:'יש מזונות שאתה לא אוכל / לא אוהב / רגיש / אלרגי אליהם?', hint:'סמן את מה שרלוונטי.', options:["חזה עוף","ביצים","דגים","בשר אדום","מוצרי חלב","ירקות","אורז","בטטה","תפוח אדמה","קטניות","אגוזים"] },
+  { key:'medical',type:'longtext', q:'יש לך בעיה עיכולית או רפואית שמשפיעה על התזונה?', hint:'אם אין — כתוב "אין".' },
+  { key:'supp',   type:'longtext', q:'האם אתה נוטל תוספי תזונה? (אבקת חלבון, קריאטין וכדומה)', hint:'אם כן — אילו? אם לא — כתוב "לא".' },
+  { key:'goal',   type:'choice', multi:false, q:'מה המטרה שלך?', options:["עלייה במסת שריר","חיטוב","שמירה על המשקל"] },
+  { key:'pref',   type:'choice', multi:true, other:true, q:'מה הכי חשוב לך בתפריט?', options:["תוצאות (שינוי בגוף)","להיות שבע","טעם","קל להקפיד"] },
+  { key:'past',   type:'choice', multi:false, followOn:'כן', followLabel:'אם כן — מה? (איזו תוכנית / מעקב)', q:'היית בעבר בתוכנית תזונה או מעקב מקצועי?', options:["כן","לא"] },
+  { key:'photo',  type:'file', optional:true, q:'תמונת גוף ("איך הגוף שלך נראה כרגע")', hint:'עוזר ליועץ להחליט אם מסה / חיטוב / ריקומפוזיציה. לא חובה — אפשר להעלות עכשיו או לשלוח בהמשך.' }
+];
+
+let photoData = null, photoName = '', lastAnswers = null, lastName = '', lastPdfUri = null;
+const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
+
+function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function build(){
+  document.getElementById('questions').innerHTML = NUTRITION.map((it,idx)=>{
+    const n = idx+1;
+    const req = it.optional ? '' : ' <span class="req">*</span>';
+    const hint = it.hint ? `<div class="q-hint">${esc(it.hint)}</div>` : '';
+    let body='';
+    if(it.type==='longtext'){
+      body = `<textarea class="in" id="f-${it.key}" rows="3" placeholder="${it.optional?'רשות':'התשובה שלך'}" oninput="touch('${it.key}')"></textarea>`;
+    } else if(it.type==='text'){
+      const im = it.num ? ' inputmode="decimal"' : '';
+      body = `<input type="text"${im} class="in" id="f-${it.key}" placeholder="${it.optional?'רשות':'התשובה שלך'}" oninput="touch('${it.key}')">`;
+    } else if(it.type==='choice'){
+      const inp = it.multi ? 'checkbox' : 'radio';
+      const nm = 'f_'+it.key;
+      const opts = it.options.map(o=>`
+        <label class="opt">
+          <input type="${inp}" name="${nm}" value="${esc(o)}" onchange="touch('${it.key}');syncExtras('${it.key}')">
+          <span class="box">${CHECK}</span><span class="otx">${esc(o)}</span>
+        </label>`).join('');
+      let extra='';
+      if(it.other){
+        extra += `
+        <label class="opt">
+          <input type="${inp}" name="${nm}" value="__other__" onchange="touch('${it.key}');syncExtras('${it.key}')">
+          <span class="box">${CHECK}</span><span class="otx">אחר</span>
+        </label>
+        <input type="text" class="extra" id="x-${it.key}" placeholder="פירוט" style="display:none" oninput="touch('${it.key}')">`;
+      }
+      if(it.followOn){
+        extra += `<input type="text" class="extra" id="fu-${it.key}" placeholder="${esc(it.followLabel||'פירוט')}" style="display:none" oninput="touch('${it.key}')">`;
+      }
+      body = `<div class="opts">${opts}${extra}</div>`;
+    } else if(it.type==='file'){
+      body = `
+        <input type="file" id="f-${it.key}" accept="image/*" onchange="handlePhoto(this)" style="display:none">
+        <label for="f-${it.key}" class="file-btn">
+          <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+          <span>בחר/י תמונה מהמכשיר</span>
+        </label>
+        <div class="prev" id="prev-${it.key}"></div>`;
+    }
+    return `<div class="q" id="q-${it.key}">
+      <div class="q-t">${n}. ${esc(it.q)}${req}</div>${hint}${body}
+      <div class="qerr">שדה חובה</div>
+    </div>`;
+  }).join('');
+}
+
+function touch(key){ const q=document.getElementById('q-'+key); if(q) q.classList.remove('err'); }
+
+function syncExtras(key){
+  const it = NUTRITION.find(x=>x.key===key);
+  const ob = document.getElementById('x-'+key);
+  if(ob){
+    const on = !!document.querySelector(`input[name="f_${key}"][value="__other__"]:checked`);
+    ob.style.display = on ? 'block' : 'none'; if(!on) ob.value='';
+  }
+  if(it && it.followOn){
+    const fb = document.getElementById('fu-'+key);
+    const on = !!document.querySelector(`input[name="f_${key}"][value="${it.followOn}"]:checked`);
+    if(fb){ fb.style.display = on ? 'block' : 'none'; if(!on) fb.value=''; }
+  }
+}
+
+function handlePhoto(input){
+  const file = input.files && input.files[0];
+  const prev = document.getElementById('prev-photo');
+  if(!file){ clearPhoto(); return; }
+  const reader = new FileReader();
+  reader.onload = ev => {
+    const img = new Image();
+    img.onload = () => {
+      const max=1280; let w=img.width, h=img.height;
+      if(w>max||h>max){ const s=Math.min(max/w,max/h); w=Math.round(w*s); h=Math.round(h*s); }
+      const cv=document.createElement('canvas'); cv.width=w; cv.height=h;
+      cv.getContext('2d').drawImage(img,0,0,w,h);
+      photoData = cv.toDataURL('image/jpeg',0.82); photoName = file.name||'photo';
+      prev.innerHTML = `<img src="${photoData}" alt="תצוגה"><button type="button" onclick="clearPhoto()">הסר/י תמונה</button>`;
+    };
+    img.onerror = () => { clearPhoto(); alert('לא הצלחנו לטעון את התמונה. נסה/י אחרת.'); };
+    img.src = ev.target.result;
+  };
+  reader.readAsDataURL(file);
+}
+function clearPhoto(){ photoData=null; photoName=''; const f=document.getElementById('f-photo'); if(f) f.value=''; const p=document.getElementById('prev-photo'); if(p) p.innerHTML=''; }
+
+function collect(){
+  const answers=[]; let ok=true;
+  NUTRITION.forEach(it=>{
+    const q = document.getElementById('q-'+it.key);
+    let a='';
+    if(it.type==='text'||it.type==='longtext'){
+      const el=document.getElementById('f-'+it.key); a = el ? el.value.trim() : '';
+    } else if(it.type==='choice'){
+      const checked=[...document.querySelectorAll(`input[name="f_${it.key}"]:checked`)];
+      const parts=[]; let bad=false;
+      checked.forEach(c=>{
+        if(c.value==='__other__'){
+          const t=(document.getElementById('x-'+it.key).value||'').trim();
+          if(t) parts.push('אחר: '+t); else { parts.push('אחר'); bad=true; }
+        } else if(it.followOn && c.value===it.followOn){
+          const t=(document.getElementById('fu-'+it.key).value||'').trim();
+          if(t) parts.push(c.value+' — '+t); else { parts.push(c.value); bad=true; }
+        } else parts.push(c.value);
+      });
+      a = parts.join(', ');
+      if(bad && !it.optional){ ok=false; if(q) q.classList.add('err'); answers.push({q:it.q,a}); return; }
+    } else if(it.type==='file'){
+      return; /* התמונה נשלחת בנפרד */
+    }
+    if(!it.optional && !a){ ok=false; if(q) q.classList.add('err'); }
+    else if(q) q.classList.remove('err');
+    answers.push({ q: it.q, a });
+  });
+  return { answers, ok };
+}
+
+function submitForm(){
+  const res = collect();
+  const fe = document.getElementById('formErr');
+  if(!res.ok){
+    fe.classList.add('show');
+    const first = document.querySelector('.q.err'); if(first) first.scrollIntoView({behavior:'smooth',block:'center'});
+    return;
+  }
+  fe.classList.remove('show');
+  const nameA = res.answers.find(x=>x.q.indexOf('שם')===0);
+  lastName = nameA ? nameA.a : '';
+  lastAnswers = res.answers;
+
+  document.getElementById('form').classList.add('hide');
+  document.getElementById('success').classList.add('show');
+  window.scrollTo({top:0,behavior:'smooth'});
+  finish(res.answers);
+}
+
+async function finish(answers){
+  showProcessing();
+  let pdfUri = null;
+  try { pdfUri = await genPdf(lastName, answers); } catch(e){ pdfUri = null; }
+  lastPdfUri = pdfUri;
+  if(DRIVE_ENDPOINT && pdfUri){
+    try { await upload(answers, pdfUri); showDone('ok'); }
+    catch(e){ showDone('fail'); }
+  } else { showDone(pdfUri ? 'ok' : 'fail'); }
+}
+
+function fileBase(){
+  const d = new Date().toISOString().slice(0,10);
+  const safe = s => String(s||'').replace(/[\\/:*?"<>|]+/g,' ').trim();
+  return { pdf:`שאלון תזונה - ${safe(lastName)} - ${d}`, photo:`תמונת גוף - ${safe(lastName)} - ${d}` };
+}
+
+function buildDoc(name, answers){
+  const rows = answers.filter(a=>a.a).map(a=>
+    `<div class="pd-q"><span class="k">${esc(a.q)}</span><span class="v">${esc(a.a)}</span></div>`).join('');
+  const now = new Date().toLocaleString('he-IL');
+  document.getElementById('printArea').innerHTML = `
+    <div class="pd">
+      <div class="pd-h">
+        <h1>שאלון תזונה — יחידת הקליסטניקס</h1>
+        <div class="pd-sub">${esc(name)} · נשלח בתאריך ${esc(now)}</div>
+      </div>
+      ${rows}
+      <div class="pd-meta">נוצר אוטומטית משאלון התזונה הדיגיטלי · מתן קופל · ע.מ 212739486</div>
+    </div>`;
+}
+
+async function genPdf(name, answers){
+  if(typeof html2pdf === 'undefined') return null;
+  buildDoc(name, answers);
+  const el = document.getElementById('printArea');
+  const wrap = document.createElement('div');
+  wrap.style.cssText = 'position:fixed;left:-10000px;top:0;width:760px;background:#fff;z-index:-1';
+  document.body.appendChild(wrap);
+  el.style.cssText = 'display:block;position:static;width:760px;background:#fff';
+  wrap.appendChild(el);
+  el.querySelectorAll('.pd-h h1, .pd-sub, .pd-q .k, .pd-q .v, .pd-meta').forEach(n=>{ n.innerHTML = n.innerHTML.replace(/ /g,'\u00A0'); });
+  await new Promise(r=>setTimeout(r,60));
+  const opt = { margin:[10,10,12,10], filename:'nutrition.pdf', image:{type:'jpeg',quality:.96},
+    html2canvas:{scale:2,useCORS:true,backgroundColor:'#ffffff'}, jsPDF:{unit:'mm',format:'a4',orientation:'portrait'},
+    pagebreak:{mode:['css','legacy']} };
+  let uri=null;
+  try { const ab = await html2pdf().set(opt).from(el).outputPdf('arraybuffer'); uri = 'data:application/pdf;base64,'+btoa(new Uint8Array(ab).reduce((s,b)=>s+String.fromCharCode(b),'')); }
+  finally { document.body.appendChild(el); el.style.display='none'; wrap.remove(); }
+  return uri;
+}
+
+function upload(answers, uri){
+  return new Promise(resolve => {
+    const fb = fileBase();
+    const payload = {
+      type:'nutrition',
+      name: lastName,
+      answers,
+      pdfBase64: (uri.split(',')[1]||''),
+      filename: fb.pdf,
+      photoBase64: photoData ? (photoData.split(',')[1]||'') : '',
+      photoFilename: photoData ? fb.photo : '',
+      time: new Date().toLocaleString('he-IL')
+    };
+    const form = document.createElement('form');
+    form.method='POST'; form.action=DRIVE_ENDPOINT; form.target='sink'; form.style.display='none';
+    const inp=document.createElement('input'); inp.type='hidden'; inp.name='payload'; inp.value=JSON.stringify(payload);
+    form.appendChild(inp); document.body.appendChild(form);
+    const ifr=document.getElementById('sink'); let done=false;
+    const fin=()=>{ if(done)return; done=true; if(ifr) ifr.onload=null; setTimeout(()=>form.remove(),0); resolve({ok:true}); };
+    if(ifr) ifr.onload=fin; setTimeout(fin,9000); form.submit();
+  });
+}
+
+function showProcessing(){
+  document.getElementById('scIc').className='sc-ic';
+  document.getElementById('scIc').innerHTML='<div class="spinner"></div>';
+  document.getElementById('scTitle').textContent='רגע, שולחים את השאלון…';
+  document.getElementById('scName').textContent=lastName;
+  document.getElementById('scMsg').textContent='מייצרים מסמך ושולחים ליועץ התזונה…';
+  document.getElementById('scActions').innerHTML='';
+}
+function showDone(mode){
+  const ic=document.getElementById('scIc'), t=document.getElementById('scTitle'), m=document.getElementById('scMsg'), a=document.getElementById('scActions');
+  const dl = lastPdfUri ? `<button class="sc-btn" onclick="downloadPdf()"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>שמור/י עותק PDF</button>` : '';
+  const wa = `<button class="sc-btn" onclick="sendWa()"><svg viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.4L3 21l2.1-5.4A8.5 8.5 0 1 1 21 11.5Z"/></svg>שליחה למאמן בוואטסאפ</button>`;
+  if(mode==='ok'){
+    ic.className='sc-ic'; ic.innerHTML='<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+    t.textContent='השאלון נשלח בהצלחה! ✓';
+    m.textContent='השאלון הגיע ליועץ התזונה. נעדכן אותך כשהתפריט מוכן. אין צורך לעשות דבר נוסף.';
+    a.innerHTML = dl;
+  } else {
+    ic.className='sc-ic warn'; ic.innerHTML='<svg viewBox="0 0 24 24"><path d="M12 9v4M12 17h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/></svg>';
+    t.textContent='השליחה האוטומטית נכשלה';
+    m.textContent='שמור/י את המסמך ושלח/י למאמן בוואטסאפ כדי שלא לאבד את התשובות.';
+    a.innerHTML = wa + dl;
+  }
+}
+function downloadPdf(){
+  if(!lastPdfUri) return;
+  const a=document.createElement('a'); a.href=lastPdfUri; a.download=fileBase().pdf+'.pdf';
+  document.body.appendChild(a); a.click(); a.remove();
+}
+function sendWa(){
+  const lines = (lastAnswers||[]).filter(x=>x.a).map(x=>`• ${x.q}\n  ${x.a}`).join('\n');
+  const msg = `שלום, מילאתי את שאלון התזונה — Matan Kopel.\n\nשם: ${lastName}\n\n${lines}\n\n(מצרף/ת גם מסמך PDF)`;
+  const num = COACH_WHATSAPP.replace(/\D/g,'');
+  window.open((num?`https://wa.me/${num}`:'https://wa.me/')+`?text=${encodeURIComponent(msg)}`,'_blank','noopener');
+}
+
+build();
+</script>
+</body>
+</html>
