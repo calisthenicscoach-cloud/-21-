@@ -13,9 +13,15 @@ writes a file the next step reads:
 | 2 | `scripts/run_media.py` → `gen_variants.py` | `winners.json` | `trial_variants/<sc>/*.mp4` |
 | 3 | `scripts/plan_schedule.py` | winners + variants | `plan.json` |
 | 4 | `scripts/schedule_campaign.py` → `host_media.py` | `plan.json` | posts to Metricool, `scheduled_posts.json` |
+| 5 | `scripts/audit.py` | Metricool calendar | prints status / rejections / bad media |
 
-`host_media.py` (step 4's helper) uploads each variant to a temporary public host and returns
-a direct URL; Metricool fetches that URL server-side and keeps its own copy.
+`host_media.py` (step 4's helper) uploads each variant to a temporary public host
+(uguu → litterbox → catbox, with byte-verify read-back) and returns a direct URL; Metricool
+fetches that URL server-side and keeps its own copy on static.metricool.com.
+
+`audit.py` (step 5) is the safety net — run it daily the first week, then weekly. It reports
+every trial reel's status, surfaces rate **rejections** (the only way this account's true
+ceiling gets measured), and flags any pending post whose stored media would fail to transcode.
 
 ---
 
@@ -59,7 +65,6 @@ pip install requests yt-dlp                  # plus ffmpeg + ffprobe on PATH (br
 | `timezone` | `Asia/Jerusalem` |
 | `startDate` | `null` = start tomorrow, or `"YYYY-MM-DD"` |
 | `shareTrialAutomatically` | `false` keeps trials in front of non-followers only; you then promote the single best variant by hand |
-| `uploadEndpoint` | temp host for `host_media.py` (default `https://0x0.st`) |
 
 ---
 
@@ -107,6 +112,9 @@ python3 scripts/plan_schedule.py              # add --ceiling N only if you know
 # STEP 4 — post to Metricool as trial reels
 python3 scripts/schedule_campaign.py --dry    # preview
 python3 scripts/schedule_campaign.py --go     # do it (add --limit N to ramp in slowly)
+
+# STEP 5 — audit daily the first week, then weekly (the safety net)
+python3 scripts/audit.py                      # status, rejections (= your real ceiling), bad media
 ```
 
 ## Guardrails baked in

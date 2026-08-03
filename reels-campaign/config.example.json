@@ -7,6 +7,5 @@
   "slots": [[9, 30], [13, 0], [17, 30], [20, 30]],
   "timezone": "Asia/Jerusalem",
   "startDate": null,
-  "shareTrialAutomatically": false,
-  "uploadEndpoint": "https://0x0.st"
+  "shareTrialAutomatically": false
 }
