@@ -1,0 +1,18 @@
+# Never commit the real config — it names the brand's blogId / guard host.
+config.json
+
+# Never commit secrets.
+.env
+
+# Working data + generated media — all reproducible, none belongs in git.
+sources/
+trial_variants/
+winners.json
+captions.json
+plan.json
+scheduled_posts.json
+shortcodes.txt
+
+# Python bytecode
+__pycache__/
+*.pyc

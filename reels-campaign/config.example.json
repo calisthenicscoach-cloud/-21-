@@ -1,0 +1,12 @@
+{
+  "account": "matankopel",
+  "topN": 50,
+  "blogId": "PUT-THE-MATAN-KOPEL-METRICOOL-BLOG-ID-HERE",
+  "guardBase": "https://YOUR-METRICOOL-GUARD-HOST/…/scheduler/posts",
+  "perDay": 4,
+  "slots": [[9, 30], [13, 0], [17, 30], [20, 30]],
+  "timezone": "Asia/Jerusalem",
+  "startDate": null,
+  "shareTrialAutomatically": false,
+  "uploadEndpoint": "https://0x0.st"
+}
