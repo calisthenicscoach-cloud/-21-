@@ -94,6 +94,18 @@ allowed it) ~3 weeks. **Decide the cadence with your real ceiling in mind before
 
 ## Run it
 
+**Easiest — one command** (does steps 1→3 + a dry preview; add `--go` to actually schedule):
+
+```bash
+cd reels-campaign
+export GUARD_KEY=matan_xxxxxxxxxxxxxxxxxxxx
+./run.sh            # preview only, nothing posted
+./run.sh --go       # schedules to Metricool after you confirm
+```
+
+`run.sh` checks your tools, bootstraps `config.json`, runs every step in order, and makes you
+type `yes` before anything goes live. Or run the steps by hand:
+
 ```bash
 # STEP 1 — pick the top 50 and grab their own captions
 export APIFY_TOKEN=...                        # route A: automatic
