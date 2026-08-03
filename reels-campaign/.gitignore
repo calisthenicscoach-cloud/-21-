@@ -16,3 +16,4 @@ shortcodes.txt
 # Python bytecode
 __pycache__/
 *.pyc
+cookies.txt

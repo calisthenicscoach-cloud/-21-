@@ -88,8 +88,13 @@ for r in reels:
     if pick_source(sc) is None:
         for g in glob.glob(os.path.join(HERE, "sources", f"{sc}.*")):
             os.remove(g)                     # clear any half-merged DASH leftovers
+        # Headless VMs have no browser to read cookies from: prefer a Netscape cookies.txt
+        # dropped in the campaign dir, and only fall back to the browser on a real desktop.
+        cookies = os.path.join(HERE, "cookies.txt")
+        auth = ["--cookies", cookies] if os.path.exists(cookies) else \
+               ["--cookies-from-browser", "chrome"]
         dl = subprocess.run(
-            ["yt-dlp", "--no-update", "--cookies-from-browser", "chrome",
+            ["yt-dlp", "--no-update", *auth,
              "-f", "bv*+ba/b", "--merge-output-format", "mp4",
              "--no-playlist", "-o", os.path.join(HERE, "sources", f"{sc}.%(ext)s"),
              f"https://www.instagram.com/reel/{sc}/"],
