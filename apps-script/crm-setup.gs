@@ -81,6 +81,13 @@ function enhanceLeads_(ss) {
       sheet.getRange(2, newCol).setFormula(whatsappArrayFormula_(columnToLetter_(phoneCol + 1)));
     }
   }
+
+  // בורר תאריך (לוח שנה) לעמודות התאריך
+  var lastRow2 = Math.max(sheet.getMaxRows() - 1, 1);
+  ['תאריך השארת פרטים', 'תאריך חזרה', 'תאריך לפולואפ'].forEach(function (h) {
+    var c = headers.indexOf(h) + 1;
+    if (c > 0) setDateValidation_(sheet, c, lastRow2);
+  });
 }
 
 /* ----- טאב מתאמנים / ארכיון ----- */
@@ -107,6 +114,7 @@ function ensureTraineeSheet_(ss, name) {
 
   ['תאריך התחלה', 'תאריך סיום', 'תאריך קשר אחרון'].forEach(function (h) {
     sheet.getRange(2, col(h), lastRow, 1).setNumberFormat('dd/mm/yyyy');
+    setDateValidation_(sheet, col(h), lastRow);
   });
 
   var letter = columnToLetter_(col('סטטוס'));
@@ -285,6 +293,10 @@ function waLink_(phone) {
 function esc_(s) { return String(s == null ? '' : s).replace(/[&<>]/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c]; }); }
 function setListValidation_(sheet, col, values, numRows) {
   var rule = SpreadsheetApp.newDataValidation().requireValueInList(values, true).setAllowInvalid(true).build();
+  sheet.getRange(2, col, numRows, 1).setDataValidation(rule);
+}
+function setDateValidation_(sheet, col, numRows) {
+  var rule = SpreadsheetApp.newDataValidation().requireDate().setAllowInvalid(true).build();
   sheet.getRange(2, col, numRows, 1).setDataValidation(rule);
 }
 function cfRule_(formula, color, range) {
