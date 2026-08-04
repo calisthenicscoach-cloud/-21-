@@ -119,8 +119,15 @@ def main():
                 "draft": False, "autoPublish": True,
                 "instagramData": {"type": "TRIAL_REEL",
                                   "shareTrialAutomatically": CFG["shareTrialAutomatically"]}}
-        r = requests.post(BASE, headers=hdrs(),
-                          data=json.dumps(body, ensure_ascii=False).encode(), timeout=180)
+        try:
+            r = requests.post(BASE, headers=hdrs(),
+                              data=json.dumps(body, ensure_ascii=False).encode(), timeout=180)
+        except Exception as e:
+            # transient egress/guard timeout — don't crash the whole run; reconcile (match by
+            # publicationDate) on the next pass adopts any post the guard created anyway.
+            print(f"  POST ERR {p['key']}: {str(e)[:120]}", flush=True)
+            fail.append((p["key"], "post-exc"))
+            continue
         if r.status_code != 200 or not (r.json().get("data") or {}).get("id"):
             print(f"  FAIL {p['key']}: {r.status_code} {r.text[:140]}", flush=True)
             fail.append((p["key"], r.status_code))
@@ -130,7 +137,10 @@ def main():
         stored, good = None, False
         for _ in range(6):
             time.sleep(2.5)
-            g = requests.get(f"{BASE}/{pid}", headers=hdrs(), timeout=60)
+            try:
+                g = requests.get(f"{BASE}/{pid}", headers=hdrs(), timeout=60)
+            except Exception:
+                continue        # transient timeout during verify — keep polling, never crash
             if g.status_code == 200:
                 m = ((g.json().get("data") or {}).get("media")) or []
                 if m:
@@ -142,7 +152,10 @@ def main():
         if not good:
             # Never leave a post pointing at media Instagram will refuse. Delete and retry
             # later — this key stays out of the log, so a re-run picks it up.
-            requests.delete(f"{BASE}/{pid}", headers=hdrs(), timeout=60)
+            try:
+                requests.delete(f"{BASE}/{pid}", headers=hdrs(), timeout=60)
+            except Exception:
+                pass
             print(f"  BAD MEDIA {p['key']} — post {pid} deleted ({stored})", flush=True)
             fail.append((p["key"], "media"))
             continue
