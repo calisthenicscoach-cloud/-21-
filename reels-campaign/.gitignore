@@ -17,3 +17,6 @@ shortcodes.txt
 __pycache__/
 *.pyc
 cookies.txt
+matan_sources.json
+*.log
+render.log
