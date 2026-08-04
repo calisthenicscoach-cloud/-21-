@@ -1,0 +1,310 @@
+{
+ "_account": {
+  "username": "matan_kopel",
+  "metricoolBlogId": 6661436
+ },
+ "_source": "apify/instagram-scraper run twImXr6yUbvO7fPhO, 183 recent posts, pulled 2026-08-03 ~16:03 UTC",
+ "_ranking": "videoPlayCount desc. PLAYS, not follows.",
+ "winners": [
+  {
+   "rank": 1,
+   "shortCode": "Da73zDkIHXy",
+   "plays": 1508477,
+   "dur": 45.021
+  },
+  {
+   "rank": 2,
+   "shortCode": "DVOwn16iJtG",
+   "plays": 186631,
+   "dur": 14.9
+  },
+  {
+   "rank": 3,
+   "shortCode": "DQrcF6uCAWF",
+   "plays": 116766,
+   "dur": 32.0
+  },
+  {
+   "rank": 4,
+   "shortCode": "DS8BI9nCILJ",
+   "plays": 79400,
+   "dur": 9.833
+  },
+  {
+   "rank": 5,
+   "shortCode": "DU8BwqpCGxi",
+   "plays": 61846,
+   "dur": 18.866
+  },
+  {
+   "rank": 6,
+   "shortCode": "DaAymf8TsAu",
+   "plays": 59363,
+   "dur": 54.75
+  },
+  {
+   "rank": 7,
+   "shortCode": "DUnYgUTCK19",
+   "plays": 55096,
+   "dur": 17.866
+  },
+  {
+   "rank": 8,
+   "shortCode": "DT8XMv9jXg2",
+   "plays": 47889,
+   "dur": 24.366
+  },
+  {
+   "rank": 9,
+   "shortCode": "DVTv52yiIXJ",
+   "plays": 42719,
+   "dur": 19.066
+  },
+  {
+   "rank": 10,
+   "shortCode": "DaIgtu-SBjO",
+   "plays": 40857,
+   "dur": 40.076
+  },
+  {
+   "rank": 11,
+   "shortCode": "DVJmpTIjafq",
+   "plays": 38945,
+   "dur": 22.966
+  },
+  {
+   "rank": 12,
+   "shortCode": "DR19ZZgCBMj",
+   "plays": 37195,
+   "dur": 20.6
+  },
+  {
+   "rank": 13,
+   "shortCode": "DR2YnO-iGSv",
+   "plays": 33528,
+   "dur": 19.533
+  },
+  {
+   "rank": 14,
+   "shortCode": "DRer4nTiKzN",
+   "plays": 30429,
+   "dur": 17.433
+  },
+  {
+   "rank": 15,
+   "shortCode": "DRwxdkpCP9J",
+   "plays": 30222,
+   "dur": 49.366
+  },
+  {
+   "rank": 16,
+   "shortCode": "DVqXce8iBcM",
+   "plays": 25691,
+   "dur": 22.4
+  },
+  {
+   "rank": 17,
+   "shortCode": "DUx9lhyiCNK",
+   "plays": 23683,
+   "dur": 57.3
+  },
+  {
+   "rank": 18,
+   "shortCode": "DR7XHCzCPL1",
+   "plays": 22639,
+   "dur": 32.033
+  },
+  {
+   "rank": 19,
+   "shortCode": "DRzQ4ngCD7H",
+   "plays": 19746,
+   "dur": 17.166
+  },
+  {
+   "rank": 20,
+   "shortCode": "DTIrnRCiLRs",
+   "plays": 17787,
+   "dur": 16.766
+  },
+  {
+   "rank": 21,
+   "shortCode": "DRpV3YMCMk3",
+   "plays": 17104,
+   "dur": 15.333
+  },
+  {
+   "rank": 22,
+   "shortCode": "DQ4hX7sCP3V",
+   "plays": 17047,
+   "dur": 36.033
+  },
+  {
+   "rank": 23,
+   "shortCode": "DSNZE0LiFu6",
+   "plays": 16173,
+   "dur": 11.266
+  },
+  {
+   "rank": 24,
+   "shortCode": "DVDqYG3CAOU",
+   "plays": 15621,
+   "dur": 19.1
+  },
+  {
+   "rank": 25,
+   "shortCode": "DauZUYVOZVZ",
+   "plays": 15396,
+   "dur": 10.216
+  },
+  {
+   "rank": 26,
+   "shortCode": "DUqfhSiCGpu",
+   "plays": 15088,
+   "dur": 32.533
+  },
+  {
+   "rank": 27,
+   "shortCode": "DTSjkTOiMVl",
+   "plays": 14884,
+   "dur": 16.266
+  },
+  {
+   "rank": 28,
+   "shortCode": "DQoUeeFCPLL",
+   "plays": 14345,
+   "dur": 16.233
+  },
+  {
+   "rank": 29,
+   "shortCode": "DQuQLWFCJzE",
+   "plays": 13709,
+   "dur": 97.133
+  },
+  {
+   "rank": 30,
+   "shortCode": "DRHmFl_iEJQ",
+   "plays": 13467,
+   "dur": 13.9
+  },
+  {
+   "rank": 31,
+   "shortCode": "DRhzZtwCBWC",
+   "plays": 13096,
+   "dur": 23.633
+  },
+  {
+   "rank": 32,
+   "shortCode": "DSAtRC8CKSS",
+   "plays": 11341,
+   "dur": 11.1
+  },
+  {
+   "rank": 33,
+   "shortCode": "Dam8o9kOFSM",
+   "plays": 11250,
+   "dur": 14.3
+  },
+  {
+   "rank": 34,
+   "shortCode": "DT5kx_ICGlY",
+   "plays": 10940,
+   "dur": 21.366
+  },
+  {
+   "rank": 35,
+   "shortCode": "DaSHknryIBl",
+   "plays": 10846,
+   "dur": 9.913
+  },
+  {
+   "rank": 36,
+   "shortCode": "DRb3KyUCKbJ",
+   "plays": 10763,
+   "dur": 11.533
+  },
+  {
+   "rank": 37,
+   "shortCode": "DUsrHtQCCkm",
+   "plays": 9550,
+   "dur": 16.0
+  },
+  {
+   "rank": 38,
+   "shortCode": "Dac_rCJoaAQ",
+   "plays": 9370,
+   "dur": 21.2
+  },
+  {
+   "rank": 39,
+   "shortCode": "DRt2_EkiAm3",
+   "plays": 9164,
+   "dur": 16.533
+  },
+  {
+   "rank": 40,
+   "shortCode": "DaFA1g3SmN7",
+   "plays": 8908,
+   "dur": 12.233
+  },
+  {
+   "rank": 41,
+   "shortCode": "DSGEtlCjhOi",
+   "plays": 8763,
+   "dur": 11.433
+  },
+  {
+   "rank": 42,
+   "shortCode": "Daj0M0bIGuV",
+   "plays": 8633,
+   "dur": 18.087
+  },
+  {
+   "rank": 43,
+   "shortCode": "DRFggm9CIKZ",
+   "plays": 8607,
+   "dur": 32.4
+  },
+  {
+   "rank": 44,
+   "shortCode": "DQjA1fACBwu",
+   "plays": 8568,
+   "dur": 8.566
+  },
+  {
+   "rank": 45,
+   "shortCode": "DZ9uzyKyAj4",
+   "plays": 8140,
+   "dur": 8.821
+  },
+  {
+   "rank": 46,
+   "shortCode": "DUONV4xCL9K",
+   "plays": 7949,
+   "dur": 12.8
+  },
+  {
+   "rank": 47,
+   "shortCode": "DWzFwTCktQE",
+   "plays": 7921,
+   "dur": 9.171
+  },
+  {
+   "rank": 48,
+   "shortCode": "DZZDB-OSgmS",
+   "plays": 7800,
+   "dur": 6.366
+  },
+  {
+   "rank": 49,
+   "shortCode": "DV0mxlEiB6C",
+   "plays": 7785,
+   "dur": 19.566
+  },
+  {
+   "rank": 50,
+   "shortCode": "DZkZNfySMfg",
+   "plays": 7373,
+   "dur": 19.62
+  }
+ ]
+}
