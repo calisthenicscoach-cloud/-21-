@@ -34,9 +34,11 @@ var ARCHIVE_SHEET = 'ארכיון מתאמנים';
 
 function onOpen() {
   SpreadsheetApp.getUi().createMenu('🛠️ CRM')
-    .addItem('הקם / רענן מבנה', 'setupCRM')
+    .addItem('מיין פעילים לפי תאריך סיום', 'sortActiveByEndDate')
     .addItem('שלח לי סיכום עכשיו (בדיקה)', 'sendWeeklyDigest')
     .addItem('העבר מסיימים לארכיון (ידני)', 'archiveFinishedNow')
+    .addSeparator()
+    .addItem('הקם / רענן מבנה', 'setupCRM')
     .addToUi();
 }
 
@@ -227,6 +229,22 @@ function moveRowToArchive_(sheet, row) {
   archive.appendRow(vals[0]);
   sheet.deleteRow(row);
 }
+/* מיון טאב הפעילים לפי "תאריך סיום" (הקרוב לסיום למעלה) — בלי לשבור את נוסחת הוואטסאפ */
+function sortActiveByEndDate() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var sheet = ss.getSheetByName(ACTIVE_SHEET);
+  if (!sheet || sheet.getLastRow() < 3) return;
+  var col = function (h) { return TRAINEE_HEADERS.indexOf(h) + 1; };
+  var last = sheet.getLastRow();
+  var waCol = col('וואטסאפ');
+  // מסירים זמנית את נוסחת המערך של הוואטסאפ (אחרת המיון שובר אותה)
+  sheet.getRange(2, waCol, last - 1, 1).clearContent();
+  // ממיינים את שאר הנתונים לפי תאריך סיום (עולה; ריקים יורדים למטה)
+  sheet.getRange(2, 1, last - 1, TRAINEE_HEADERS.length).sort({ column: col('תאריך סיום'), ascending: true });
+  // מחזירים את נוסחת הוואטסאפ — היא תחשב מחדש לפי הסדר החדש
+  sheet.getRange(2, waCol).setFormula(whatsappArrayFormula_(columnToLetter_(col('טלפון'))));
+}
+
 function archiveFinishedNow() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName(ACTIVE_SHEET);
