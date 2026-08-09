@@ -1345,16 +1345,17 @@ let DRIVE_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5_j9pHH8hQcU0l-f
    כל מסלול מקושר לקובץ ה-PDF המקורי של התקנון (בתיקיית terms/). */
 const TRACKS = {
   chodesh: { name: 'חודש ניסיון',         pdf: 'terms/maslul-chodesh.pdf' },
-  m4:      { name: 'מסלול 4 חודשים',      pdf: 'terms/maslul-4-chodashim.pdf' },
-  m10:     { name: 'מסלול 10 חודשים',     pdf: 'terms/maslul-10-chodashim.pdf' },
+  m3:      { name: 'מסלול 3 חודשים',      pdf: 'terms/maslul-3-chodashim.pdf' },
+  m8:      { name: 'מסלול 8 חודשים',      pdf: 'terms/maslul-8-chodashim.pdf' },
   minui:   { name: 'מסלול ללא התחייבות',  pdf: 'terms/maslul-minui-chodshi.pdf' },
 };
-const TRACK_ORDER = ['chodesh', 'm4', 'm10', 'minui'];
+const TRACK_ORDER = ['chodesh', 'm3', 'm8', 'minui'];
 
 /* קישור ייעודי לכל מסלול: שלח ללקוח קישור עם הפרמטר ?maslul=
-   ?maslul=chodesh · ?maslul=4 · ?maslul=10 · ?maslul=minui
-   הטופס ייפתח נעול למסלול שלו, בלי בורר ובלי מסלולים אחרים. */
-const TRACK_ALIAS = { chodesh:'chodesh', '1':'chodesh', '4':'m4', '10':'m10', minui:'minui' };
+   ?maslul=chodesh · ?maslul=4 (3 חודשים) · ?maslul=10 (8 חודשים) · ?maslul=minui
+   הקישורים הישנים (4 ו-10) ממשיכים לעבוד ומובילים למסלולים החדשים.
+   אפשר גם ?maslul=3 ו-?maslul=8. הטופס ייפתח נעול למסלול שלו. */
+const TRACK_ALIAS = { chodesh:'chodesh', '1':'chodesh', '3':'m3', '4':'m3', '8':'m8', '10':'m8', minui:'minui' };
 function getTrackParam(){
   const p = new URLSearchParams(location.search).get('maslul');
   if(!p) return null;
@@ -1851,9 +1852,9 @@ async function generatePdf(r){
 const STAMP = {
   chodesh: { name:[194.6,494.9,252.9], parent:[100.3,381.2,235.2], id:[234.7,428.0,217.4], dob:[366.5,540.0,199.7], date:[323.5,503.6,182.0], sign:[81.0,281.1,182.0], biz:[400.1,470.1,146.6] },
   minui:   { name:[194.6,494.9,341.4], parent:[100.3,381.2,323.7], id:[234.7,428.0,306.0], dob:[366.5,540.0,288.3], date:[323.5,503.6,270.6], sign:[81.0,281.1,270.6], biz:[400.1,470.1,235.2] },
-  m4:      { name:[194.6,494.9,182.0], parent:[100.3,381.2,164.3], id:[234.7,428.0,146.6], dob:[366.5,540.0,128.9], date:[323.5,503.6,111.2], sign:[81.0,281.1,111.2], biz:[400.1,470.1,75.8] }
+  m3:      { name:[194.6,494.9,182.0], parent:[100.3,381.2,164.3], id:[234.7,428.0,146.6], dob:[366.5,540.0,128.9], date:[323.5,503.6,111.2], sign:[81.0,281.1,111.2], biz:[400.1,470.1,75.8] }
 };
-STAMP.m10 = STAMP.m4;                      /* אותו פריסה */
+STAMP.m8 = STAMP.m3;                       /* בלוק חתימה באותו מיקום */
 
 let BIZ_SIG_URL = null;
 async function loadBizSig(){
