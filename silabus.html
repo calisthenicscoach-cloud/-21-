@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>התוכנית · יחידת הקליסטניקס — Matan Kopel</title>
+<meta name="description" content="מחייל רגיל לגוף חטוב, שרירי וחזק — בזמן השירות. ליווי אונליין, משקל גוף בלבד.">
+<meta property="og:title" content="התוכנית · יחידת הקליסטניקס">
+<meta property="og:description" content="מחייל רגיל לגוף חטוב, שרירי וחזק — בזמן השירות. משקל גוף בלבד, ליווי אונליין.">
+<meta property="og:image" content="https://matankopel.pages.dev/assets/mk-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="יחידת הקליסטניקס — Matan Kopel">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mg:#E6CD7C; --mg2:#C6963A; --mgrad:linear-gradient(135deg,#F1DC92,#C6963A);
+    --ink:#F5EFDE; --ink2:#DAD2BB; --mut:#A8A585;
+    --surf:rgba(13,15,7,.52); --surf2:rgba(9,11,5,.62);
+    --line:rgba(230,205,124,.20); --line2:rgba(230,205,124,.46);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Rubik',Arial,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(230,205,124,.06), transparent 60%),
+      linear-gradient(158deg,#3a3e26,#2b2f1c 62%,#232614) fixed;
+    line-height:1.62;-webkit-text-size-adjust:100%;
+    padding-bottom:84px;
+  }
+  .wrap{max-width:680px;margin:0 auto;padding:0 18px}
+  img{max-width:100%;display:block}
+
+  /* HERO */
+  .hero{text-align:center;padding:30px 0 8px}
+  .hero .logo{width:104px;margin:0 auto 8px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+  .hero h1{
+    font-size:30px;line-height:1.2;font-weight:900;margin:6px 0 8px;
+    background:var(--mgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
+    text-shadow:0 2px 12px rgba(0,0,0,.25);
+  }
+  .hero .tag{font-size:15px;color:var(--ink2);font-weight:600;letter-spacing:.01em}
+  .hero .tag b{color:var(--mg)}
+  .hero .unit{margin-top:10px;font-size:12.5px;letter-spacing:.16em;color:var(--mut);text-transform:uppercase}
+
+  /* SECTION */
+  section{margin:26px 0}
+  .sec-h{
+    display:flex;align-items:center;gap:12px;justify-content:center;
+    font-size:22px;font-weight:800;color:var(--mg);text-align:center;margin:0 0 14px;
+  }
+  .sec-h::before,.sec-h::after{content:"";height:2px;flex:1;max-width:54px;
+    background:linear-gradient(90deg,transparent,var(--line2))}
+  .sec-h::after{background:linear-gradient(270deg,transparent,var(--line2))}
+  p.lead{font-size:16px;color:var(--ink2);margin:0 auto;max-width:600px;text-align:center}
+  .em{color:var(--mg);font-weight:700}
+
+  /* CARD / BULLETS */
+  .card{background:var(--surf);border:1px solid var(--line);border-radius:var(--r);
+    padding:16px 18px;backdrop-filter:blur(3px)}
+  ul.feat{list-style:none;margin:14px 0 0;padding:0;display:grid;gap:10px}
+  ul.feat li{display:flex;gap:11px;align-items:flex-start;font-size:15.5px;color:var(--ink)}
+  ul.feat li .ic{flex:none;font-size:18px;line-height:1.4;filter:grayscale(.1)}
+  ul.feat li b{color:var(--mg);font-weight:700}
+
+  /* PYRAMID */
+  .pyr{max-width:340px;margin:14px auto 0;border-radius:14px;overflow:hidden;
+    border:1px solid var(--line);box-shadow:0 14px 34px -18px rgba(0,0,0,.8)}
+
+  /* RESULTS */
+  .ba{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+  .ba figure{margin:0;border-radius:12px;overflow:hidden;border:1px solid var(--line2);
+    box-shadow:0 10px 26px -16px rgba(0,0,0,.8)}
+  .ba img{width:100%;height:100%;object-fit:cover}
+  .proof-sub{text-align:center;margin:12px 0 0;font-size:15px;color:var(--ink2)}
+  .proof-sub b{color:var(--mg)}
+
+  /* REVIEWS */
+  .revs{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+  .revs figure{margin:0;border-radius:10px;overflow:hidden;border:1px solid var(--line);
+    background:rgba(0,0,0,.25);max-width:220px;box-shadow:0 8px 20px -14px rgba(0,0,0,.8)}
+
+  /* PRICE */
+  .price{background:linear-gradient(158deg,rgba(230,205,124,.10),rgba(9,11,5,.55));
+    border:1.5px solid var(--line2);border-radius:20px;padding:22px 20px;text-align:center;
+    box-shadow:0 20px 50px -26px rgba(0,0,0,.9)}
+  .price .pname{font-size:20px;font-weight:800;color:var(--mg)}
+  .price .amount{font-size:44px;font-weight:900;color:var(--ink);margin:6px 0 2px;line-height:1}
+  .price .amount small{font-size:19px;font-weight:700;color:var(--mut)}
+  .price .pnote{font-size:14px;color:var(--mut);margin-bottom:12px}
+  .price .pwho{font-size:15.5px;color:var(--ink2);border-top:1px solid var(--line);
+    padding-top:13px;margin-top:4px}
+
+  /* CTA */
+  .cta-btn{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    background:var(--mgrad);color:#2a2410;font-weight:800;font-size:18px;
+    text-decoration:none;border-radius:14px;padding:15px 22px;
+    box-shadow:0 14px 30px -12px rgba(230,205,124,.5);border:1px solid rgba(255,255,255,.25);
+  }
+  .cta-btn:active{transform:translateY(1px)}
+  .cta-note{text-align:center;font-size:13px;color:var(--mut);margin-top:10px}
+
+  /* STICKY BAR */
+  .stick{position:fixed;inset:auto 0 0 0;z-index:20;padding:10px 14px;
+    background:linear-gradient(0deg,#20230f,rgba(32,35,15,.92));
+    border-top:1px solid var(--line2);backdrop-filter:blur(6px)}
+  .stick .cta-btn{max-width:680px;margin:0 auto}
+
+  footer{text-align:center;color:var(--mut);font-size:12.5px;padding:14px 0 4px}
+
+  @media(max-width:420px){
+    .hero h1{font-size:25px}
+    .sec-h{font-size:19px}
+    .ba{gap:7px}
+    .price .amount{font-size:38px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <img class="logo" src="assets/mk-logo.png" alt="יחידת הקליסטניקס">
+    <h1>מחייל רגיל — לגוף חטוב, שרירי וחזק</h1>
+    <div class="tag">בזמן השירות · <b>במשקל גוף בלבד</b> · הכל אונליין</div>
+    <div class="unit">יחידת הקליסטניקס · Matan Kopel</div>
+  </header>
+
+  <section>
+    <h2 class="sec-h">מה המטרה שלנו</h2>
+    <p class="lead">להביא כל חייל — סדיר, קבע או מילואים — לגוף <span class="em">חטוב וחזק</span> דרך קליסטניקס.
+    בלי חדר כושר ובלי ציוד, רק משקל הגוף שלך — כך שתתאמן בכל מקום, גם בלי לו״ז קבוע.
+    ובנוסף לאימון: <span class="em">תפריט תזונה מותאם אישית</span> שיביא אותך לתוצאה.</p>
+  </section>
+
+  <section>
+    <h2 class="sec-h">איך זה עובד</h2>
+    <div class="card">
+      <p style="margin:0;font-size:15.5px;color:var(--ink2)">אתה מתחיל בדרגת <b style="color:var(--mg)">טירון</b>,
+      ומטפס בדרגות לפי מבחני כוח. כל דרגה מקבלת תוכנית אימון משלה עם סרטון הסבר לכל תרגיל —
+      אתה תמיד יודע בדיוק מה לעשות ואיך.</p>
+      <img class="pyr" src="assets/silabus/pyramid.jpg" alt="דרגות התוכנית — מטירון ועד לוחם עילית">
+      <ul class="feat">
+        <li><span class="ic">🎯</span><span><b>תוכנית מותאמת לדרגה שלך</b> — ומתקדמת יחד איתך</span></li>
+        <li><span class="ic">🎥</span><span><b>סרטון לכל תרגיל</b> — טכניקה נכונה, בלי לנחש</span></li>
+        <li><span class="ic">💬</span><span><b>ליווי יומי בוואטסאפ</b> ממני ומהצוות</span></li>
+        <li><span class="ic">🩺</span><span><b>ייעוץ עם מטפל בספורט</b> לכל כאב או פציעה</span></li>
+        <li><span class="ic">🪖</span><span>מתאים לכל חייל — <b>מג'ובניק ועד לוחם</b></span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec-h">תזונה ובונוסים</h2>
+    <div class="card">
+      <ul class="feat">
+        <li><span class="ic">🥗</span><span><b>קורס תזונה דיגיטלי</b> — מותאם לחיים בצבא</span></li>
+        <li><span class="ic">📋</span><span><b>תפריט אישי</b> לפי המטרות שלך</span></li>
+        <li><span class="ic">📚</span><span>ספרים דיגיטליים: <b>החייל החטוב</b>, <b>חייל במסה</b>, ו-60+ מתכונים</span></li>
+        <li><span class="ic">🧠</span><span>בונוסים: כלים מנטליים + קורסים (עמידת ידיים ועוד)</span></li>
+        <li><span class="ic">👥</span><span><b>קהילה סגורה</b> + מפגשים אחת לחודשיים</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec-h">התוצאות מדברות</h2>
+    <div class="ba">
+      <figure><img src="assets/silabus/ba1.jpg" alt="לפני ואחרי — חייל בתוכנית"></figure>
+      <figure><img src="assets/silabus/ba2.jpg" alt="לפני ואחרי — חייל בתוכנית"></figure>
+      <figure><img src="assets/silabus/ba3.jpg" alt="לפני ואחרי — חייל בתוכנית"></figure>
+    </div>
+    <p class="proof-sub">עשרות חיילים כבר עברו את השינוי — <b>עכשיו תורך.</b></p>
+  </section>
+
+  <section>
+    <h2 class="sec-h">מה כותבים לנו</h2>
+    <div class="revs">
+      <figure><img src="assets/silabus/rev4.jpg" alt="ביקורת מתאמן"></figure>
+      <figure><img src="assets/silabus/rev5.jpg" alt="ביקורת מתאמן"></figure>
+      <figure><img src="assets/silabus/rev1.jpg" alt="ביקורת מתאמן"></figure>
+      <figure><img src="assets/silabus/rev2.jpg" alt="ביקורת מתאמן"></figure>
+      <figure><img src="assets/silabus/rev3.jpg" alt="ביקורת מתאמן"></figure>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="sec-h">המסלול שלך</h2>
+    <div class="price">
+      <div class="pname" id="pName">—</div>
+      <div class="amount" id="pAmount">—</div>
+      <div class="pnote" id="pNote">—</div>
+      <div class="pwho" id="pWho">—</div>
+    </div>
+    <p class="cta-note">מקומות מוגבלים — הליווי אישי ולכן כמות המתאמנים בכל תקופה מוגבלת.</p>
+  </section>
+
+  <section style="margin-top:20px">
+    <a class="cta-btn" id="ctaMain" href="#">אני בפנים, בוא נתחיל 💪</a>
+    <p class="cta-note">לוחצים, ואני חוזר אליך אישית בוואטסאפ עם כל הפרטים.</p>
+  </section>
+
+  <footer>מתן קופל · ע.מ 212739486 · יחידת הקליסטניקס</footer>
+</div>
+
+<div class="stick"><a class="cta-btn" id="ctaStick" href="#">אני בפנים, בוא נתחיל 💪</a></div>
+
+<script>
+  const COACH_WHATSAPP = '972587979678';
+
+  const TRACKS = {
+    chodesh:{ name:'חודש ניסיון', amount:'500 ₪', note:'תשלום חד-פעמי · חודש מלא בתוכנית',
+      who:'רוצה קודם לראות שאתה מצליח להתמיד ורואה תוצאות? התחל בחודש ניסיון — ואז תחליט אם להמשיך לבד או לקחת מסלול מלא בתוכנית.' },
+    m3:{ name:'מסלול 3 חודשים', amount:'450 ₪', per:'לחודש', note:'לתקופת 3 חודשים',
+      who:'מתאים למי שלא יכול או לא רוצה להתחייב למסלול ארוך, או מוגבל בזמן. אם תרצה — תמיד אפשר להמשיך ולהתקדם למסלול ארוך יותר.' },
+    m8:{ name:'מסלול 8 חודשים', amount:'350 ₪', per:'לחודש', note:'לתקופת 8 חודשים · המחיר המשתלם ביותר',
+      who:'מיועד למי שיודע שהוא פה בשביל להישאר. תהליך עמוק עם שינוי הרגלים אמיתי, בניית יסודות חזקים לתרגילים מתקדמים בקליסטניקס — ושמירה על התוצאות לטווח רחוק.' },
+    minui:{ name:'מסלול ללא התחייבות', amount:'500 ₪', per:'לחודש', note:'חודשי מתחדש · בלי התחייבות לתקופה',
+      who:'רוצה גמישות מלאה? מסלול חודשי מתחדש, בלי התחייבות לתקופה. אפשר לצאת בכל שלב ופשוט נבטל את המשך התשלום — אתה מתקדם בקצב שלך ומחליט חודש-חודש.' }
+  };
+  const ALIAS = { chodesh:'chodesh','1':'chodesh','3':'m3','4':'m3',m3:'m3','8':'m8','10':'m8',m8:'m8',minui:'minui' };
+
+  function currentTrack(){
+    const p = new URLSearchParams(location.search).get('maslul');
+    const key = ALIAS[(p||'').toLowerCase().trim()] || 'm3';
+    return TRACKS[key] || TRACKS.m3;
+  }
+
+  const t = currentTrack();
+  document.getElementById('pName').textContent = t.name;
+  document.getElementById('pAmount').innerHTML = t.amount + (t.per ? ' <small>' + t.per + '</small>' : '');
+  document.getElementById('pNote').textContent = t.note;
+  document.getElementById('pWho').textContent = t.who;
+  document.title = t.name + ' · יחידת הקליסטניקס';
+
+  const msg = encodeURIComponent('היי מתן, קראתי על ' + t.name + ' ואני רוצה להתחיל 💪');
+  const link = 'https://wa.me/' + COACH_WHATSAPP.replace(/\D/g,'') + '?text=' + msg;
+  document.getElementById('ctaMain').href = link;
+  document.getElementById('ctaStick').href = link;
+</script>
+</body>
+</html>
