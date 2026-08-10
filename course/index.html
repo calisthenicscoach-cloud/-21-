@@ -138,6 +138,7 @@
   .player .pl .b .ic{margin-inline-start:3px}
   .player .barrow{position:absolute;inset-block-end:0;inset-inline:0;height:4px;background:rgba(255,255,255,.12)}
   .player .barrow i{display:block;height:100%;width:28%;background:var(--accent)}
+  .player iframe{position:absolute;inset:0;width:100%;height:100%;border:0}
   .les-head{padding:18px 0 2px}
   .les-crumb{font-size:12px;color:var(--accent2);font-weight:700;letter-spacing:.03em}
   .les-title{font-size:23px;font-weight:900;margin-top:7px;letter-spacing:-.02em;line-height:1.2}
@@ -261,7 +262,7 @@
     <button class="back-btn" onclick="go('dash')"><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span>לוח הקורס</span></button>
     <div class="ap-ctx" id="lesCtx"></div>
   </header>
-  <div class="player">
+  <div class="player" id="lesPlayer">
     <div class="pl"><div class="b"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></div></div>
     <div class="barrow"><i></i></div>
   </div>
@@ -316,49 +317,37 @@ const IC_RES={
 // unlockDay = days from first login that the chapter opens (DRIP)
 const MODULES=[
  {n:1,title:"ברוכים הבאים",unlockDay:0,lessons:[
-   {t:"ברוך הבא",d:"4 דק'",links:[{i:'wa',t:"הצטרף לקבוצת הוואטסאפ של האתגר",u:"#"}]},
-   {t:"מה נדרש ממך בקורס",d:"5 דק'"},
-   {t:"התזונה שתגדיל את התוצאות",d:"7 דק'",links:[{i:'book',t:"הספר הדיגיטלי לעלייה במסה",u:"#"},{i:'calc',t:"מחשבון הוצאה קלורית יומית",u:"#"}]},
-   {t:"מדידת היקפים ותוצאות",d:"6 דק'",links:[{i:'cart',t:"מטר / חוט מדידה — קישור לקנייה",u:"#"}]},
-   {t:"אל תעשה את 5 הטעויות האלה",d:"5 דק'"},
+   {t:"ברוך הבא",d:"2:21",yt:"v45kLNl4TSI",links:[{i:'wa',t:"הצטרף לקבוצת הוואטסאפ של האתגר",u:"#"}]},
+   {t:"מה נדרש ממך ב־21 הימים הבאים",d:"4:30",yt:"WouungXhhCU"},
+   {t:"3 חוקי התזונה שיקבעו כמה הידיים שלך יגדלו ב־21 יום",d:"4:07",yt:"83sKkFdr3b0",links:[{i:'book',t:"הספר הדיגיטלי לעלייה במסה",u:"#"},{i:'calc',t:"מחשבון הוצאה קלורית יומית",u:"#"}]},
+   {t:"מדידת היקפים ותוצאות בשטח",d:"2:36",yt:"jgvA7uyeYBY",links:[{i:'cart',t:"מטר / חוט מדידה — קישור לקנייה",u:"#"}]},
+   {t:"אל תעשה את 5 הטעויות האלה ב־21 הימים הקרובים",d:"3:46",yt:"q6ZJBK1xUqo"},
  ]},
  {n:2,title:"לפני שמתחילים להתאמן",unlockDay:0,lessons:[
-   {t:"בדיקת רמה והתאמת תוכנית",d:"8 דק'",
+   {t:"מבחן רמה והתאמת תוכנית אימון",d:"4:10",yt:"JhgWsHvrPk4",
      desc:"בשיעור הזה נעשה יחד את <b>מבחן הרמה</b> — נבדוק כמה חזרות אתה מצליח במתח, מקבילים ושכיבות שמיכה, ולפי זה תדע בדיוק לאיזו תוכנית אימון להיכנס.",
      task:"בצע את מבחן הרמה, ושלח את התוצאה בקבוצת הוואטסאפ של האתגר — להתחייבות והנעה.",
      links:[{i:'wa',t:"שלח את תוצאת המבחן בקבוצה",u:"#"},{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
-   {t:"חימום לפני אימון",d:"3 דק'"},
-   {t:"מה זה RIR",d:"5 דק'"},
+   {t:"חימום לפני אימון",d:"3:02",yt:"G35Gxr8DzZU"},
+   {t:"סולם ההגעה לכשל",d:"2:24",yt:"bNP1c_PJ80E"},
  ]},
- {n:3,title:"תוכנית אימון · רמה 1",unlockDay:1,lessons:[
-   {t:"הכנה לאימון",d:"4 דק'"},
-   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ {n:3,title:"תוכנית האימון",unlockDay:1,lessons:[
+   {t:"תוכניות האימון",d:"9:41",yt:"LXtDHlsxAns",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
  ]},
- {n:4,title:"תוכנית אימון · רמה 2",unlockDay:1,lessons:[
-   {t:"הכנה לאימון",d:"4 דק'"},
-   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ {n:4,title:"שאלות נפוצות",unlockDay:0,lessons:[
+   {t:"אין לי פאמפ, זה אומר שהתוכנית לא עובדת?",d:"1:12",yt:"aKWyDxaoZv4"},
+   {t:"כאבים מהאימון, מה לעשות?",d:"1:08",yt:"IdPtOZ3wOus"},
+   {t:"האם אפשר להוסיף עוד אימונים חוץ ממה שבתוכנית?",d:"1:21",yt:"ra2sl8Oud4E"},
+   {t:"מה לעשות אם פספסת אימון?",d:"0:41",yt:"vA4dXIIxJYk"},
+   {t:"מה לעשות אם האימון קל מדי",d:"0:41",yt:"eejgQ2fyNtE"},
+   {t:"מה לעשות אם אין מתח ומקבילים לאימון",d:"0:45",yt:"N0vt88HGycU"},
+   {t:"אני לא רואה שינוי במראה, למרות שאני מתחזק",d:"1:01",yt:"h8hRJOEr50o"},
  ]},
- {n:5,title:"תוכנית אימון · רמה 3",unlockDay:1,lessons:[
-   {t:"הכנה לאימון",d:"4 דק'"},
-   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ {n:5,title:"עברת חצי מהאתגר!",unlockDay:10,lessons:[
+   {t:"עברת חצי מהאתגר!",d:"1:28",yt:"sQbBXJ7M90Q",links:[{i:'wa',t:"שתף את ההתקדמות שלך בקבוצה",u:"#"}]},
  ]},
- {n:6,title:"עברת חצי מהדרך!",unlockDay:10,lessons:[
-   {t:"תזכורת, חיזוק ודחיפה להמשך",d:"5 דק'",links:[{i:'wa',t:"שתף את ההתקדמות שלך בקבוצה",u:"#"}]},
- ]},
- {n:7,title:"שאלות נפוצות",unlockDay:0,lessons:[
-   {t:"אין לי פאמפ — התוכנית עובדת?",d:"3 דק'"},
-   {t:"הגוף כואב מהאימון, להמשיך?",d:"2 דק'"},
-   {t:"אפשר להוסיף אימונים מעבר לתוכנית?",d:"3 דק'"},
-   {t:"מה לעשות אם פספסתי אימון",d:"2 דק'"},
-   {t:"האימון מרגיש קל מדי, מה עכשיו?",d:"3 דק'"},
-   {t:"אין לי מתח/מקבילים כל הזמן",d:"3 דק'"},
- ]},
- {n:8,title:"סיום האתגר",unlockDay:20,lessons:[
-   {t:"מבחן סיום",d:"5 דק'"},
-   {t:"בדיקת היקפים ותמונות גוף",d:"4 דק'"},
-   {t:"סיכום התוצאות שלך",d:"6 דק'"},
-   {t:"איך בונים גוף מטורף מכאן",d:"7 דק'"},
-   {t:"מה עכשיו? — הצעד הבא שלך",d:"8 דק'"},
+ {n:6,title:"סיום האתגר",unlockDay:20,lessons:[
+   {t:"סיום האתגר",d:"3:12",yt:"HaH46-xZ7xA"},
  ]},
 ];
 
@@ -378,6 +367,7 @@ let curId=null;
 function isUnlocked(mi){ return getDay() >= MODULES[mi].unlockDay; }
 
 function go(id){
+  if(id!=='lesson'){ const p=document.getElementById('lesPlayer'); if(p) p.innerHTML=''; } // stop video playback on leave
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
@@ -399,8 +389,9 @@ function renderDash(){
   const next=FLAT.find(f=>isUnlocked(f.mi) && !done.has(f.id));
   const rs=document.getElementById('resumeSlot');
   if(next){
+    const rvThumb=next.l.yt?` style="background-image:linear-gradient(180deg,rgba(10,14,23,.15),rgba(10,14,23,.55)),url('https://img.youtube.com/vi/${next.l.yt}/hqdefault.jpg');background-size:cover;background-position:center"`:'';
     rs.innerHTML=`<div class="resume">
-      <div class="rv"><div class="pl"><div class="b">${PLAY}</div></div>
+      <div class="rv"${rvThumb}><div class="pl"><div class="b">${PLAY}</div></div>
         <div class="lbl">פרק ${next.m.n} · שיעור ${next.li+1}</div></div>
       <div class="rb">
         <div class="rk">${done.size?'המשך מאיפה שהפסקת':'מתחילים!'}</div>
@@ -462,12 +453,21 @@ function openLesson(id){
   document.getElementById('lesTitle').textContent=f.l.t;
   document.getElementById('lesDur').textContent=f.l.d;
   document.getElementById('lesPos').textContent=`שיעור ${idx+1} מתוך ${TOTAL}`;
+
+  // video player — real YouTube embed when the lesson has a video id
+  const player=document.getElementById('lesPlayer');
+  if(f.l.yt){
+    player.innerHTML=`<iframe src="https://www.youtube.com/embed/${f.l.yt}?rel=0&modestbranding=1&playsinline=1" title="${f.l.t.replace(/"/g,'&quot;')}" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>`;
+  } else {
+    player.innerHTML=`<div class="pl"><div class="b">${PLAY}</div></div><div class="barrow"><i></i></div>`;
+  }
+
   document.getElementById('lesProse').innerHTML=
     f.l.desc?`<p>${f.l.desc}</p>`
     :`<p>כאן יופיע הסבר השיעור <b>"${f.l.t}"</b>. (טקסט לדוגמה — תחליף בתוכן האמיתי שלך.)</p>`;
   const tw=document.getElementById('lesTaskWrap');
   if(f.l.task){ tw.style.display=''; document.getElementById('lesTask').textContent=f.l.task; }
-  else { tw.style.display=''; document.getElementById('lesTask').textContent='כאן תופיע המשימה של השיעור (למשל: "בצע את האימון ושתף בקבוצה").'; }
+  else { tw.style.display='none'; }
 
   // resource links at the bottom of the lesson
   const rs=document.getElementById('resSlot');
@@ -495,9 +495,10 @@ function openLesson(id){
   const nx=findNext(idx);
   const up=document.getElementById('upnextSlot');
   if(nx){
+    const unThumb=nx.l.yt?` style="background-image:url('https://img.youtube.com/vi/${nx.l.yt}/mqdefault.jpg');background-size:cover;background-position:center;color:transparent"`:'';
     up.innerHTML=`<div class="ul">השיעור הבא</div>
       <div class="un-card" onclick="openLesson('${nx.id}')" style="cursor:pointer">
-        <div class="un-th">${PLAY}</div>
+        <div class="un-th"${unThumb}>${nx.l.yt?'':PLAY}</div>
         <div class="un-b"><div class="un-k">פרק ${nx.m.n} · שיעור ${nx.li+1}</div><div class="un-t">${nx.l.t}</div></div>
         <div class="les-go">${CHEV}</div></div>`;
   } else { up.innerHTML=''; }
