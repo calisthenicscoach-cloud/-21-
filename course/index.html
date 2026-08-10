@@ -110,6 +110,13 @@
   .mod-name{font-size:15.5px;font-weight:800;line-height:1.2}
   .mod-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
   .mod-pct{font-size:12px;font-weight:800;color:var(--ink2);flex:0 0 auto}
+  .mod-h{cursor:pointer}
+  .mod:not(.open) .mod-h{border-bottom-color:transparent}
+  .mod-caret{color:var(--muted);flex:0 0 auto;display:grid;place-items:center;transition:transform .22s}
+  .mod-caret .ic{width:20px;height:20px}
+  .mod.open .mod-caret{transform:rotate(180deg)}
+  .mod-les{display:none}
+  .mod.open .mod-les{display:block}
   .lockpill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:var(--gold);
     background:rgba(245,181,74,.12);border:1px solid rgba(245,181,74,.3);padding:5px 10px;border-radius:100px;flex:0 0 auto}
   .lockpill .ic{width:13px;height:13px}
@@ -315,6 +322,7 @@ const PLAY='<svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1
 const CHECK='<svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
 const LOCK='<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
 const CHEV='<svg class="ic" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>';
+const CARET='<svg class="ic" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></svg>';
 const CLOCK='<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
 const IC_RES={
   wa:'<svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.45L3 21l2.05-5.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 9.7c0 3.2 2.6 5.8 5.8 5.8"/></svg>',
@@ -360,7 +368,7 @@ const MODULES=[
      task:"כל דבר שלא ברור — שאל בקבוצת הוואטסאפ.",
      links:[{i:'wa',t:"שאל בקבוצת הוואטסאפ",u:"https://chat.whatsapp.com/IlSCBUE9xJ73k130gkjuUp"}]},
  ]},
- {n:3,title:"תוכנית האימון",unlockDay:1,lessons:[
+ {n:3,title:"תוכנית האימון",unlockDay:0,lessons:[
    {t:"תוכניות האימון",d:"9:41",yt:"LXtDHlsxAns",
      desc:"<p>סקירת תוכנית האימון והעקרונות שלה. התוכנית המלאה נמצאת באתר התוכניות (קישור למטה).</p>",
      links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"},{i:'wa',t:"התייעץ בקבוצת הוואטסאפ",u:"https://chat.whatsapp.com/IlSCBUE9xJ73k130gkjuUp"}]},
@@ -401,6 +409,7 @@ function getDay(){ const v=localStorage.getItem('ec_day'); return v===null?3:+v;
 function saveDay(d){ localStorage.setItem('ec_day',d); }
 
 let curId=null;
+let openMods=new Set();
 
 function isUnlocked(mi){ return getDay() >= MODULES[mi].unlockDay; }
 
@@ -460,10 +469,13 @@ function renderDash(){
       return;
     }
     const pctLbl=allDone?'הושלם ✓':`${dcount}/${total}`;
-    h+=`<div class="mod"><div class="mod-h">
+    const isOpen=openMods.has(mi);
+    h+=`<div class="mod${isOpen?' open':''}" data-mi="${mi}">
+      <div class="mod-h" onclick="toggleMod(${mi})">
       <div class="mod-n ${allDone?'done':''}">${allDone?CHECK:m.n}</div>
-      <div class="mod-ti"><div class="mod-name">${m.title}</div><div class="mod-sub">${total} שיעורים</div></div>
-      <div class="mod-pct">${pctLbl}</div></div>`;
+      <div class="mod-ti"><div class="mod-name">${m.title}</div><div class="mod-sub">${total} שיעורים · ${pctLbl}</div></div>
+      <div class="mod-caret">${CARET}</div></div>
+      <div class="mod-les">`;
     m.lessons.forEach((l,li)=>{
       const id=mi+'-'+li;
       const isD=done.has(id);
@@ -472,12 +484,18 @@ function renderDash(){
         <div class="les-b"><div class="les-t">${l.t}</div><div class="les-d">${l.d}</div></div>
         <div class="les-go">${CHEV}</div></div>`;
     });
-    h+=`</div>`;
+    h+=`</div></div>`;
   });
   document.getElementById('curriculum').innerHTML=h;
 
   // demo bar active state
   document.querySelectorAll('.demobar .db').forEach(b=>b.classList.toggle('on',+b.dataset.day===getDay()));
+}
+
+function toggleMod(mi){
+  if(openMods.has(mi)) openMods.delete(mi); else openMods.add(mi);
+  const el=document.querySelector('.mod[data-mi="'+mi+'"]');
+  if(el) el.classList.toggle('open');
 }
 
 function openLesson(id){
