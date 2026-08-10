@@ -22,7 +22,8 @@
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{overflow-x:clip;background:var(--bg);color:var(--ink);
     font-family:'Rubik','Segoe UI',system-ui,-apple-system,Arial,sans-serif;-webkit-font-smoothing:antialiased}
-  body{min-height:100vh;position:relative;padding-bottom:56px}
+  body{min-height:100vh;position:relative}
+  body.demo{padding-bottom:56px}
   body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
     background:radial-gradient(90% 55% at 82% -8%,rgba(59,130,246,.14),transparent 60%),linear-gradient(180deg,var(--bg2),var(--bg) 42%)}
   a{color:inherit;text-decoration:none;cursor:pointer}
@@ -215,6 +216,8 @@
     padding:5px 10px;font-size:12px;font-weight:700}
   .demobar .db.on{background:var(--grad);color:#fff;border-color:transparent}
   .demobar .dreset{color:var(--muted);font-size:11px;font-weight:700;text-decoration:underline}
+  .demobar{display:none}            /* hidden for real users */
+  body.demo .demobar{display:flex}  /* shown only in demo mode (?demo=1) */
 </style>
 </head>
 <body>
@@ -405,7 +408,27 @@ const TOTAL=FLAT.length;
 // state
 function getDone(){ try{return new Set(JSON.parse(localStorage.getItem('ec_done')||'[]'));}catch(e){return new Set();} }
 function setDone(s){ localStorage.setItem('ec_done',JSON.stringify([...s])); }
-function getDay(){ const v=localStorage.getItem('ec_day'); return v===null?3:+v; }
+const DAY_MS=86400000;
+// demo mode (for testing): turn on with ?demo=1 in the URL (stays on), off with ?demo=0
+function demoOn(){
+  try{
+    const p=new URLSearchParams(location.search);
+    if(p.get('demo')==='1') localStorage.setItem('ec_demo','1');
+    if(p.get('demo')==='0') localStorage.removeItem('ec_demo');
+  }catch(e){}
+  return localStorage.getItem('ec_demo')==='1';
+}
+// start date = first time this device opened the course
+function getStart(){
+  let s=localStorage.getItem('ec_start');
+  if(!s){ s=String(Date.now()); localStorage.setItem('ec_start',s); }
+  return +s;
+}
+// day in the challenge: forced by the demo bar in demo mode, otherwise computed from the start date
+function getDay(){
+  if(demoOn()){ const v=localStorage.getItem('ec_day'); if(v!==null) return +v; }
+  return Math.max(0,Math.floor((Date.now()-getStart())/DAY_MS));
+}
 function saveDay(d){ localStorage.setItem('ec_day',d); }
 
 let curId=null;
@@ -594,6 +617,7 @@ function toggleDone(){
 function setDay(d){ saveDay(d); renderDash(); }
 function resetProgress(){ localStorage.removeItem('ec_done'); renderDash(); }
 
+if(demoOn()) document.body.classList.add('demo');
 renderDash();
 </script>
 </body>
