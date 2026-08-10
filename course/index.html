@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="האתגר שלי">
+<meta name="theme-color" content="#0A0E17">
+<title>הקורס שלי — פרוטוטייפ שלב 1</title>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --bg:#0A0E17;--bg2:#0E1421;--surface:#141B29;--surface2:#1A2333;
+    --line:rgba(255,255,255,.07);--line-2:rgba(255,255,255,.12);
+    --ink:#F4F7FC;--ink2:#C6CEDE;--muted:#7C8698;
+    --accent:#3B82F6;--accent2:#63A0FF;--grad:linear-gradient(135deg,#4C8DFF,#2563EB);
+    --green:#22C68B;--gold:#F5B54A;
+    --shadow-sm:0 1px 2px rgba(0,0,0,.35),0 6px 16px -10px rgba(0,0,0,.7);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{overflow-x:clip;background:var(--bg);color:var(--ink);
+    font-family:'Rubik','Segoe UI',system-ui,-apple-system,Arial,sans-serif;-webkit-font-smoothing:antialiased}
+  body{min-height:100vh;position:relative;padding-bottom:56px}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:radial-gradient(90% 55% at 82% -8%,rgba(59,130,246,.14),transparent 60%),linear-gradient(180deg,var(--bg2),var(--bg) 42%)}
+  a{color:inherit;text-decoration:none;cursor:pointer}
+  button{font-family:inherit;cursor:pointer}
+  input{font-family:inherit}
+  svg{display:block}
+  .ic{width:1em;height:1em;fill:none;stroke:currentColor;stroke-width:1.85;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+  .ic-fill{fill:currentColor;stroke:none}
+  .screen{display:none}
+  .screen.active{display:block;animation:fade .35s ease}
+  @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .wrap{max-width:660px;margin:0 auto;padding:0 18px 40px}
+  .eyebrow{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;letter-spacing:.12em;
+    color:var(--accent2);text-transform:uppercase;border:1px solid var(--line-2);background:rgba(59,130,246,.08);
+    padding:6px 13px;border-radius:100px}
+  .eyebrow .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(59,130,246,.18)}
+
+  /* ---------- AUTH ---------- */
+  .authbg{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;padding:24px 18px}
+  .auth-card{width:100%;max-width:400px;background:var(--surface);border:1px solid var(--line);border-radius:22px;
+    padding:30px 26px;box-shadow:0 30px 70px -30px rgba(0,0,0,.9)}
+  .auth-card h1{font-size:25px;font-weight:900;line-height:1.15;margin:16px 0 8px;letter-spacing:-.02em}
+  .auth-card .lead{font-size:13.5px;color:var(--muted);line-height:1.6;margin-bottom:22px}
+  .field{margin-bottom:14px}
+  .field label{display:block;font-size:12.5px;font-weight:700;color:var(--ink2);margin-bottom:7px}
+  .field input{width:100%;background:var(--bg);border:1px solid var(--line-2);border-radius:12px;
+    padding:13px 14px;color:var(--ink);font-size:14.5px;outline:none;transition:border-color .15s}
+  .field input:focus{border-color:var(--accent)}
+  .field input::placeholder{color:#586074}
+  .btn-primary{width:100%;display:flex;align-items:center;justify-content:center;gap:9px;background:var(--grad);
+    color:#fff;border:none;border-radius:12px;padding:14px;font-size:15.5px;font-weight:800;margin-top:6px;
+    box-shadow:0 12px 28px -12px rgba(59,130,246,.75);transition:transform .15s,box-shadow .15s}
+  .btn-primary:hover{transform:translateY(-2px);box-shadow:0 18px 38px -14px rgba(59,130,246,.9)}
+  .btn-primary .ic{width:18px;height:18px}
+  .auth-alt{text-align:center;font-size:13px;color:var(--muted);margin-top:18px}
+  .auth-alt a{color:var(--accent2);font-weight:700}
+  .sent-ic{width:64px;height:64px;border-radius:18px;background:rgba(59,130,246,.13);border:1px solid rgba(59,130,246,.3);
+    display:grid;place-items:center;color:var(--accent);margin-bottom:6px}
+  .sent-ic .ic{width:30px;height:30px}
+  .sent-mail{color:var(--accent2);font-weight:700}
+  .demo-hint{margin-top:18px;font-size:11.5px;color:var(--muted);background:rgba(255,255,255,.03);
+    border:1px dashed var(--line-2);border-radius:10px;padding:10px 12px;line-height:1.5}
+
+  /* ---------- DASHBOARD ---------- */
+  .topbar{border-bottom:1px solid var(--line);background:linear-gradient(180deg,var(--bg2),transparent)}
+  .topbar-in{max-width:660px;margin:0 auto;padding:20px 18px 22px;display:flex;align-items:center;gap:14px}
+  .avatar{width:46px;height:46px;border-radius:14px;background:var(--grad);display:grid;place-items:center;
+    font-weight:800;font-size:18px;color:#fff;flex:0 0 auto}
+  .hello{flex:1;min-width:0}
+  .hello .hi{font-size:13px;color:var(--muted);font-weight:500}
+  .hello .nm{font-size:19px;font-weight:800;line-height:1.2}
+  .ring{position:relative;width:52px;height:52px;flex:0 0 auto;border-radius:50%}
+  .ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--bg)}
+  .ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;z-index:1}
+
+  .resume{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm)}
+  .resume .rv{position:relative;aspect-ratio:16/9;background:radial-gradient(120% 120% at 30% 0%,rgba(59,130,246,.28),transparent 55%),linear-gradient(135deg,#18233B,#0E1626)}
+  .resume .rv .pl{position:absolute;inset:0;display:grid;place-items:center}
+  .resume .rv .pl .b{width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,.14);backdrop-filter:blur(4px);
+    display:grid;place-items:center;color:#fff;font-size:22px;border:1px solid rgba(255,255,255,.3)}
+  .resume .rv .lbl{position:absolute;inset-block-end:12px;inset-inline-start:12px;font-size:11.5px;font-weight:700;color:#fff;background:rgba(0,0,0,.55);padding:5px 11px;border-radius:100px}
+  .resume .rb{padding:16px 18px}
+  .resume .rk{font-size:12px;color:var(--accent2);font-weight:800;letter-spacing:.04em;text-transform:uppercase}
+  .resume .rt{font-size:18px;font-weight:800;margin-top:5px}
+  .resume .rmeta{font-size:12.5px;color:var(--muted);margin-top:4px}
+  .resume .rbtn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;margin-top:14px;background:var(--grad);
+    color:#fff;border:none;border-radius:12px;padding:13px;font-size:15px;font-weight:800;box-shadow:0 12px 26px -14px rgba(59,130,246,.7)}
+  .resume .rbtn .ic{width:18px;height:18px}
+
+  .seclabel{display:flex;align-items:center;gap:11px;margin:30px 2px 15px}
+  .seclabel .tick{width:3px;height:16px;border-radius:2px;background:var(--accent)}
+  .seclabel h2{font-size:12.5px;font-weight:800;letter-spacing:.1em;color:var(--ink2);text-transform:uppercase}
+  .seclabel .rule{height:1px;flex:1;background:var(--line)}
+
+  .mod{background:var(--surface);border:1px solid var(--line);border-radius:18px;overflow:hidden;margin-bottom:13px;box-shadow:var(--shadow-sm)}
+  .mod.locked{opacity:.72}
+  .mod-h{display:flex;align-items:center;gap:13px;padding:15px 17px;border-bottom:1px solid var(--line)}
+  .mod.locked .mod-h{border-bottom:none}
+  .mod-n{width:38px;height:38px;border-radius:11px;flex:0 0 auto;display:grid;place-items:center;font-size:16px;font-weight:900;
+    color:var(--accent);background:rgba(59,130,246,.12);border:1px solid rgba(59,130,246,.28)}
+  .mod-n.done{color:var(--green);background:rgba(34,198,139,.12);border-color:rgba(34,198,139,.3)}
+  .mod-n.lock{color:var(--muted);background:rgba(255,255,255,.05);border-color:var(--line-2)}
+  .mod-n.lock .ic{width:17px;height:17px}
+  .mod-ti{flex:1;min-width:0}
+  .mod-name{font-size:15.5px;font-weight:800;line-height:1.2}
+  .mod-sub{font-size:12px;color:var(--muted);font-weight:500;margin-top:3px}
+  .mod-pct{font-size:12px;font-weight:800;color:var(--ink2);flex:0 0 auto}
+  .lockpill{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:800;color:var(--gold);
+    background:rgba(245,181,74,.12);border:1px solid rgba(245,181,74,.3);padding:5px 10px;border-radius:100px;flex:0 0 auto}
+  .lockpill .ic{width:13px;height:13px}
+  .les{display:flex;align-items:center;gap:12px;padding:12px 17px;transition:background .12s}
+  .les+.les{border-top:1px solid var(--line)}
+  .les:hover{background:rgba(255,255,255,.03)}
+  .les-ic{width:30px;height:30px;border-radius:9px;flex:0 0 auto;display:grid;place-items:center;font-size:13px}
+  .les-ic.done{background:rgba(34,198,139,.14);color:var(--green)}
+  .les-ic.todo{background:rgba(59,130,246,.14);color:var(--accent)}
+  .les-b{flex:1;min-width:0}
+  .les-t{font-size:14px;font-weight:600;line-height:1.3}
+  .les-d{font-size:11.5px;color:var(--muted);margin-top:2px}
+  .les-go{color:var(--muted);font-size:16px;flex:0 0 auto}
+
+  /* ---------- LESSON ---------- */
+  .appbar{position:sticky;top:0;z-index:60;display:flex;align-items:center;gap:12px;padding:11px 16px;
+    background:color-mix(in srgb,var(--bg) 80%,transparent);
+    -webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border-bottom:1px solid var(--line)}
+  .back-btn{display:inline-flex;align-items:center;gap:8px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink);
+    font-size:14px;font-weight:700;padding:9px 14px 9px 12px;border-radius:11px;min-height:42px}
+  .back-btn .ic{width:18px;height:18px;color:var(--accent)}
+  .appbar .ap-ctx{margin-inline-start:auto;font-size:12.5px;font-weight:700;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .player{position:relative;aspect-ratio:16/9;background:radial-gradient(120% 120% at 30% 0%,rgba(59,130,246,.26),transparent 55%),linear-gradient(135deg,#18233B,#0D1523);border-bottom:1px solid var(--line)}
+  .player .pl{position:absolute;inset:0;display:grid;place-items:center}
+  .player .pl .b{width:70px;height:70px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;font-size:26px;box-shadow:0 16px 40px -14px rgba(59,130,246,.8)}
+  .player .pl .b .ic{margin-inline-start:3px}
+  .player .barrow{position:absolute;inset-block-end:0;inset-inline:0;height:4px;background:rgba(255,255,255,.12)}
+  .player .barrow i{display:block;height:100%;width:28%;background:var(--accent)}
+  .les-head{padding:18px 0 2px}
+  .les-crumb{font-size:12px;color:var(--accent2);font-weight:700;letter-spacing:.03em}
+  .les-title{font-size:23px;font-weight:900;margin-top:7px;letter-spacing:-.02em;line-height:1.2}
+  .les-meta{display:flex;gap:14px;margin-top:10px;font-size:12.5px;color:var(--muted);font-weight:500}
+  .les-meta span{display:inline-flex;align-items:center;gap:6px}
+  .les-meta .ic{width:15px;height:15px}
+  .prose{margin-top:18px;font-size:14.5px;line-height:1.75;color:var(--ink2)}
+  .prose p{margin-bottom:12px}
+  .prose b{color:var(--ink)}
+  .task{margin-top:18px;background:rgba(59,130,246,.07);border:1px solid rgba(59,130,246,.25);border-radius:15px;padding:15px 17px}
+  .task .tt{display:flex;align-items:center;gap:9px;font-size:14px;font-weight:800;color:var(--accent2);margin-bottom:8px}
+  .task .tt .ic{width:18px;height:18px}
+  .task p{font-size:13.5px;color:var(--ink2);line-height:1.6}
+  .les-actions{display:flex;gap:11px;margin-top:22px}
+  .btn-ghost{flex:1;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--surface);border:1px solid var(--line-2);color:var(--ink);border-radius:12px;padding:13px;font-size:14px;font-weight:700}
+  .btn-ghost:disabled{opacity:.4}
+  .btn-done{flex:1.5;display:flex;align-items:center;justify-content:center;gap:8px;background:var(--green);border:none;color:#04160E;border-radius:12px;padding:13px;font-size:14.5px;font-weight:800}
+  .btn-done.isdone{background:rgba(34,198,139,.16);color:var(--green);border:1px solid rgba(34,198,139,.4)}
+  .btn-done .ic{width:18px;height:18px}
+  .upnext{margin-top:26px}
+  .upnext .ul{font-size:12.5px;font-weight:800;letter-spacing:.08em;color:var(--muted);text-transform:uppercase;margin:0 2px 11px}
+  .un-card{display:flex;align-items:center;gap:13px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:13px 15px}
+  .un-th{width:56px;height:40px;border-radius:9px;flex:0 0 auto;background:linear-gradient(135deg,#18233B,#0E1626);display:grid;place-items:center;color:var(--accent);font-size:14px}
+  .un-b{flex:1;min-width:0}
+  .un-k{font-size:11px;color:var(--muted);font-weight:600}
+  .un-t{font-size:14.5px;font-weight:700;margin-top:2px}
+
+  /* ---------- ADD TO HOME BANNER ---------- */
+  .a2hs{display:flex;align-items:center;gap:12px;margin-top:18px;background:rgba(59,130,246,.08);
+    border:1px solid rgba(59,130,246,.28);border-radius:14px;padding:12px 14px}
+  .a2hs-ic{font-size:22px;flex:0 0 auto}
+  .a2hs-b{flex:1;min-width:0;display:flex;flex-direction:column}
+  .a2hs-b b{font-size:14px;font-weight:800}
+  .a2hs-b span{font-size:12px;color:var(--muted);margin-top:2px;line-height:1.4}
+  .a2hs-x{background:none;border:none;color:var(--muted);font-size:15px;flex:0 0 auto;padding:4px}
+
+  /* ---------- RESOURCE LINKS (lesson) ---------- */
+  .reslinks{margin-top:22px}
+  .reslinks .rl-lbl{font-size:12px;font-weight:800;letter-spacing:.06em;color:var(--muted);text-transform:uppercase;margin:0 2px 10px}
+  .reslink{display:flex;align-items:center;gap:12px;background:var(--surface);border:1px solid var(--line);
+    border-radius:13px;padding:12px 14px;margin-top:9px;transition:border-color .13s,background .13s}
+  .reslink:hover{border-color:rgba(59,130,246,.5);background:var(--surface2)}
+  .reslink .rl-ic{width:34px;height:34px;border-radius:10px;flex:0 0 auto;display:grid;place-items:center;
+    font-size:16px;background:rgba(59,130,246,.12);color:var(--accent)}
+  .reslink.wa .rl-ic{background:rgba(34,198,139,.14);color:var(--green)}
+  .reslink .rl-t{flex:1;font-size:14px;font-weight:700}
+  .reslink .rl-arrow{color:var(--muted);font-size:15px;flex:0 0 auto}
+  .rl-soon{font-size:11px;font-weight:800;color:var(--gold);background:rgba(245,181,74,.14);
+    border:1px solid rgba(245,181,74,.3);padding:3px 9px;border-radius:100px;flex:0 0 auto}
+
+  /* ---------- DEMO BAR ---------- */
+  .demobar{position:fixed;inset-block-end:0;inset-inline:0;z-index:100;display:flex;align-items:center;gap:8px;
+    padding:9px 12px;background:rgba(8,11,18,.92);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);
+    border-top:1px dashed var(--line-2);font-size:12px;flex-wrap:wrap;justify-content:center}
+  .demobar .dl{font-size:11px;font-weight:800;color:var(--gold);letter-spacing:.03em}
+  .demobar .db{background:var(--surface);border:1px solid var(--line-2);color:var(--ink2);border-radius:8px;
+    padding:5px 10px;font-size:12px;font-weight:700}
+  .demobar .db.on{background:var(--grad);color:#fff;border-color:transparent}
+  .demobar .dreset{color:var(--muted);font-size:11px;font-weight:700;text-decoration:underline}
+</style>
+</head>
+<body>
+
+<!-- ========== AUTH: enter email ========== -->
+<section id="auth" class="screen active">
+  <div class="authbg">
+    <div class="auth-card">
+      <span class="eyebrow"><span class="dot"></span>קורס דיגיטלי · 21 יום</span>
+      <h1>הגישה לאתגר שלך מתחילה כאן</h1>
+      <p class="lead">הזן את המייל שאיתו קנית את הקורס, ונשלח לך קישור כניסה מיידי — בלי סיסמאות.</p>
+      <div class="field">
+        <label>אימייל</label>
+        <input id="emailInput" type="email" placeholder="you@email.com" value="ran.trainee@gmail.com">
+      </div>
+      <button class="btn-primary" onclick="sendLink()">
+        <svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
+        שלחו לי קישור כניסה
+      </button>
+      <div class="auth-alt">בעיה בכניסה? <a onclick="go('authSent')">דברו איתנו</a></div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== AUTH: link sent ========== -->
+<section id="authSent" class="screen">
+  <div class="authbg">
+    <div class="auth-card" style="text-align:center">
+      <div class="sent-ic" style="margin:0 auto 14px"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
+      <h1 style="margin-top:0">בדוק את המייל שלך 📩</h1>
+      <p class="lead">שלחנו קישור כניסה אל <span class="sent-mail" id="sentMail">you@email.com</span>.<br>לחץ עליו כדי להיכנס לקורס.</p>
+      <button class="btn-primary" onclick="go('dash')">פתח את הקישור (הדגמה) ←</button>
+      <div class="demo-hint">🧪 <b>הדגמה:</b> במערכת האמיתית זה קישור אמיתי שמגיע למייל. כאן לחץ על הכפתור כדי להמשיך.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ========== DASHBOARD ========== -->
+<section id="dash" class="screen">
+  <div class="topbar">
+    <div class="topbar-in">
+      <div class="avatar">ר</div>
+      <div class="hello"><div class="hi">שמח שחזרת,</div><div class="nm">רן 👋</div></div>
+      <div class="ring" id="ring"><b id="ringPct">0%</b></div>
+    </div>
+  </div>
+  <div class="wrap">
+    <div id="a2hs" class="a2hs">
+      <span class="a2hs-ic">📲</span>
+      <div class="a2hs-b"><b>הוסף את הקורס למסך הבית</b><span>גישה בנגיעה אחת, כמו אפליקציה — בלי להתחבר כל פעם.</span></div>
+      <button class="a2hs-x" onclick="document.getElementById('a2hs').style.display='none'">✕</button>
+    </div>
+    <div id="resumeSlot"></div>
+    <div class="seclabel"><span class="tick"></span><h2>תוכן הקורס</h2><span class="rule"></span></div>
+    <div id="curriculum"></div>
+  </div>
+</section>
+
+<!-- ========== LESSON ========== -->
+<section id="lesson" class="screen">
+  <header class="appbar">
+    <button class="back-btn" onclick="go('dash')"><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg><span>לוח הקורס</span></button>
+    <div class="ap-ctx" id="lesCtx"></div>
+  </header>
+  <div class="player">
+    <div class="pl"><div class="b"><svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></div></div>
+    <div class="barrow"><i></i></div>
+  </div>
+  <div class="wrap">
+    <div class="les-head">
+      <div class="les-crumb" id="lesCrumb"></div>
+      <div class="les-title" id="lesTitle"></div>
+      <div class="les-meta">
+        <span><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg><span id="lesDur">5 דק'</span></span>
+        <span><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h10"/></svg><span id="lesPos"></span></span>
+      </div>
+    </div>
+    <div class="prose" id="lesProse"></div>
+    <div class="task" id="lesTaskWrap">
+      <div class="tt"><svg class="ic" viewBox="0 0 24 24"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>המשימה שלך</div>
+      <p id="lesTask"></p>
+    </div>
+    <div id="resSlot"></div>
+    <div class="les-actions">
+      <button class="btn-ghost" id="prevBtn" onclick="goPrev()">שיעור קודם</button>
+      <button class="btn-done" id="doneBtn" onclick="toggleDone()"></button>
+    </div>
+    <div class="upnext" id="upnextSlot"></div>
+  </div>
+</section>
+
+<!-- ========== DEMO BAR ========== -->
+<div class="demobar">
+  <span class="dl">🧪 הדגמה · יום באתגר:</span>
+  <button class="db" data-day="0" onclick="setDay(0)">0</button>
+  <button class="db" data-day="3" onclick="setDay(3)">3</button>
+  <button class="db" data-day="10" onclick="setDay(10)">10</button>
+  <button class="db" data-day="18" onclick="setDay(18)">18</button>
+  <button class="db" data-day="21" onclick="setDay(21)">21</button>
+  <a class="dreset" onclick="resetProgress()">איפוס התקדמות</a>
+</div>
+
+<script>
+const PLAY='<svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg>';
+const CHECK='<svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+const LOCK='<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>';
+const CHEV='<svg class="ic" viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg>';
+const CLOCK='<svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>';
+const IC_RES={
+  wa:'<svg class="ic" viewBox="0 0 24 24"><path d="M21 11.5a8.5 8.5 0 0 1-12.6 7.45L3 21l2.05-5.4A8.5 8.5 0 1 1 21 11.5Z"/><path d="M8.5 9.7c0 3.2 2.6 5.8 5.8 5.8"/></svg>',
+  site:'<svg class="ic" viewBox="0 0 24 24"><path d="M14 4h6v6"/><path d="M20 4 10 14"/><path d="M20 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h5"/></svg>',
+  book:'<svg class="ic" viewBox="0 0 24 24"><path d="M5 4a2 2 0 0 1 2-2h11v18H7a2 2 0 0 0-2 2z"/><path d="M18 2v18"/></svg>',
+  cart:'<svg class="ic" viewBox="0 0 24 24"><circle cx="9" cy="20" r="1"/><circle cx="18" cy="20" r="1"/><path d="M2 3h3l2.4 12.6h11L21 7H6.2"/></svg>',
+  calc:'<svg class="ic" viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 11h.01M12 11h.01M16 11h.01M8 15h.01M12 15h.01M16 15h.01M8 19h4"/></svg>'
+};
+
+// unlockDay = days from first login that the chapter opens (DRIP)
+const MODULES=[
+ {n:1,title:"ברוכים הבאים",unlockDay:0,lessons:[
+   {t:"ברוך הבא",d:"4 דק'",links:[{i:'wa',t:"הצטרף לקבוצת הוואטסאפ של האתגר",u:"#"}]},
+   {t:"מה נדרש ממך בקורס",d:"5 דק'"},
+   {t:"התזונה שתגדיל את התוצאות",d:"7 דק'",links:[{i:'book',t:"הספר הדיגיטלי לעלייה במסה",u:"#"},{i:'calc',t:"מחשבון הוצאה קלורית יומית",u:"#"}]},
+   {t:"מדידת היקפים ותוצאות",d:"6 דק'",links:[{i:'cart',t:"מטר / חוט מדידה — קישור לקנייה",u:"#"}]},
+   {t:"אל תעשה את 5 הטעויות האלה",d:"5 דק'"},
+ ]},
+ {n:2,title:"לפני שמתחילים להתאמן",unlockDay:0,lessons:[
+   {t:"בדיקת רמה והתאמת תוכנית",d:"8 דק'",
+     desc:"בשיעור הזה נעשה יחד את <b>מבחן הרמה</b> — נבדוק כמה חזרות אתה מצליח במתח, מקבילים ושכיבות שמיכה, ולפי זה תדע בדיוק לאיזו תוכנית אימון להיכנס.",
+     task:"בצע את מבחן הרמה, ושלח את התוצאה בקבוצת הוואטסאפ של האתגר — להתחייבות והנעה.",
+     links:[{i:'wa',t:"שלח את תוצאת המבחן בקבוצה",u:"#"},{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+   {t:"חימום לפני אימון",d:"3 דק'"},
+   {t:"מה זה RIR",d:"5 דק'"},
+ ]},
+ {n:3,title:"תוכנית אימון · רמה 1",unlockDay:1,lessons:[
+   {t:"הכנה לאימון",d:"4 דק'"},
+   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ ]},
+ {n:4,title:"תוכנית אימון · רמה 2",unlockDay:1,lessons:[
+   {t:"הכנה לאימון",d:"4 דק'"},
+   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ ]},
+ {n:5,title:"תוכנית אימון · רמה 3",unlockDay:1,lessons:[
+   {t:"הכנה לאימון",d:"4 דק'"},
+   {t:"תוכנית האימון המלאה",d:"10 דק'",links:[{i:'site',t:"פתח את אתר תוכניות האימון",u:"https://armschallenge.netlify.app/"}]},
+ ]},
+ {n:6,title:"עברת חצי מהדרך!",unlockDay:10,lessons:[
+   {t:"תזכורת, חיזוק ודחיפה להמשך",d:"5 דק'",links:[{i:'wa',t:"שתף את ההתקדמות שלך בקבוצה",u:"#"}]},
+ ]},
+ {n:7,title:"שאלות נפוצות",unlockDay:0,lessons:[
+   {t:"אין לי פאמפ — התוכנית עובדת?",d:"3 דק'"},
+   {t:"הגוף כואב מהאימון, להמשיך?",d:"2 דק'"},
+   {t:"אפשר להוסיף אימונים מעבר לתוכנית?",d:"3 דק'"},
+   {t:"מה לעשות אם פספסתי אימון",d:"2 דק'"},
+   {t:"האימון מרגיש קל מדי, מה עכשיו?",d:"3 דק'"},
+   {t:"אין לי מתח/מקבילים כל הזמן",d:"3 דק'"},
+ ]},
+ {n:8,title:"סיום האתגר",unlockDay:20,lessons:[
+   {t:"מבחן סיום",d:"5 דק'"},
+   {t:"בדיקת היקפים ותמונות גוף",d:"4 דק'"},
+   {t:"סיכום התוצאות שלך",d:"6 דק'"},
+   {t:"איך בונים גוף מטורף מכאן",d:"7 דק'"},
+   {t:"מה עכשיו? — הצעד הבא שלך",d:"8 דק'"},
+ ]},
+];
+
+// flat index
+const FLAT=[];
+MODULES.forEach((m,mi)=>m.lessons.forEach((l,li)=>FLAT.push({id:mi+'-'+li,mi,li,m,l})));
+const TOTAL=FLAT.length;
+
+// state
+function getDone(){ try{return new Set(JSON.parse(localStorage.getItem('ec_done')||'[]'));}catch(e){return new Set();} }
+function setDone(s){ localStorage.setItem('ec_done',JSON.stringify([...s])); }
+function getDay(){ const v=localStorage.getItem('ec_day'); return v===null?3:+v; }
+function saveDay(d){ localStorage.setItem('ec_day',d); }
+
+let curId=null;
+
+function isUnlocked(mi){ return getDay() >= MODULES[mi].unlockDay; }
+
+function go(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+}
+function sendLink(){
+  const em=document.getElementById('emailInput').value||'you@email.com';
+  document.getElementById('sentMail').textContent=em;
+  go('authSent');
+}
+
+function renderDash(){
+  const done=getDone();
+  const pct=Math.round(done.size/TOTAL*100);
+  document.getElementById('ringPct').textContent=pct+'%';
+  document.getElementById('ring').style.background=
+    `conic-gradient(var(--accent) ${pct}%, rgba(255,255,255,.08) 0)`;
+
+  // resume = first unlocked, not-done lesson
+  const next=FLAT.find(f=>isUnlocked(f.mi) && !done.has(f.id));
+  const rs=document.getElementById('resumeSlot');
+  if(next){
+    rs.innerHTML=`<div class="resume">
+      <div class="rv"><div class="pl"><div class="b">${PLAY}</div></div>
+        <div class="lbl">פרק ${next.m.n} · שיעור ${next.li+1}</div></div>
+      <div class="rb">
+        <div class="rk">${done.size?'המשך מאיפה שהפסקת':'מתחילים!'}</div>
+        <div class="rt">${next.l.t}</div>
+        <div class="rmeta">${done.size} מתוך ${TOTAL} שיעורים הושלמו · נשארו ${TOTAL-done.size}</div>
+        <button class="rbtn" onclick="openLesson('${next.id}')">${PLAY}${done.size?'המשך צפייה':'התחל עכשיו'}</button>
+      </div></div>`;
+  } else {
+    rs.innerHTML=`<div class="resume"><div class="rb">
+      <div class="rk">כל הכבוד! 🎉</div>
+      <div class="rt">סיימת את כל מה שפתוח כרגע</div>
+      <div class="rmeta">פרקים נוספים ייפתחו בהמשך האתגר.</div></div></div>`;
+  }
+
+  let h='';
+  MODULES.forEach((m,mi)=>{
+    const unlocked=isUnlocked(mi);
+    const total=m.lessons.length;
+    const dcount=m.lessons.filter((l,li)=>done.has(mi+'-'+li)).length;
+    const allDone=dcount===total;
+    if(!unlocked){
+      const days=m.unlockDay-getDay();
+      h+=`<div class="mod locked"><div class="mod-h">
+        <div class="mod-n lock">${LOCK}</div>
+        <div class="mod-ti"><div class="mod-name">${m.title}</div><div class="mod-sub">${total} שיעורים</div></div>
+        <div class="lockpill">${CLOCK}נפתח בעוד ${days} ${days===1?'יום':'ימים'}</div>
+      </div></div>`;
+      return;
+    }
+    const pctLbl=allDone?'הושלם ✓':`${dcount}/${total}`;
+    h+=`<div class="mod"><div class="mod-h">
+      <div class="mod-n ${allDone?'done':''}">${allDone?CHECK:m.n}</div>
+      <div class="mod-ti"><div class="mod-name">${m.title}</div><div class="mod-sub">${total} שיעורים</div></div>
+      <div class="mod-pct">${pctLbl}</div></div>`;
+    m.lessons.forEach((l,li)=>{
+      const id=mi+'-'+li;
+      const isD=done.has(id);
+      h+=`<div class="les" onclick="openLesson('${id}')">
+        <div class="les-ic ${isD?'done':'todo'}">${isD?CHECK:PLAY}</div>
+        <div class="les-b"><div class="les-t">${l.t}</div><div class="les-d">${l.d}</div></div>
+        <div class="les-go">${CHEV}</div></div>`;
+    });
+    h+=`</div>`;
+  });
+  document.getElementById('curriculum').innerHTML=h;
+
+  // demo bar active state
+  document.querySelectorAll('.demobar .db').forEach(b=>b.classList.toggle('on',+b.dataset.day===getDay()));
+}
+
+function openLesson(id){
+  const f=FLAT.find(x=>x.id===id); if(!f) return;
+  if(!isUnlocked(f.mi)) return;
+  curId=id;
+  const idx=FLAT.indexOf(f);
+  const crumb=`פרק ${f.m.n} · ${f.m.title}`;
+  document.getElementById('lesCtx').textContent=crumb;
+  document.getElementById('lesCrumb').textContent=crumb;
+  document.getElementById('lesTitle').textContent=f.l.t;
+  document.getElementById('lesDur').textContent=f.l.d;
+  document.getElementById('lesPos').textContent=`שיעור ${idx+1} מתוך ${TOTAL}`;
+  document.getElementById('lesProse').innerHTML=
+    f.l.desc?`<p>${f.l.desc}</p>`
+    :`<p>כאן יופיע הסבר השיעור <b>"${f.l.t}"</b>. (טקסט לדוגמה — תחליף בתוכן האמיתי שלך.)</p>`;
+  const tw=document.getElementById('lesTaskWrap');
+  if(f.l.task){ tw.style.display=''; document.getElementById('lesTask').textContent=f.l.task; }
+  else { tw.style.display=''; document.getElementById('lesTask').textContent='כאן תופיע המשימה של השיעור (למשל: "בצע את האימון ושתף בקבוצה").'; }
+
+  // resource links at the bottom of the lesson
+  const rs=document.getElementById('resSlot');
+  if(f.l.links && f.l.links.length){
+    rs.innerHTML='<div class="reslinks"><div class="rl-lbl">קישורים ומשאבים לשיעור</div>'+
+      f.l.links.map(x=>{
+        const real = x.u && x.u!=='#';
+        const attrs = real ? `href="${x.u}" target="_blank" rel="noopener noreferrer"` : `href="#" onclick="return false"`;
+        const right = real ? `<span class="rl-arrow">${CHEV}</span>` : `<span class="rl-soon">בקרוב</span>`;
+        return `<a class="reslink ${x.i==='wa'?'wa':''}" ${attrs}><span class="rl-ic">${IC_RES[x.i]||IC_RES.site}</span><span class="rl-t">${x.t}</span>${right}</a>`;
+      }).join('')+
+      '</div>';
+  } else { rs.innerHTML=''; }
+
+  // prev button
+  const pv=document.getElementById('prevBtn');
+  const prev=findPrev(idx);
+  pv.disabled=!prev;
+  pv.onclick=prev?()=>openLesson(prev.id):null;
+
+  // done button
+  refreshDoneBtn();
+
+  // up next
+  const nx=findNext(idx);
+  const up=document.getElementById('upnextSlot');
+  if(nx){
+    up.innerHTML=`<div class="ul">השיעור הבא</div>
+      <div class="un-card" onclick="openLesson('${nx.id}')" style="cursor:pointer">
+        <div class="un-th">${PLAY}</div>
+        <div class="un-b"><div class="un-k">פרק ${nx.m.n} · שיעור ${nx.li+1}</div><div class="un-t">${nx.l.t}</div></div>
+        <div class="les-go">${CHEV}</div></div>`;
+  } else { up.innerHTML=''; }
+
+  go('lesson');
+}
+
+function findNext(idx){ for(let i=idx+1;i<FLAT.length;i++){ if(isUnlocked(FLAT[i].mi)) return FLAT[i]; } return null; }
+function findPrev(idx){ for(let i=idx-1;i>=0;i--){ if(isUnlocked(FLAT[i].mi)) return FLAT[i]; } return null; }
+
+function refreshDoneBtn(){
+  const done=getDone();
+  const btn=document.getElementById('doneBtn');
+  if(done.has(curId)){
+    btn.classList.add('isdone');
+    btn.innerHTML=`${CHECK}הושלם — לחץ לביטול`;
+  } else {
+    btn.classList.remove('isdone');
+    btn.innerHTML=`${CHECK}סמן כהושלם והמשך`;
+  }
+}
+function toggleDone(){
+  const done=getDone();
+  if(done.has(curId)){ done.delete(curId); setDone(done); refreshDoneBtn(); return; }
+  done.add(curId); setDone(done);
+  const idx=FLAT.findIndex(f=>f.id===curId);
+  const nx=findNext(idx);
+  if(nx){ openLesson(nx.id); } else { renderDash(); go('dash'); }
+}
+
+function setDay(d){ saveDay(d); renderDash(); }
+function resetProgress(){ localStorage.removeItem('ec_done'); renderDash(); }
+
+renderDash();
+</script>
+</body>
+</html>
