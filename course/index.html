@@ -454,6 +454,7 @@ function isUnlocked(mi){ return getDay() >= MODULES[mi].unlockDay; }
 
 function go(id){
   if(id!=='lesson'){ const p=document.getElementById('lesPlayer'); if(p) p.innerHTML=''; } // stop video playback on leave
+  if(id==='dash') renderDash(); // always refresh the board (progress, %) when returning to it
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
