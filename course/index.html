@@ -78,6 +78,9 @@
   .ring{position:relative;width:52px;height:52px;flex:0 0 auto;border-radius:50%}
   .ring::after{content:"";position:absolute;inset:5px;border-radius:50%;background:var(--bg)}
   .ring b{position:absolute;inset:0;display:grid;place-items:center;font-size:12px;font-weight:800;z-index:1}
+  .logout-btn{flex:0 0 auto;background:transparent;border:1px solid var(--line-2);color:var(--muted);
+    font-size:12px;font-weight:700;padding:8px 11px;border-radius:10px}
+  .logout-btn:hover{color:var(--ink2);border-color:var(--line)}
 
   .resume{margin-top:20px;background:var(--surface);border:1px solid var(--line);border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm)}
   .resume .rv{position:relative;aspect-ratio:16/9;background:radial-gradient(120% 120% at 30% 0%,rgba(59,130,246,.28),transparent 55%),linear-gradient(135deg,#18233B,#0E1626)}
@@ -231,13 +234,13 @@
       <p class="lead">הזן את המייל שאיתו קנית את הקורס, ונשלח לך קישור כניסה מיידי — בלי סיסמאות.</p>
       <div class="field">
         <label>אימייל</label>
-        <input id="emailInput" type="email" placeholder="you@email.com" value="ran.trainee@gmail.com">
+        <input id="emailInput" type="email" placeholder="you@email.com" autocomplete="email" inputmode="email">
       </div>
       <button class="btn-primary" onclick="sendLink()">
         <svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg>
         שלחו לי קישור כניסה
       </button>
-      <div class="auth-alt">בעיה בכניסה? <a onclick="go('authSent')">דברו איתנו</a></div>
+      <div class="auth-alt">הקישור יישלח למייל שאיתו קנית את הקורס.</div>
     </div>
   </div>
 </section>
@@ -249,8 +252,7 @@
       <div class="sent-ic" style="margin:0 auto 14px"><svg class="ic" viewBox="0 0 24 24"><path d="M4 6h16v12H4z"/><path d="m4 7 8 6 8-6"/></svg></div>
       <h1 style="margin-top:0">בדוק את המייל שלך 📩</h1>
       <p class="lead">שלחנו קישור כניסה אל <span class="sent-mail" id="sentMail">you@email.com</span>.<br>לחץ עליו כדי להיכנס לקורס.</p>
-      <button class="btn-primary" onclick="go('dash')">פתח את הקישור (הדגמה) ←</button>
-      <div class="demo-hint">🧪 <b>הדגמה:</b> במערכת האמיתית זה קישור אמיתי שמגיע למייל. כאן לחץ על הכפתור כדי להמשיך.</div>
+      <div class="auth-alt" style="margin-top:10px">לא הגיע? בדוק בתיקיית הספאם, או <a onclick="go('auth')">שלח שוב</a>.</div>
     </div>
   </div>
 </section>
@@ -259,9 +261,10 @@
 <section id="dash" class="screen">
   <div class="topbar">
     <div class="topbar-in">
-      <div class="avatar">ר</div>
-      <div class="hello"><div class="hi">שמח שחזרת,</div><div class="nm">רן 👋</div></div>
+      <div class="avatar">👤</div>
+      <div class="hello"><div class="hi">שמח שחזרת,</div><div class="nm">מתאמן 👋</div></div>
       <div class="ring" id="ring"><b id="ringPct">0%</b></div>
+      <button class="logout-btn" onclick="logout()" title="יציאה מהחשבון">יציאה</button>
     </div>
   </div>
   <div class="wrap">
@@ -320,6 +323,7 @@
   <a class="dreset" onclick="resetProgress()">איפוס התקדמות</a>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script>
 const PLAY='<svg class="ic ic-fill" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg>';
 const CHECK='<svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
@@ -406,10 +410,15 @@ MODULES.forEach((m,mi)=>m.lessons.forEach((l,li)=>FLAT.push({id:mi+'-'+li,mi,li,
 const TOTAL=FLAT.length;
 
 // state
-function getDone(){ try{return new Set(JSON.parse(localStorage.getItem('ec_done')||'[]'));}catch(e){return new Set();} }
-function setDone(s){ localStorage.setItem('ec_done',JSON.stringify([...s])); }
+// ---------- Supabase: accounts + cloud progress ----------
+const SUPABASE_URL='https://jfrsvhkqtyxfcwldsekg.supabase.co';
+const SUPABASE_KEY='sb_publishable_RDYVOwoGzaa1ZWh-Wevk5Q_0_51Pq4t';
+const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+
+let profile = null; // { id, email, started_at, done:[], has_access }
 const DAY_MS=86400000;
-// demo mode (for testing): turn on with ?demo=1 in the URL (stays on), off with ?demo=0
+
+// demo mode (testing): ?demo=1 shows the day bar and bypasses login with a local profile; ?demo=0 turns it off
 function demoOn(){
   try{
     const p=new URLSearchParams(location.search);
@@ -418,16 +427,23 @@ function demoOn(){
   }catch(e){}
   return localStorage.getItem('ec_demo')==='1';
 }
-// start date = first time this device opened the course
-function getStart(){
-  let s=localStorage.getItem('ec_start');
-  if(!s){ s=String(Date.now()); localStorage.setItem('ec_start',s); }
-  return +s;
+
+// completed lessons — held on the user's profile (synced to Supabase)
+function getDone(){ return new Set(profile && Array.isArray(profile.done) ? profile.done : []); }
+function setDone(s){
+  const arr=[...s];
+  if(!profile) return;
+  profile.done=arr;
+  if(sb && profile.id!=='demo'){
+    sb.from('profiles').update({done:arr}).eq('id',profile.id).then(({error})=>{ if(error) console.warn('progress save failed', error.message); });
+  }
 }
-// day in the challenge: forced by the demo bar in demo mode, otherwise computed from the start date
+
+// day in the challenge: forced by the demo bar in demo mode, else computed from the server start date
 function getDay(){
   if(demoOn()){ const v=localStorage.getItem('ec_day'); if(v!==null) return +v; }
-  return Math.max(0,Math.floor((Date.now()-getStart())/DAY_MS));
+  const start = profile && profile.started_at ? new Date(profile.started_at).getTime() : Date.now();
+  return Math.max(0, Math.floor((Date.now()-start)/DAY_MS));
 }
 function saveDay(d){ localStorage.setItem('ec_day',d); }
 
@@ -442,8 +458,16 @@ function go(id){
   document.getElementById(id).classList.add('active');
   window.scrollTo({top:0,behavior:'instant'});
 }
-function sendLink(){
-  const em=document.getElementById('emailInput').value||'you@email.com';
+async function sendLink(){
+  const em=(document.getElementById('emailInput').value||'').trim();
+  if(!em){ alert('נא להזין כתובת אימייל'); return; }
+  if(!sb){ alert('טעינת המערכת נכשלה — רענן את הדף ונסה שוב.'); return; }
+  const btn=document.querySelector('#auth .btn-primary');
+  const old=btn?btn.innerHTML:'';
+  if(btn){ btn.disabled=true; btn.style.opacity='.7'; btn.textContent='שולח…'; }
+  const { error } = await sb.auth.signInWithOtp({ email:em, options:{ emailRedirectTo: location.origin+location.pathname } });
+  if(btn){ btn.disabled=false; btn.style.opacity='1'; btn.innerHTML=old; }
+  if(error){ alert('שגיאה בשליחת הקישור: '+error.message); return; }
   document.getElementById('sentMail').textContent=em;
   go('authSent');
 }
@@ -615,10 +639,44 @@ function toggleDone(){
 }
 
 function setDay(d){ saveDay(d); renderDash(); }
-function resetProgress(){ localStorage.removeItem('ec_done'); renderDash(); }
+function resetProgress(){ setDone(new Set()); renderDash(); }
 
-if(demoOn()) document.body.classList.add('demo');
-renderDash();
+// ---------- auth wiring ----------
+function setUserUI(){
+  const em = profile && profile.email ? profile.email : '';
+  const nm = (em.split('@')[0] || 'מתאמן');
+  const av=document.querySelector('#dash .avatar'); if(av) av.textContent=(nm[0]||'👤').toUpperCase();
+  const nmEl=document.querySelector('#dash .hello .nm'); if(nmEl) nmEl.textContent=nm+' 👋';
+}
+async function logout(){ try{ if(sb) await sb.auth.signOut(); }catch(e){} profile=null; location.replace(location.pathname); }
+
+async function loadProfile(user){
+  const cols='id,email,started_at,done,has_access';
+  let { data } = await sb.from('profiles').select(cols).eq('id',user.id).maybeSingle();
+  if(!data){ await new Promise(r=>setTimeout(r,700)); ({ data } = await sb.from('profiles').select(cols).eq('id',user.id).maybeSingle()); }
+  profile = data || { id:user.id, email:user.email, started_at:new Date().toISOString(), done:[], has_access:true };
+  if(!Array.isArray(profile.done)) profile.done=[];
+}
+let entered=false;
+async function enterApp(user){ if(entered) return; entered=true; await loadProfile(user); setUserUI(); renderDash(); go('dash'); }
+
+async function init(){
+  if(demoOn()){
+    document.body.classList.add('demo');
+    profile={ id:'demo', email:'demo@local', started_at:new Date(Date.now()-3*DAY_MS).toISOString(), done:[], has_access:true };
+    setUserUI(); renderDash(); go('dash'); return;
+  }
+  if(!sb){ go('auth'); return; }
+  try{
+    const { data:{ session } } = await sb.auth.getSession();
+    if(session && session.user){ await enterApp(session.user); } else { go('auth'); }
+  }catch(e){ go('auth'); }
+  sb.auth.onAuthStateChange((event, session)=>{
+    if(event==='SIGNED_IN' && session && session.user){ enterApp(session.user); }
+    if(event==='SIGNED_OUT'){ entered=false; }
+  });
+}
+init();
 </script>
 </body>
 </html>
