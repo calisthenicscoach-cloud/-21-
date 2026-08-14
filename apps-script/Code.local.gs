@@ -21,7 +21,7 @@ const NUTRITION_SUBFOLDER = 'שאלוני תזונה';                   // PDF 
 const NUTRITION_SHEET     = 'תפריט תזונה';                    // לשונית (גיליון) נפרד/ת לשאלוני התזונה
 
 /* ── פתיחת מתאמן אוטומטית ב-CRM בכל חתימה ── */
-const CRM_SHEET_ID     = 'PASTE_CRM_SHEET_ID';   // ה-ID של גיליון הלידים/CRM (מה-URL שלו, בין /d/ ל-/edit)
+const CRM_SHEET_ID     = '1o6c6CZEasSJk5X9Hw5Vfc1fhq7GPHOl8N3u8zpm8yg8';   // ה-ID של גיליון הלידים/CRM
 const CRM_ACTIVE_SHEET = 'מתאמנים פעילים';        // שם הטאב של המתאמנים הפעילים
 // מיפוי שם המסלול (מהטופס) → [שם המסלול ב-CRM, מחיר חודשי, מספר חודשים למסלול]
 const CRM_TRACK_MAP = {
