@@ -99,17 +99,25 @@ function addTraineeToCRMCore_(d) {
   const sheet = SpreadsheetApp.openById(CRM_SHEET_ID).getSheetByName(CRM_ACTIVE_SHEET);
   if (!sheet) throw new Error('לא נמצא טאב בשם "' + CRM_ACTIVE_SHEET + '" בגיליון ה-CRM');
 
-  const phone = d.phone || '';
   const norm  = function (p) { return String(p == null ? '' : p).replace(/\D/g, ''); };
+  const phone = d.phone || '';
 
-  // דדופ: אם כבר קיים מתאמן פעיל עם אותו טלפון — לא מוסיפים כפול (למשל שליחה חוזרת)
-  const last = sheet.getLastRow();
-  if (phone && last >= 2) {
+  // קוראים את עמודות "שם" (A) ו"טלפון" (I) בלבד — כדי לא להיות תלויים ב-getLastRow,
+  // שמנופח כאן כי נוסחת המערך של הוואטסאפ "תופסת" את כל עמודת J עד תחתית הגיליון.
+  const maxR   = sheet.getMaxRows();
+  const names  = sheet.getRange(1, 1, maxR, 1).getValues();   // A = שם
+  const phones = sheet.getRange(1, 9, maxR, 1).getValues();   // I = טלפון
+
+  // דדופ לפי טלפון (על כל השורות)
+  if (phone) {
     const np = norm(phone);
-    const phones = sheet.getRange(2, 9, last - 1, 1).getValues();   // עמודה 9 = טלפון
-    for (let i = 0; i < phones.length; i++) {
-      if (np && norm(phones[i][0]) === np) return;
-    }
+    for (let r = 2; r <= maxR; r++) if (np && norm(phones[r - 1][0]) === np) return;
+  }
+
+  // שורת יעד = השורה הריקה הראשונה (שם+טלפון ריקים) מ-2 והלאה — כך זה נכנס מיד אחרי המתאמן האחרון
+  let target = maxR + 1;
+  for (let r = 2; r <= maxR; r++) {
+    if (String(names[r - 1][0]).trim() === '' && String(phones[r - 1][0]).trim() === '') { target = r; break; }
   }
 
   const map    = CRM_TRACK_MAP[d.track] || [d.track || '', '', 0];
@@ -120,22 +128,26 @@ function addTraineeToCRMCore_(d) {
 
   // סדר עמודות: שם, מסלול, דרגה, סטטוס, תאריך התחלה, תאריך סיום, תאריך קשר אחרון, מחיר חודשי, טלפון
   // עמודה 10 (וואטסאפ) נשארת ריקה — נוסחת המערך תמלא אותה לבד. עמודה 11 (הערות) ריקה.
-  const target = sheet.getLastRow() + 1;
   sheet.getRange(target, 1, 1, 9).setValues([[
     d.name || '', track, 'טירון שלב א', 'פעיל/ה', start, end, start, price, phone
   ]]);
   sheet.getRange(target, 5, 1, 3).setNumberFormat('dd/mm/yyyy');    // 3 עמודות התאריך
 }
 
-/* 🔎 בדיקה ידנית — בעורך בוחרים "testCRM" בבורר הפונקציות ולוחצים "הפעלה", ואז פותחים "יומן ביצוע".
-   הבדיקה מוסיפה שורת "בדיקה טסט" לטאב "מתאמנים פעילים" ומדפיסה כל שלב — כך רואים בדיוק איפה זה נתקע. */
+/* 🔎 בדיקה ידנית — בעורך בוחרים "testCRM" בבורר הפונקציות ולוחצים "הפעלה".
+   מנקה שורות בדיקה קודמות ("בדיקה טסט") מכל מקום בטאב, ואז מוסיפה שורה טרייה במקום הנכון. */
 function testCRM() {
-  console.log('CRM_SHEET_ID = ' + CRM_SHEET_ID);
   const ss = SpreadsheetApp.openById(CRM_SHEET_ID);
-  console.log('✓ הגיליון נפתח: ' + ss.getName());
-  console.log('טאבים בגיליון: ' + ss.getSheets().map(function (s) { return '"' + s.getName() + '"'; }).join(', '));
+  const sheet = ss.getSheetByName(CRM_ACTIVE_SHEET);
+  console.log('✓ הגיליון: ' + ss.getName() + ' | טאבים: ' + ss.getSheets().map(function (s) { return '"' + s.getName() + '"'; }).join(', '));
+  // ניקוי שורות "בדיקה טסט" ישנות (כולל כאלה שנפלו בתחתית)
+  const maxR = sheet.getMaxRows();
+  const names = sheet.getRange(1, 1, maxR, 1).getValues();
+  let removed = 0;
+  for (let r = maxR; r >= 2; r--) if (String(names[r - 1][0]).trim() === 'בדיקה טסט') { sheet.deleteRow(r); removed++; }
+  if (removed) console.log('ניקיתי ' + removed + ' שורות בדיקה ישנות');
   addTraineeToCRMCore_({ name: 'בדיקה טסט', phone: '0509999999', track: 'מסלול 3 חודשים', time: new Date() });
-  console.log('✓ סיימתי — לך לטאב "מתאמנים פעילים", אמורה להופיע שורה "בדיקה טסט" (אפשר למחוק אחרי).');
+  console.log('✓ נוספה שורת "בדיקה טסט" — עכשיו היא ליד שאר המתאמנים למעלה (אפשר למחוק אחרי).');
 }
 
 /* ============ שאלון תזונה ============ */
