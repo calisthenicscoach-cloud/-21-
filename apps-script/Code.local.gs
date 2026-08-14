@@ -21,8 +21,10 @@ const NUTRITION_SUBFOLDER = 'שאלוני תזונה';                   // PDF 
 const NUTRITION_SHEET     = 'תפריט תזונה';                    // לשונית (גיליון) נפרד/ת לשאלוני התזונה
 
 /* ── פתיחת מתאמן אוטומטית ב-CRM בכל חתימה ── */
-const CRM_SHEET_ID     = '1o6c6CZEasSJk5X9Hw5Vfc1fhq7GPHOl8N3u8zpm8yg8';   // ה-ID של גיליון הלידים/CRM
-const CRM_ACTIVE_SHEET = 'מתאמנים פעילים';        // שם הטאב של המתאמנים הפעילים
+const CRM_SHEET_ID      = '1o6c6CZEasSJk5X9Hw5Vfc1fhq7GPHOl8N3u8zpm8yg8';   // ה-ID של גיליון הלידים/CRM
+const CRM_ACTIVE_SHEET  = 'מתאמנים פעילים';       // טאב המתאמנים הפעילים
+const CRM_ARCHIVE_SHEET = 'ארכיון מתאמנים';       // טאב הארכיון
+const CRM_LEADS_SHEET   = 'לידים';               // טאב הלידים — לסימון "נסגר ✅" אוטומטי בחתימה
 // מיפוי שם המסלול (מהטופס) → [שם המסלול ב-CRM, מחיר חודשי, מספר חודשים למסלול]
 const CRM_TRACK_MAP = {
   'חודש ניסיון':        ['חודש ניסיון',  500, 1],
@@ -80,8 +82,9 @@ function handleSignature(d) {
     sheet.appendRow(baseVals.concat(intake.map(function (x) { return x.a; })).concat([photoCell, d.notes || '']));
   }
 
-  // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") — אוטומטית
+  // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") + סימון הליד כ-"נסגר ✅" — אוטומטית
   addTraineeToCRM_(d);
+  markLeadClosed_(d);
 
   sendNotification(d, file, photoUrl);
   return json({ ok: true, url: file.getUrl(), photoUrl: photoUrl });
@@ -134,12 +137,56 @@ function addTraineeToCRMCore_(d) {
   sheet.getRange(target, 5, 1, 3).setNumberFormat('dd/mm/yyyy');    // 3 עמודות התאריך
 }
 
+/* עטיפה בטוחה — מסמן את הליד שחתם כ-"נסגר ✅" בטאב הלידים. לא מפיל את החתימה אם משהו משתבש. */
+function markLeadClosed_(d) {
+  try { markLeadClosedCore_(d); }
+  catch (err) { /* מתעלמים בכוונה */ }
+}
+
+/* מוצא את הליד לפי טלפון ומסמן את עמודת "סטטוס" שלו כ-"נסגר ✅". זורק שגיאות (כדי ש-testCRM יראה אותן). */
+function markLeadClosedCore_(d) {
+  if (!CRM_SHEET_ID || CRM_SHEET_ID.indexOf('PASTE_') === 0) return;
+  const phone = String(d.phone || '').replace(/\D/g, '');
+  if (!phone) return;
+  const sheet = crmLeadsSheet_(SpreadsheetApp.openById(CRM_SHEET_ID));
+  if (!sheet) return;
+  const values = sheet.getDataRange().getValues();
+  if (values.length < 2) return;
+  const header = values[0].map(function (h) { return String(h).trim(); });
+  let phoneCol = header.indexOf('מס טלפון');
+  if (phoneCol === -1) phoneCol = header.indexOf('טלפון');
+  const statusCol = header.indexOf('סטטוס');
+  if (phoneCol === -1 || statusCol === -1) return;
+  const norm = function (p) { return String(p == null ? '' : p).replace(/\D/g, ''); };
+  for (let r = 1; r < values.length; r++) {
+    if (norm(values[r][phoneCol]) === phone) sheet.getRange(r + 1, statusCol + 1).setValue('נסגר ✅');
+  }
+}
+
+/* מאתר את טאב הלידים — לפי השם "לידים", ואם לא, לפי כותרות (סטטוס + טלפון/שם מלא). */
+function crmLeadsSheet_(ss) {
+  const byName = ss.getSheetByName(CRM_LEADS_SHEET);
+  if (byName) return byName;
+  const sheets = ss.getSheets();
+  for (let i = 0; i < sheets.length; i++) {
+    const nm = sheets[i].getName();
+    if (nm === CRM_ACTIVE_SHEET || nm === CRM_ARCHIVE_SHEET) continue;
+    const lc = sheets[i].getLastColumn();
+    if (lc < 1) continue;
+    const hdr = sheets[i].getRange(1, 1, 1, lc).getValues()[0].map(function (h) { return String(h).trim(); });
+    if (hdr.indexOf('סטטוס') > -1 && (hdr.indexOf('מס טלפון') > -1 || hdr.indexOf('טלפון') > -1 || hdr.indexOf('שם מלא') > -1)) return sheets[i];
+  }
+  return null;
+}
+
 /* 🔎 בדיקה ידנית — בעורך בוחרים "testCRM" בבורר הפונקציות ולוחצים "הפעלה".
    מנקה שורות בדיקה קודמות ("בדיקה טסט") מכל מקום בטאב, ואז מוסיפה שורה טרייה במקום הנכון. */
 function testCRM() {
   const ss = SpreadsheetApp.openById(CRM_SHEET_ID);
   const sheet = ss.getSheetByName(CRM_ACTIVE_SHEET);
   console.log('✓ הגיליון: ' + ss.getName() + ' | טאבים: ' + ss.getSheets().map(function (s) { return '"' + s.getName() + '"'; }).join(', '));
+  const leads = crmLeadsSheet_(ss);
+  console.log(leads ? ('✓ טאב לידים לסימון "נסגר ✅": "' + leads.getName() + '"') : '✗ לא נמצא טאב לידים');
   // ניקוי שורות "בדיקה טסט" ישנות (כולל כאלה שנפלו בתחתית)
   const maxR = sheet.getMaxRows();
   const names = sheet.getRange(1, 1, maxR, 1).getValues();
