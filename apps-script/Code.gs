@@ -133,7 +133,8 @@ function addTraineeToCRMCore_(d) {
 
   const map    = CRM_TRACK_MAP[d.track] || [d.track || '', '', 0];
   const track  = map[0], price = map[1], months = map[2];
-  const start  = d.time ? new Date(d.time) : new Date();
+  // d.time הוא טקסט עברי שלא ניתן לפרסור — משתמשים ב-d.ts (ISO), ואם אין, בזמן הנוכחי
+  const start  = (d.ts && !isNaN(new Date(d.ts).getTime())) ? new Date(d.ts) : new Date();
   let end = '';
   if (months > 0) { end = new Date(start); end.setMonth(end.getMonth() + months); }
 
@@ -194,6 +195,12 @@ function testCRM() {
   console.log('✓ הגיליון: ' + ss.getName() + ' | טאבים: ' + ss.getSheets().map(function (s) { return '"' + s.getName() + '"'; }).join(', '));
   const leads = crmLeadsSheet_(ss);
   console.log(leads ? ('✓ טאב לידים לסימון "נסגר ✅": "' + leads.getName() + '"') : '✗ לא נמצא טאב לידים');
+  if (leads) {
+    const hv = leads.getRange(1, 1, 1, leads.getLastColumn()).getValues()[0].map(function (h) { return String(h).trim(); });
+    let pc = hv.indexOf('מס טלפון'); if (pc === -1) pc = hv.indexOf('טלפון');
+    const sc = hv.indexOf('סטטוס');
+    console.log('בלידים: עמודת טלפון = ' + (pc > -1 ? ('#' + (pc + 1)) : '✗ לא נמצא!') + ' | עמודת סטטוס = ' + (sc > -1 ? ('#' + (sc + 1)) : '✗ לא נמצא!'));
+  }
   // ניקוי שורות "בדיקה טסט" ישנות (כולל כאלה שנפלו בתחתית)
   const maxR = sheet.getMaxRows();
   const names = sheet.getRange(1, 1, maxR, 1).getValues();
