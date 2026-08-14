@@ -23,6 +23,17 @@ const PHOTO_SUBFOLDER     = 'תמונות לפני';
 const NUTRITION_SUBFOLDER = 'שאלוני תזונה';
 const NUTRITION_SHEET     = 'תפריט תזונה';
 
+/* ── פתיחת מתאמן אוטומטית ב-CRM בכל חתימה ── */
+const CRM_SHEET_ID     = 'PASTE_CRM_SHEET_ID';   // ה-ID של גיליון הלידים/CRM (מה-URL שלו, בין /d/ ל-/edit)
+const CRM_ACTIVE_SHEET = 'מתאמנים פעילים';        // שם הטאב של המתאמנים הפעילים
+// מיפוי שם המסלול (מהטופס) → [שם המסלול ב-CRM, מחיר חודשי, מספר חודשים למסלול]
+const CRM_TRACK_MAP = {
+  'חודש ניסיון':        ['חודש ניסיון',  500, 1],
+  'מסלול 3 חודשים':     ['3 חודשים',     450, 3],
+  'מסלול 8 חודשים':     ['8 חודשים',     350, 8],
+  'מסלול ללא התחייבות': ['ללא התחייבות', 500, 0]   // 0 = בלי תאריך סיום
+};
+
 function doPost(e) {
   try {
     const raw = (e && e.parameter && e.parameter.payload) ? e.parameter.payload
@@ -69,8 +80,50 @@ function handleSignature(d) {
     sheet.appendRow(baseVals.concat(intake.map(function (x) { return x.a; })).concat([photoCell, d.notes || '']));
   }
 
+  // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") — אוטומטית
+  addTraineeToCRM_(d);
+
   sendNotification(d, file, photoUrl);
   return json({ ok: true, url: file.getUrl(), photoUrl: photoUrl });
+}
+
+/* פותח שורת מתאמן חדשה בטאב "מתאמנים פעילים" שב-CRM.
+   עטוף ב-try — אם משהו משתבש, החתימה עדיין נשמרת (עדיף חתימה בלי CRM מאשר חתימה שנכשלה). */
+function addTraineeToCRM_(d) {
+  try {
+    if (!CRM_SHEET_ID || CRM_SHEET_ID.indexOf('PASTE_') === 0) return;
+    const sheet = SpreadsheetApp.openById(CRM_SHEET_ID).getSheetByName(CRM_ACTIVE_SHEET);
+    if (!sheet) return;
+
+    const phone = d.phone || '';
+    const norm  = function (p) { return String(p == null ? '' : p).replace(/\D/g, ''); };
+
+    // דדופ: אם כבר קיים מתאמן פעיל עם אותו טלפון — לא מוסיפים כפול (למשל שליחה חוזרת)
+    const last = sheet.getLastRow();
+    if (phone && last >= 2) {
+      const np = norm(phone);
+      const phones = sheet.getRange(2, 9, last - 1, 1).getValues();   // עמודה 9 = טלפון
+      for (let i = 0; i < phones.length; i++) {
+        if (np && norm(phones[i][0]) === np) return;
+      }
+    }
+
+    const map    = CRM_TRACK_MAP[d.track] || [d.track || '', '', 0];
+    const track  = map[0], price = map[1], months = map[2];
+    const start  = d.time ? new Date(d.time) : new Date();
+    let end = '';
+    if (months > 0) { end = new Date(start); end.setMonth(end.getMonth() + months); }
+
+    // סדר עמודות: שם, מסלול, דרגה, סטטוס, תאריך התחלה, תאריך סיום, תאריך קשר אחרון, מחיר חודשי, טלפון
+    // עמודה 10 (וואטסאפ) נשארת ריקה — נוסחת המערך תמלא אותה לבד. עמודה 11 (הערות) ריקה.
+    const target = sheet.getLastRow() + 1;
+    sheet.getRange(target, 1, 1, 9).setValues([[
+      d.name || '', track, 'טירון שלב א', 'פעיל/ה', start, end, start, price, phone
+    ]]);
+    sheet.getRange(target, 5, 1, 3).setNumberFormat('dd/mm/yyyy');    // 3 עמודות התאריך
+  } catch (err) {
+    // מתעלמים בכוונה — לא מפילים את החתימה בגלל תקלת CRM
+  }
 }
 
 /* ============ שאלון תזונה ============ */
