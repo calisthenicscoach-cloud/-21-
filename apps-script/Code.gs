@@ -90,6 +90,15 @@ function handleSignature(d) {
   return json({ ok: true, url: file.getUrl(), photoUrl: photoUrl });
 }
 
+/* מפתח טלפון אחיד להשוואה — מסיר תווים לא-ספרתיים, קידומת 972, ואפס מוביל.
+   כך "0587979678" = "587979678" = "972-58-797-9678" (הלידים שמורים בלי האפס המוביל). */
+function phoneKey_(p) {
+  let s = String(p == null ? '' : p).replace(/\D/g, '');
+  if (s.indexOf('972') === 0) s = s.slice(3);
+  if (s.charAt(0) === '0') s = s.slice(1);
+  return s;
+}
+
 /* עטיפה בטוחה — אם ה-CRM נכשל, החתימה עדיין נשמרת (לא מפילים את הטופס). */
 function addTraineeToCRM_(d) {
   try { addTraineeToCRMCore_(d); }
@@ -102,7 +111,6 @@ function addTraineeToCRMCore_(d) {
   const sheet = SpreadsheetApp.openById(CRM_SHEET_ID).getSheetByName(CRM_ACTIVE_SHEET);
   if (!sheet) throw new Error('לא נמצא טאב בשם "' + CRM_ACTIVE_SHEET + '" בגיליון ה-CRM');
 
-  const norm  = function (p) { return String(p == null ? '' : p).replace(/\D/g, ''); };
   const phone = d.phone || '';
 
   // קוראים את עמודות "שם" (A) ו"טלפון" (I) בלבד — כדי לא להיות תלויים ב-getLastRow,
@@ -111,10 +119,10 @@ function addTraineeToCRMCore_(d) {
   const names  = sheet.getRange(1, 1, maxR, 1).getValues();   // A = שם
   const phones = sheet.getRange(1, 9, maxR, 1).getValues();   // I = טלפון
 
-  // דדופ לפי טלפון (על כל השורות)
-  if (phone) {
-    const np = norm(phone);
-    for (let r = 2; r <= maxR; r++) if (np && norm(phones[r - 1][0]) === np) return;
+  // דדופ לפי טלפון (התאמה אחידה שמתעלמת מאפס מוביל / קידומת 972)
+  const pk = phoneKey_(phone);
+  if (pk) {
+    for (let r = 2; r <= maxR; r++) if (phoneKey_(phones[r - 1][0]) === pk) return;
   }
 
   // שורת יעד = השורה הריקה הראשונה (שם+טלפון ריקים) מ-2 והלאה — כך זה נכנס מיד אחרי המתאמן האחרון
@@ -146,8 +154,8 @@ function markLeadClosed_(d) {
 /* מוצא את הליד לפי טלפון ומסמן את עמודת "סטטוס" שלו כ-"נסגר ✅". זורק שגיאות (כדי ש-testCRM יראה אותן). */
 function markLeadClosedCore_(d) {
   if (!CRM_SHEET_ID || CRM_SHEET_ID.indexOf('PASTE_') === 0) return;
-  const phone = String(d.phone || '').replace(/\D/g, '');
-  if (!phone) return;
+  const pk = phoneKey_(d.phone);
+  if (!pk) return;
   const sheet = crmLeadsSheet_(SpreadsheetApp.openById(CRM_SHEET_ID));
   if (!sheet) return;
   const values = sheet.getDataRange().getValues();
@@ -157,9 +165,8 @@ function markLeadClosedCore_(d) {
   if (phoneCol === -1) phoneCol = header.indexOf('טלפון');
   const statusCol = header.indexOf('סטטוס');
   if (phoneCol === -1 || statusCol === -1) return;
-  const norm = function (p) { return String(p == null ? '' : p).replace(/\D/g, ''); };
   for (let r = 1; r < values.length; r++) {
-    if (norm(values[r][phoneCol]) === phone) sheet.getRange(r + 1, statusCol + 1).setValue('נסגר ✅');
+    if (phoneKey_(values[r][phoneCol]) === pk) sheet.getRange(r + 1, statusCol + 1).setValue('נסגר ✅');
   }
 }
 
