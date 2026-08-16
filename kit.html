@@ -127,19 +127,36 @@
   const name = (params.get('name') || '').trim();
   if (name) document.getElementById('name').textContent = 'שם: ' + name;
 
-  // אם יש תפריט אישי — מזריקים כפתור בולט בראש הרשימה
-  const menu = (params.get('menu') || '').trim();
-  if (menu) {
+  // הזרקת כפתור התפריט האישי בראש הרשימה (פעם אחת)
+  let menuInjected = false;
+  function injectMenu(url) {
+    if (!url || menuInjected) return;
+    menuInjected = true;
     const btns = document.getElementById('btns');
     const a = document.createElement('a');
     a.className = 'btn primary';
-    a.href = menu; a.target = '_blank'; a.rel = 'noopener';
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
     a.innerHTML = '<span class="ic">🍽️</span><span class="tx">התפריט האישי שלך' +
                   '<span class="sub">התפריט + מעקב יומי ושקילות</span></span><span class="arw">‹</span>';
     btns.insertBefore(a, btns.firstChild);
     const lbl = document.createElement('div');
     lbl.className = 'sec-label'; lbl.textContent = 'עוד תכנים של היחידה';
     btns.insertBefore(lbl, a.nextSibling);
+  }
+
+  // 1) קישור תפריט ישיר ב-URL (?menu=) — לתצוגה מקדימה / גיבוי
+  const directMenu = (params.get('menu') || '').trim();
+  if (directMenu) injectMenu(directMenu);
+
+  // 2) קישור אישי שמתעדכן לבד: ?id=<טלפון> → בודק מול הסקריפט אם כבר יש תפריט (JSONP עוקף CORS)
+  const id = (params.get('id') || '').trim();
+  const KIT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5_j9pHH8hQcU0l-fZXn7r0v5p_KmfzK2vaW1ylRdOUf0LoqimlijI_ejrQWjSXisc-A/exec';
+  if (id && !directMenu) {
+    window.__onKit = function (data) { if (data && data.menu) injectMenu(data.menu); };
+    const s = document.createElement('script');
+    s.src = KIT_ENDPOINT + '?kit=' + encodeURIComponent(id) + '&callback=__onKit';
+    s.onerror = function () { /* אם הבדיקה נכשלת — מציגים בלי תפריט, לא שוברים כלום */ };
+    document.head.appendChild(s);
   }
 </script>
 </body>

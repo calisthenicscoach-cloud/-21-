@@ -169,6 +169,7 @@ const COACH_WHATSAPP = '972587979678';
            followOn='ערך' + followLabel — מציג שדה טקסט כשנבחר הערך הזה. */
 const NUTRITION = [
   { key:'name',   type:'text', q:'שם ושם משפחה' },
+  { key:'phone',  type:'text', q:'מספר טלפון', hint:'כדי שנקשר אליך את התפריט האישי' },
   { key:'age',    type:'text', num:true, q:'גיל' },
   { key:'height', type:'text', num:true, q:'גובה (ס״מ)' },
   { key:'weight', type:'text', num:true, q:'משקל (ק״ג)' },
@@ -192,7 +193,7 @@ const NUTRITION = [
   { key:'photo',  type:'file', optional:true, q:'תמונת גוף ("איך הגוף שלך נראה כרגע")', hint:'עוזר ליועץ להחליט אם מסה / חיטוב / ריקומפוזיציה. לא חובה — אפשר להעלות עכשיו או לשלוח בהמשך.' }
 ];
 
-let photoData = null, photoName = '', lastAnswers = null, lastName = '', lastPdfUri = null;
+let photoData = null, photoName = '', lastAnswers = null, lastName = '', lastPhone = '', lastPdfUri = null;
 const CHECK = '<svg viewBox="0 0 24 24"><path d="M5 13l4 4L19 7"/></svg>';
 
 function esc(s){ return String(s==null?'':s).replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
@@ -325,6 +326,8 @@ function submitForm(){
   fe.classList.remove('show');
   const nameA = res.answers.find(x=>x.q.indexOf('שם')===0);
   lastName = nameA ? nameA.a : '';
+  const phoneA = res.answers.find(x=>x.q==='מספר טלפון');
+  lastPhone = phoneA ? phoneA.a : '';
   lastAnswers = res.answers;
 
   document.getElementById('form').classList.add('hide');
@@ -391,6 +394,7 @@ function upload(answers, uri){
     const payload = {
       type:'nutrition',
       name: lastName,
+      phone: lastPhone,
       answers,
       pdfBase64: (uri.split(',')[1]||''),
       filename: fb.pdf,

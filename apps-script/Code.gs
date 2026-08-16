@@ -36,6 +36,21 @@ const CRM_TRACK_MAP = {
   'מסלול ללא התחייבות': ['ללא התחייבות', 500, 0]   // 0 = בלי תאריך סיום
 };
 
+/* ── ערכת פתיחה + יצירת תפריט אוטומטית ── */
+const KIT_BASE_URL     = 'https://matankopel.pages.dev/kit.html';   // דף ערכת הפתיחה
+const MENU_TEMPLATE_ID = 'PASTE_MENU_TEMPLATE_ID';                  // ID של תבנית שיטס התפריט (מעתיקים ממנה)
+const MENU_FOLDER_ID   = 'PASTE_MENU_FOLDER_ID';                    // ID של התיקייה המשותפת עם היועץ
+const MENU_LINKS_SHEET = 'קישורי תפריט';                            // לשונית מיפוי טלפון→תפריט (בגיליון החתימות)
+// ההודעה שנשלחת עם ערכת הפתיחה (בכפתור "שלח למתאמן")
+const KIT_MESSAGE =
+  'כאן נמצא כל מה שאתה צריך כדי להישאר מדויק ומכוון:\n' +
+  '🎓 קורס תזונה פרקטי – שילמד אותך איך להתנהל תזונתית בחיים ובצבא.\n' +
+  '🎯 מאגר התוכן של היחידה – סרטוני העשרה, ספרים דיגיטליים, כלים מנטליים ועוד\n' +
+  'הדף הזה הוא כמו הבסיס שלך – תחזור אליו מתי שצריך, הוא ילווה אותך כל הדרך, וכך תדע תמיד לאן ממשיכים.\n' +
+  'לא סתם תוכנית. יחידת הקליסטניקס של צה"ל.\n' +
+  'זכור – זו לא תוכנית שאתה רק "עובר בה". זו דרך חיים שאתה מאמץ.\n' +
+  'יאללה, יוצאים לדרך 🔥';
+
 function doPost(e) {
   try {
     const raw = (e && e.parameter && e.parameter.payload) ? e.parameter.payload
@@ -240,12 +255,75 @@ function handleNutrition(d) {
     sheet.appendRow(row);
   }
 
-  sendNutritionEmail(d, file, photoUrl, answers);
-  return json({ ok: true, url: file ? file.getUrl() : '', photoUrl: photoUrl });
+  // 4) יצירת עותק תפריט אוטומטי בתיקייה המשותפת + שמירת הקישור למתאמן (לפי טלפון)
+  const menuUrl = createMenuForTrainee_(d);
+
+  sendNutritionEmail(d, file, photoUrl, answers, menuUrl);
+  return json({ ok: true, url: file ? file.getUrl() : '', photoUrl: photoUrl, menuUrl: menuUrl });
 }
 
-function doGet() {
+function doGet(e) {
+  const p = (e && e.parameter) || {};
+  // API לדף ערכת הפתיחה: ?kit=<טלפון> → מחזיר את קישור התפריט (אם כבר קיים)
+  if (p.kit) {
+    const out = JSON.stringify({ menu: lookupMenu_(p.kit) });
+    return p.callback
+      ? ContentService.createTextOutput(p.callback + '(' + out + ')').setMimeType(ContentService.MimeType.JAVASCRIPT)
+      : ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
+  }
   return json({ ok: true, msg: 'Matan Kopel endpoint is live' });
+}
+
+/* ====== ערכת פתיחה + תפריט אוטומטי ====== */
+function waIntl_(phone) { const k = phoneKey_(phone); return k ? ('972' + k) : ''; }
+
+function kitUrl_(phone, name) {
+  return KIT_BASE_URL + '?id=' + encodeURIComponent(phoneKey_(phone)) + '&name=' + encodeURIComponent(name || '');
+}
+
+/* יוצר עותק של תבנית התפריט בתיקייה המשותפת, משתף לעריכה, ושומר מיפוי טלפון→תפריט. מחזיר את הקישור. */
+function createMenuForTrainee_(d) {
+  try {
+    if (!MENU_TEMPLATE_ID || MENU_TEMPLATE_ID.indexOf('PASTE_') === 0) return '';
+    const name = String(d.name || 'מתאמן').trim();
+    const folder = DriveApp.getFolderById(MENU_FOLDER_ID);
+    const copy = DriveApp.getFileById(MENU_TEMPLATE_ID).makeCopy('תפריט תזונה - ' + name, folder);
+    try { copy.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT); } catch (e) {}
+    const url = copy.getUrl();
+    storeMenuLink_(d.phone, name, url);
+    return url;
+  } catch (err) { return ''; }
+}
+
+/* שומר שורה בלשונית "קישורי תפריט" (בגיליון החתימות): טלפון(מנורמל) | שם | קישור | תאריך */
+function storeMenuLink_(phone, name, url) {
+  try {
+    if (!SHEET_ID) return;
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    let sheet = ss.getSheetByName(MENU_LINKS_SHEET);
+    if (!sheet) {
+      sheet = ss.insertSheet(MENU_LINKS_SHEET);
+      sheet.getRange(1, 1, 1, 4).setValues([['טלפון', 'שם', 'קישור תפריט', 'תאריך']]);
+    }
+    sheet.appendRow([phoneKey_(phone), name, url, new Date()]);
+  } catch (err) {}
+}
+
+/* מחפש קישור תפריט לפי טלפון (החדש ביותר גובר). ריק אם אין. */
+function lookupMenu_(phone) {
+  try {
+    const key = phoneKey_(phone);
+    if (!key || !SHEET_ID) return '';
+    const ss = SpreadsheetApp.openById(SHEET_ID);
+    const sheet = ss.getSheetByName(MENU_LINKS_SHEET);
+    if (!sheet || sheet.getLastRow() < 2) return '';
+    const vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 3).getValues();
+    let url = '';
+    for (let i = 0; i < vals.length; i++) {
+      if (phoneKey_(vals[i][0]) === key && vals[i][2]) url = String(vals[i][2]);
+    }
+    return url;
+  } catch (err) { return ''; }
 }
 
 /* ============ עוזרים ============ */
@@ -277,11 +355,23 @@ function sendNotification(d, file, photoUrl) {
     if (photoUrl) links += '<br>🖼️ <a href="' + photoUrl + '">פתח את תמונת ה"לפני"</a>';
     links += '</p>';
 
+    // כפתור "שלח ערכת פתיחה למתאמן" — וואטסאפ עם ההודעה + הקישור האישי מוכנים
+    let sendBtn = '';
+    const waNum = waIntl_(d.phone);
+    if (waNum) {
+      const waText = encodeURIComponent(KIT_MESSAGE + '\n\n' + kitUrl_(d.phone, d.name));
+      sendBtn =
+        '<div style="margin:18px 0">' +
+        '<a href="https://wa.me/' + waNum + '?text=' + waText + '" ' +
+        'style="display:inline-block;background:#25D366;color:#fff;text-decoration:none;font-weight:bold;padding:13px 24px;border-radius:8px;font-size:15px">📤 שלח ערכת פתיחה למתאמן</a>' +
+        '<div style="color:#888;font-size:12px;margin-top:6px">לחיצה תפתח וואטסאפ עם ההודעה והקישור האישי מוכנים לשליחה.</div></div>';
+    }
+
     MailApp.sendEmail({
       to: NOTIFY_EMAIL,
       subject: '✍️ טופס חתום חדש — ' + (d.name || '') + ' (' + (d.track || '') + ')',
       htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
-        '<h2 style="margin:0 0 12px;color:#2e7d32">✅ טופס חתום חדש התקבל</h2>' + details + intake + links +
+        '<h2 style="margin:0 0 12px;color:#2e7d32">✅ טופס חתום חדש התקבל</h2>' + details + intake + sendBtn + links +
         '<hr style="border:none;border-top:1px solid #ddd;margin:16px 0">' +
         '<p style="color:#999;font-size:12px">נשלח אוטומטית ממערכת החתימות שלך.</p></div>',
       attachments: [file.getAs('application/pdf')]
@@ -289,12 +379,19 @@ function sendNotification(d, file, photoUrl) {
   } catch (err) { /* לא מפילים את הבקשה אם המייל נכשל */ }
 }
 
-function sendNutritionEmail(d, file, photoUrl, answers) {
+function sendNutritionEmail(d, file, photoUrl, answers, menuUrl) {
   if (!NUTRITION_EMAIL) return;
   try {
     const qa = (answers || []).filter(function (x) { return x.a; }).map(function (x) {
       return '<div style="margin-bottom:9px"><b>' + esc(x.q) + '</b><br>' + esc(x.a) + '</div>';
     }).join('');
+    let menuBtn = '';
+    if (menuUrl) {
+      menuBtn =
+        '<div style="margin:4px 0 16px">' +
+        '<a href="' + menuUrl + '" style="display:inline-block;background:#2e7d32;color:#fff;text-decoration:none;font-weight:bold;padding:12px 22px;border-radius:8px">🍽️ פתח את שיטס התפריט (מוכן למילוי)</a>' +
+        '<div style="color:#888;font-size:12px;margin-top:6px">שיטס אישי נוצר אוטומטית עם שם המתאמן, בתיקייה המשותפת — פשוט למלא את התפריט.</div></div>';
+    }
     let links = '';
     if (file) links += '<p style="margin-top:14px">📄 <a href="' + file.getUrl() + '">פתח את השאלון (PDF)</a>';
     if (photoUrl) links += (links ? '<br>' : '<p style="margin-top:14px">') + '🖼️ <a href="' + photoUrl + '">פתח תמונת גוף</a>';
@@ -306,7 +403,7 @@ function sendNutritionEmail(d, file, photoUrl, answers) {
       htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
         '<h2 style="margin:0 0 4px;color:#2e7d32">🥗 שאלון תזונה חדש</h2>' +
         '<p style="margin:0 0 14px;color:#555">מתאמן: <b>' + esc(d.name || '') + '</b></p>' +
-        qa + links +
+        menuBtn + qa + links +
         '<hr style="border:none;border-top:1px solid #ddd;margin:16px 0">' +
         '<p style="color:#999;font-size:12px">נשלח אוטומטית משאלון התזונה של יחידת הקליסטניקס.</p></div>'
     };
