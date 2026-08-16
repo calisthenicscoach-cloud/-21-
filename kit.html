@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ערכת פתיחה · יחידת הקליסטניקס</title>
+<meta name="description" content="ערכת פתיחה — יחידת הקליסטניקס. כל הכלים והתכנים שלך במקום אחד.">
+<meta property="og:title" content="ערכת פתיחה — יחידת הקליסטניקס">
+<meta property="og:description" content="כל הכלים והתכנים שלך במקום אחד — קורס תזונה, מאגר תוכן, גמישות ועוד.">
+<meta property="og:image" content="https://matankopel.pages.dev/assets/mk-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="יחידת הקליסטניקס — Matan Kopel">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mg:#E6CD7C; --mg2:#C6963A; --mgrad:linear-gradient(135deg,#F1DC92,#C6963A);
+    --ink:#F5EFDE; --ink2:#DAD2BB; --mut:#A8A585;
+    --surf:rgba(13,15,7,.52); --line:rgba(230,205,124,.20); --line2:rgba(230,205,124,.46);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Rubik',Arial,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(230,205,124,.06), transparent 60%),
+      linear-gradient(158deg,#3a3e26,#2b2f1c 62%,#232614) fixed;
+    line-height:1.6;-webkit-text-size-adjust:100%;padding-bottom:30px;
+  }
+  .wrap{max-width:620px;margin:0 auto;padding:0 18px}
+  img{max-width:100%;display:block}
+
+  .hero{text-align:center;padding:30px 0 4px}
+  .hero .logo{width:110px;margin:0 auto 10px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+  .hero h1{
+    font-size:30px;line-height:1.15;font-weight:900;margin:2px 0 4px;
+    background:var(--mgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .unit{font-size:14px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
+  .hero .name{
+    display:inline-block;font-size:19px;font-weight:800;color:#2a2410;
+    background:var(--mgrad);border-radius:999px;padding:6px 20px;
+    box-shadow:0 10px 24px -12px rgba(230,205,124,.6);
+  }
+  .welcome{
+    text-align:center;font-size:16px;color:var(--ink2);max-width:520px;margin:20px auto 0;
+  }
+  .welcome b{color:var(--mg)}
+
+  .btns{display:grid;gap:13px;margin:26px 0 0}
+  .btn{
+    display:flex;align-items:center;gap:13px;text-decoration:none;
+    background:var(--surf);border:1px solid var(--line2);border-radius:var(--r);
+    padding:15px 17px;color:var(--ink);font-weight:600;font-size:16.5px;
+    transition:transform .05s;backdrop-filter:blur(3px);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn .ic{flex:none;font-size:24px;line-height:1}
+  .btn .tx{flex:1}
+  .btn .arw{color:var(--mg);font-size:20px;opacity:.8}
+  /* primary (menu) */
+  .btn.primary{
+    background:var(--mgrad);color:#2a2410;border-color:rgba(255,255,255,.25);font-weight:800;font-size:18px;
+    box-shadow:0 14px 30px -12px rgba(230,205,124,.5);
+  }
+  .btn.primary .arw{color:#5a4a12}
+  .btn.primary .sub{display:block;font-size:12.5px;font-weight:600;opacity:.75;margin-top:1px}
+
+  .sec-label{text-align:center;font-size:13px;letter-spacing:.12em;color:var(--mut);
+    text-transform:uppercase;margin:22px 0 -6px}
+
+  footer{text-align:center;color:var(--mut);font-size:12px;padding:26px 0 4px;line-height:1.7}
+  footer .rule{height:1px;background:var(--line);max-width:120px;margin:0 auto 12px}
+
+  @media(max-width:420px){ .hero h1{font-size:25px} .btn{font-size:15.5px} .btn.primary{font-size:16.5px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <img class="logo" src="assets/mk-logo.png" alt="יחידת הקליסטניקס">
+    <h1>ערכת פתיחה</h1>
+    <div class="unit">יחידת הקליסטניקס · Matan Kopel</div>
+    <div class="name" id="name">מתאמן/ת יקר/ה</div>
+  </header>
+
+  <p class="welcome">ברוך הבא ליחידת הקליסטניקס! כאן תמצא את כל הכלים והתכנים
+  שיעזרו לך להפוך <b>ללוחם אמיתי</b> דרך שיטת הקליסטניקס.</p>
+
+  <div class="btns" id="btns">
+    <!-- כפתור התפריט מוזרק כאן אם קיים -->
+    <a class="btn" id="course" href="#" target="_blank" rel="noopener">
+      <span class="ic">🥗</span><span class="tx">קורס התזונה של היחידה</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="content" href="#" target="_blank" rel="noopener">
+      <span class="ic">📚</span><span class="tx">מאגר התוכן של היחידה</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="flex" href="#" target="_blank" rel="noopener">
+      <span class="ic">🧘</span><span class="tx">רוטינת הגמישות</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="band" href="#" target="_blank" rel="noopener">
+      <span class="ic">💪</span><span class="tx">רוטינת חיזוקים עם גומיה</span><span class="arw">‹</span>
+    </a>
+  </div>
+
+  <footer>
+    <div class="rule"></div>
+    מתן קופל · ע.מ 212739486 · יחידת הקליסטניקס<br>
+    כל הזכויות שמורות · הפצה של התוכן כרוכה בעמידה לדין
+  </footer>
+</div>
+
+<script>
+  // קישורים קבועים (זהים לכל מתאמן)
+  const LINKS = {
+    course:  'https://www.youtube.com/playlist?list=PL0tJ6rOOMxzEOW32pD8Yf5c5drCzsAqui',
+    content: 'https://drive.google.com/file/d/1cU-FG-mIiLwpst71trmLAgNXG-cx2QWV/view?usp=drive_link',
+    flex:    'https://youtu.be/_4-P_ypAk28',
+    band:    'https://youtu.be/UPXbfkh84V0?si=JV3EGdg6k2YywMRZ'
+  };
+  Object.keys(LINKS).forEach(function (k) { document.getElementById(k).href = LINKS[k]; });
+
+  const params = new URLSearchParams(location.search);
+  const name = (params.get('name') || '').trim();
+  if (name) document.getElementById('name').textContent = 'שם: ' + name;
+
+  // אם יש תפריט אישי — מזריקים כפתור בולט בראש הרשימה
+  const menu = (params.get('menu') || '').trim();
+  if (menu) {
+    const btns = document.getElementById('btns');
+    const a = document.createElement('a');
+    a.className = 'btn primary';
+    a.href = menu; a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = '<span class="ic">🍽️</span><span class="tx">התפריט האישי שלך' +
+                  '<span class="sub">התפריט + מעקב יומי ושקילות</span></span><span class="arw">‹</span>';
+    btns.insertBefore(a, btns.firstChild);
+    const lbl = document.createElement('div');
+    lbl.className = 'sec-label'; lbl.textContent = 'עוד תכנים של היחידה';
+    btns.insertBefore(lbl, a.nextSibling);
+  }
+</script>
+</body>
+</html>
