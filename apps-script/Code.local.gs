@@ -293,6 +293,12 @@ function createMenuForTrainee_(d) {
     const folder = DriveApp.getFolderById(MENU_FOLDER_ID);
     const copy = DriveApp.getFileById(MENU_TEMPLATE_ID).makeCopy('תפריט תזונה - ' + name, folder);
     try { copy.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.EDIT); } catch (e) {}
+    // כותבים את שם המתאמן בתא שליד "שם לקוח" בתוך השיטס
+    try {
+      const ss = SpreadsheetApp.openById(copy.getId());
+      const cell = ss.createTextFinder('שם לקוח').findNext();
+      if (cell) cell.getSheet().getRange(cell.getRow(), cell.getColumn() + 1).setValue(name);
+    } catch (e) {}
     const url = copy.getUrl();
     storeMenuLink_(d.phone, name, url);
     return url;
