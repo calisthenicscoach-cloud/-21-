@@ -96,16 +96,13 @@ function handleSignature(d) {
     photoUrl = pf.createFile(pblob).getUrl();
   }
 
-  // 3) רישום בגיליון (הלשונית הראשית) — כולל שאלון הכניסה
+  // 3) רישום בגיליון (הלשונית הראשית) — כולל שאלון הכניסה.
+  //    התאמה לפי שם-עמודה: שאלות חדשות נוספות כעמודות חדשות בסוף — בלי להזיז שורות קיימות.
   if (SHEET_ID) {
     const sheet  = SpreadsheetApp.openById(SHEET_ID).getSheets()[0];
     const intake = Array.isArray(d.intake) ? d.intake : [];
     const baseHead = ['תאריך ושעה', 'שם', 'ת"ז', 'מסלול', 'תאריך לידה',
                       'טלפון', 'מייל', 'כתובת', 'קטין / הורה', 'דגלי בריאות', 'קישור למסמך'];
-    const head = baseHead.concat(intake.map(function (x) { return x.q; })).concat(['תמונת "לפני"', 'הערות לקוח']);
-    if (sheet.getLastRow() === 0 || sheet.getLastColumn() < head.length) {
-      sheet.getRange(1, 1, 1, head.length).setValues([head]);
-    }
     const docCell   = '=HYPERLINK("' + file.getUrl() + '","פתח מסמך")';
     const photoCell = photoUrl ? ('=HYPERLINK("' + photoUrl + '","פתח תמונה")') : '';
     const baseVals = [
@@ -113,7 +110,34 @@ function handleSignature(d) {
       d.minor ? ('קטין — ' + d.pname + ' (ת"ז ' + d.pid + ')') : '',
       d.flagged ? ('כן ×' + d.flagged) : 'הכל שלילי', docCell
     ];
-    sheet.appendRow(baseVals.concat(intake.map(function (x) { return x.a; })).concat([photoCell, d.notes || '']));
+    // ערך לכל עמודה לפי שם הכותרת
+    const valByCol = {};
+    for (let i = 0; i < baseHead.length; i++) valByCol[baseHead[i]] = baseVals[i];
+    intake.forEach(function (x) { valByCol[x.q] = x.a; });
+    valByCol['תמונת "לפני"'] = photoCell;
+    valByCol['הערות לקוח'] = d.notes || '';
+
+    const desiredHead = baseHead.concat(intake.map(function (x) { return x.q; })).concat(['תמונת "לפני"', 'הערות לקוח']);
+
+    // כותרת קיימת בגיליון
+    let header = [];
+    if (sheet.getLastRow() >= 1 && sheet.getLastColumn() >= 1) {
+      header = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0].map(function (h) { return String(h); });
+    }
+    if (!header.length || header.join('') === '') {
+      header = desiredHead.slice();
+      sheet.getRange(1, 1, 1, header.length).setValues([header]);
+    } else {
+      // מוסיפים בסוף רק עמודות שעדיין לא קיימות (שאלות חדשות) — בלי להזיז נתונים ישנים
+      const missing = desiredHead.filter(function (h) { return header.indexOf(h) === -1; });
+      if (missing.length) {
+        sheet.getRange(1, header.length + 1, 1, missing.length).setValues([missing]);
+        header = header.concat(missing);
+      }
+    }
+    // בונים שורה בהתאמה מדויקת לכותרת (לפי שם עמודה)
+    const row = header.map(function (h) { return Object.prototype.hasOwnProperty.call(valByCol, h) ? valByCol[h] : ''; });
+    sheet.appendRow(row);
   }
 
   // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") + סימון הליד כ-"נסגר ✅" — אוטומטית
