@@ -1754,15 +1754,54 @@ async function finishSubmit(r){
   lastPdfUri = pdfUri;
 
   if(DRIVE_ENDPOINT && pdfUri){
-    try {
-      const res = await uploadToDrive(r, pdfUri);
-      showDone(r, (res && res.ok) ? 'drive' : 'fail');
-    } catch(e){ showDone(r, 'fail'); }
+    // מזהה ייחודי לאימות מסירה. שולחים את הטופס, ואז מוודאים מול השרת שהוא באמת נקלט —
+    // אם לא (חיבור חלש / קובץ כבד) מציגים גיבוי במקום "הצלחה" שקרית.
+    const sid = 's' + Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
+    try { uploadToDrive(r, pdfUri, sid); } catch(e){}
+    const res = await confirmDelivery(sid);
+    // 'fail' = השרת ענה במפורש שהחתימה לא נקלטה → מציגים גיבוי.
+    // 'ok' = אושר · 'unknown' = אין אימות זמין (רשת/גרסה) → נופלים לאופטימי כמו קודם (בלי "נכשל" שקרי).
+    showDone(r, res === 'fail' ? 'fail' : 'drive');
   } else if(pdfUri){
     showDone(r, 'manual');
   } else {
     showDone(r, 'nopdf');
   }
+}
+
+/* מוודא מול השרת (ב-JSONP — שיטה שכן יכולה לקרוא תשובה) שהחתימה נקלטה. עד ~25 שניות.
+   מחזיר: 'ok' (אושר), 'fail' (השרת ענה במפורש שלא נקלט), 'unknown' (השרת לא זמין לאימות — לא מסמנים כשל). */
+function confirmDelivery(sid){
+  return new Promise(resolve => {
+    let resolved = false, everResponded = false;
+    const deadline = Date.now() + 25000;
+    const done = v => { if(!resolved){ resolved = true; resolve(v); } };
+    (function poll(){
+      if(resolved) return;
+      if(Date.now() >= deadline){ done(everResponded ? 'fail' : 'unknown'); return; }
+      jsonpConfirm(sid, (found, responded) => {
+        if(responded) everResponded = true;
+        if(found){ done('ok'); return; }
+        if(!resolved) setTimeout(poll, 2000);
+      });
+    })();
+  });
+}
+function jsonpConfirm(sid, cb){
+  const cbName = '__cfm' + Math.random().toString(36).slice(2, 9);
+  let s = null, timer = null, called = false;
+  const fire = (found, responded) => { if(called) return; called = true; cleanup(); cb(found, responded); };
+  function cleanup(){
+    try { delete window[cbName]; } catch(_){ window[cbName] = undefined; }
+    if(s && s.parentNode) s.parentNode.removeChild(s);
+    if(timer) clearTimeout(timer);
+  }
+  window[cbName] = data => fire(!!(data && data.found), true);   // השרת ענה
+  s = document.createElement('script');
+  s.src = DRIVE_ENDPOINT + '?confirm=' + encodeURIComponent(sid) + '&callback=' + cbName;
+  s.onerror = () => fire(false, false);          // לא הגיעה תשובה
+  timer = setTimeout(() => fire(false, false), 5000);
+  document.head.appendChild(s);
 }
 
 function makeFilename(r){
@@ -1918,14 +1957,15 @@ async function stampTerms(merged, r, blockIdx){
 
 /* שליחה דרך טופס נסתר אל iframe — השיטה האמינה מול Google Apps Script.
    (fetch עם no-cors לא מגיע ל-doPost בגלל ההפניה של Apps Script; טופס כן.) */
-function uploadToDrive(r, uri){
+function uploadToDrive(r, uri, sid){
   return new Promise(resolve => {
     const payload = {
+      sid: sid || '',
       pdfBase64: (uri.split(',')[1] || ''),
       filename: makeFilename(r),
       name:r.name, id:r.id, track:r.track, dob:r.dob, addr:r.addr,
       email:r.email, phone:r.phone, minor:!!r.minor, pname:r.pname||'', pid:r.pid||'',
-      flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time,
+      flagged: r.parq.filter(p=>p.a==='כן').length, notes:r.notes||'', time:r.time, ts:r.ts,
       intake: r.intake || [],
       photoBase64: r.photoData ? (r.photoData.split(',')[1] || '') : '',
       photoFilename: r.photoData ? photoFilenameFor(r) : ''
