@@ -85,6 +85,9 @@ function doPost(e) {
 
 /* ============ חתימות (הצהרת בריאות + תקנון) ============ */
 function handleSignature(d) {
+  // אישור קליטה מוקדם (לאימות מסירה) — ברגע שהמטען המלא הגיע לשרת ונקרא בהצלחה
+  try { if (d.sid) CacheService.getScriptCache().put(String(d.sid), '1', 900); } catch (e) {}
+
   const root = DriveApp.getFolderById(FOLDER_ID);
 
   const folder = getOrCreateSubfolder(root, SIGN_SUBFOLDER);
@@ -141,9 +144,6 @@ function handleSignature(d) {
     const row = header.map(function (h) { return Object.prototype.hasOwnProperty.call(valByCol, h) ? valByCol[h] : ''; });
     sheet.appendRow(row);
   }
-
-  // אישור קליטה לאפליקציה (לאימות מסירה) — אחרי שה-PDF והגיליון נשמרו
-  try { if (d.sid) CacheService.getScriptCache().put(String(d.sid), '1', 900); } catch (e) {}
 
   // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") + סימון הליד כ-"נסגר ✅" — אוטומטית
   addTraineeToCRM_(d);
