@@ -140,6 +140,9 @@ function handleSignature(d) {
     sheet.appendRow(row);
   }
 
+  // אישור קליטה לאפליקציה (לאימות מסירה) — אחרי שה-PDF והגיליון נשמרו
+  try { if (d.sid) CacheService.getScriptCache().put(String(d.sid), '1', 900); } catch (e) {}
+
   // 4) פתיחת מתאמן חדש ב-CRM ("מתאמנים פעילים") + סימון הליד כ-"נסגר ✅" — אוטומטית
   addTraineeToCRM_(d);
   markLeadClosed_(d);
@@ -311,6 +314,15 @@ function handleNutrition(d) {
 /* בדיקת חיים */
 function doGet(e) {
   const p = (e && e.parameter) || {};
+  // אימות מסירת חתימה: ?confirm=<sid> → האם החתימה נקלטה ונשמרה
+  if (p.confirm) {
+    let found = false;
+    try { found = !!CacheService.getScriptCache().get(String(p.confirm)); } catch (er) {}
+    const out = JSON.stringify({ found: found });
+    return p.callback
+      ? ContentService.createTextOutput(p.callback + '(' + out + ')').setMimeType(ContentService.MimeType.JAVASCRIPT)
+      : ContentService.createTextOutput(out).setMimeType(ContentService.MimeType.JSON);
+  }
   // API לדף ערכת הפתיחה: ?kit=<טלפון> → מחזיר את קישור התפריט (אם כבר קיים)
   if (p.kit) {
     const out = JSON.stringify({ menu: lookupMenu_(p.kit) });
