@@ -38,6 +38,8 @@ const KIT_BASE_URL     = 'https://matankopel.pages.dev/kit.html';           // �
 const MENU_TEMPLATE_ID = '1mDcCq6pFY5_dGy6O1vUjOCIYnDL7CfGcRxfIWayg6sA';    // תבנית שיטס התפריט (מעתיקים ממנה)
 const MENU_FOLDER_ID   = '1eusYKpcc5C5IxzBKQqp_aA_-f5zxNLo8';               // התיקייה המשותפת עם היועץ
 const MENU_LINKS_SHEET = 'קישורי תפריט';                                    // לשונית מיפוי טלפון→תפריט (בגיליון החתימות)
+const MENU_RATE        = 150;                                              // תשלום ליועץ התזונה לכל תפריט (₪)
+
 // ההודעה שנשלחת עם ערכת הפתיחה (בכפתור "שלח למתאמן")
 const KIT_MESSAGE =
   'ברוך הבא ליחידת הקליסטניקס! 💪\n' +
@@ -478,6 +480,53 @@ function sendNutritionEmail(d, file, photoUrl, answers, menuUrl) {
     if (file) opts.attachments = [file.getAs('application/pdf')];
     MailApp.sendEmail(opts);
   } catch (err) { /* לא מפילים את הבקשה אם המייל נכשל */ }
+}
+
+/* ====== סיכום חודשי לתשלום ליועץ התזונה ====== */
+/* הרץ פעם אחת מהעורך (בורר הפונקציות ▸ installMenuBillingTrigger ▸ Run) — מפעיל מייל חודשי ב-1 לחודש, 09:00. */
+function installMenuBillingTrigger() {
+  const have = ScriptApp.getProjectTriggers().map(function (t) { return t.getHandlerFunction(); });
+  if (have.indexOf('sendMenuBillingSummary') === -1) {
+    ScriptApp.newTrigger('sendMenuBillingSummary').timeBased().onMonthDay(1).atHour(9).create();
+  }
+  return 'טריגר חודשי הופעל ✓';
+}
+
+/* סופר את התפריטים שנוצרו בחודש שעבר (לשונית "קישורי תפריט") ושולח סיכום לתשלום ל-NOTIFY_EMAIL. */
+function sendMenuBillingSummary() {
+  if (!NOTIFY_EMAIL || !SHEET_ID) return;
+  const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const now = new Date();
+  const lm = (now.getMonth() === 0) ? 11 : now.getMonth() - 1;
+  const ly = (now.getMonth() === 0) ? now.getFullYear() - 1 : now.getFullYear();
+
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(MENU_LINKS_SHEET);
+  const names = [];
+  if (sheet && sheet.getLastRow() >= 2) {
+    const vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues();  // טלפון, שם, קישור, תאריך
+    vals.forEach(function (r) {
+      let d = r[3];
+      if (!(d instanceof Date)) d = d ? new Date(d) : null;
+      if (d && !isNaN(d) && d.getMonth() === lm && d.getFullYear() === ly) names.push(r[1] || '(ללא שם)');
+    });
+  }
+  const count = names.length;
+  const total = count * MENU_RATE;
+  const list = count
+    ? ('<ol style="margin:6px 0;padding-inline-start:22px">' + names.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ol>')
+    : '<p style="color:#777">לא הוכנו תפריטים בחודש שעבר.</p>';
+
+  MailApp.sendEmail({
+    to: NOTIFY_EMAIL,
+    subject: '🧾 תשלום ליועץ התזונה — ' + months[lm] + ' ' + ly + ' (' + count + ' תפריטים)',
+    htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
+      '<h2 style="margin:0 0 10px;color:#2e7d32">🧾 סיכום תפריטים לתשלום — ' + months[lm] + ' ' + ly + '</h2>' +
+      '<p style="font-size:16px"><b>כמות תפריטים:</b> ' + count + '<br>' +
+      '<b>לתשלום:</b> ' + count + ' × ' + MENU_RATE + ' ₪ = <b style="color:#2e7d32">' + total + ' ₪</b></p>' +
+      '<h3 style="margin:14px 0 4px">המתאמנים:</h3>' + list +
+      '<hr style="border:none;border-top:1px solid #ddd;margin:16px 0">' +
+      '<p style="color:#999;font-size:12px">נשלח אוטומטית בכל 1 לחודש. הספירה לפי תאריך יצירת התפריט (לשונית "קישורי תפריט").</p></div>'
+  });
 }
 
 function esc(s) {
