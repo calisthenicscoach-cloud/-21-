@@ -512,7 +512,8 @@ function sendMenuBillingSummary() {
 
   MailApp.sendEmail({
     to: NOTIFY_EMAIL,
-    subject: '🧾 תשלום ליועץ התזונה — ' + months[lm] + ' ' + ly + ' (' + count + ' תפריטים)',
+    // "תשלום עובד" = תגית קבועה לכל מיילי התשלום לעובדים (לסינון אוטומטי בתווית ב-Gmail)
+    subject: '🧾 תשלום עובד — יועץ תזונה — ' + months[lm] + ' ' + ly + ' (' + count + ' תפריטים)',
     htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
       '<h2 style="margin:0 0 10px;color:#2e7d32">🧾 סיכום תפריטים לתשלום — ' + months[lm] + ' ' + ly + '</h2>' +
       '<p style="font-size:16px"><b>כמות תפריטים:</b> ' + count + '<br>' +
