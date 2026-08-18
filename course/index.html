@@ -257,6 +257,19 @@
   </div>
 </section>
 
+<!-- ========== NO ACCESS (logged in, not purchased) ========== -->
+<section id="noaccess" class="screen">
+  <div class="authbg">
+    <div class="auth-card" style="text-align:center">
+      <div class="sent-ic" style="margin:0 auto 14px"><svg class="ic" viewBox="0 0 24 24"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></div>
+      <h1 style="margin-top:0">הגישה לקורס עדיין לא נפתחה</h1>
+      <p class="lead">החשבון שלך מחובר, אבל הגישה לקורס נפתחת <b>אוטומטית מיד לאחר הרכישה</b>.<br>אם כבר רכשת ועדיין אין גישה — נסה לרענן בעוד רגע, או פנה אלינו.</p>
+      <a id="buyBtn" class="btn-primary" href="#" target="_blank" rel="noopener" style="display:none;text-decoration:none">לרכישת הקורס ←</a>
+      <div class="auth-alt" style="margin-top:14px">התחברת עם חשבון אחר? <a onclick="logout()">התנתק</a></div>
+    </div>
+  </div>
+</section>
+
 <!-- ========== DASHBOARD ========== -->
 <section id="dash" class="screen">
   <div class="topbar">
@@ -414,6 +427,7 @@ const TOTAL=FLAT.length;
 const SUPABASE_URL='https://jfrsvhkqtyxfcwldsekg.supabase.co';
 const SUPABASE_KEY='sb_publishable_RDYVOwoGzaa1ZWh-Wevk5Q_0_51Pq4t';
 const sb = window.supabase ? window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY) : null;
+const SALES_URL=''; // sales-page link; when set, a "buy" button shows on the no-access screen
 
 let profile = null; // { id, email, started_at, done:[], has_access }
 const DAY_MS=86400000;
@@ -655,11 +669,21 @@ async function loadProfile(user){
   const cols='id,email,started_at,done,has_access';
   let { data } = await sb.from('profiles').select(cols).eq('id',user.id).maybeSingle();
   if(!data){ await new Promise(r=>setTimeout(r,700)); ({ data } = await sb.from('profiles').select(cols).eq('id',user.id).maybeSingle()); }
-  profile = data || { id:user.id, email:user.email, started_at:new Date().toISOString(), done:[], has_access:true };
+  profile = data || { id:user.id, email:user.email, started_at:new Date().toISOString(), done:[], has_access:false };
   if(!Array.isArray(profile.done)) profile.done=[];
 }
 let entered=false;
-async function enterApp(user){ if(entered) return; entered=true; await loadProfile(user); setUserUI(); renderDash(); go('dash'); }
+async function enterApp(user){
+  if(entered) return; entered=true;
+  await loadProfile(user);
+  setUserUI();
+  if(!profile || profile.has_access !== true){          // paywall: only paid accounts get in
+    const b=document.getElementById('buyBtn');
+    if(b && SALES_URL){ b.href=SALES_URL; b.style.display='inline-flex'; }
+    go('noaccess'); return;
+  }
+  renderDash(); go('dash');
+}
 
 async function init(){
   if(demoOn()){
