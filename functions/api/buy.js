@@ -15,7 +15,8 @@
  * Env (Cloudflare Pages → Variables and Secrets):
  *   CARDCOM_TERMINAL     e.g. 195652
  *   CARDCOM_API_NAME     the API name from Cardcom (secret)
- *   CARDCOM_AMOUNT       course price in ILS, e.g. 299
+ *   CARDCOM_AMOUNT       course price in ILS, e.g. 147
+ *   CARDCOM_MAX_PAYMENTS max installments the buyer may choose, e.g. 2 (optional, default 1)
  *   CARDCOM_PRODUCT      product name shown on the page (optional)
  *   COURSE_URL           where to send the buyer after a successful payment
  *   CARDCOM_FAIL_URL     where to send the buyer if payment fails (optional)
@@ -90,6 +91,12 @@ export async function onRequestGet(context) {
       ],
     },
   };
+
+  // Optionally let the buyer split the price into up to N payments.
+  const maxPayments = Math.max(1, Math.floor(Number(env.CARDCOM_MAX_PAYMENTS) || 1));
+  if (maxPayments > 1) {
+    body.AdvancedDefinition = { MinNumOfPayments: 1, MaxNumOfPayments: maxPayments };
+  }
 
   let data;
   try {
