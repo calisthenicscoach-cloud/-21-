@@ -62,6 +62,12 @@ export async function onRequestGet(context) {
     ReturnValue: 'course-' + Date.now().toString(36),
     SuccessRedirectUrl: env.COURSE_URL,
     FailedRedirectUrl: failUrl,
+    // The email field is hidden by default — show it and require it, so every
+    // buyer supplies the address we open access to and send the receipt to.
+    UIDefinition: {
+      IsHideCardOwnerEmail: false,
+      IsCardOwnerEmailRequired: true,
+    },
     // The terminal is set to auto-create a receipt, so Cardcom needs the document
     // lines here. Name/email are left for the buyer to fill on the payment page;
     // IsSendByEmail emails the receipt to that address automatically.
