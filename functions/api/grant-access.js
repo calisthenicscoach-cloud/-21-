@@ -1,28 +1,24 @@
 /**
- * POST /api/grant-access
- * Opens course access for a buyer, emails them a passwordless login link, and
- * adds them to the mailing list. Called after a successful payment.
+ * /api/grant-access
+ * Opens course access for a buyer, emails a passwordless login link, and adds
+ * them to the mailing list. Triggered by the Cardcom payment "Notify" webhook
+ * (POST) after a successful payment, or by a shared-secret test call.
  *
- * For now it is protected by a shared secret (GRANT_SECRET) so we can test it
- * with a simulated payment. When Cardcom is wired, its webhook signature /
- * terminal check is added on top and the real buyer email is read from the
- * Cardcom payload.
+ * Auth:
+ *   - our own tests: secret via ?secret= (GET), body.secret, or x-grant-secret header
+ *   - Cardcom Notify: a token in the URL — set the Notify URL to
+ *       https://matankopel.pages.dev/api/grant-access?token=<GRANT_SECRET>
  *
- * Environment variables (Cloudflare Pages → Settings → Variables and Secrets):
- *   SUPABASE_URL           e.g. https://jfrsvhkqtyxfcwldsekg.supabase.co
- *   SUPABASE_SERVICE_ROLE  Supabase service_role key (SECRET — server only)
- *   BREVO_API_KEY          Brevo v3 API key (SECRET)
- *   BREVO_LIST_ID          Brevo contact list id (number)
- *   SENDER_EMAIL           verified Brevo sender, e.g. calisthenics.coach@matankopel.co.il
- *   SENDER_NAME            display name, e.g. "מתן קופל"
- *   COURSE_URL             where the login link lands, e.g. https://matankopel.pages.dev/course/
- *   GRANT_SECRET           shared secret guarding this endpoint (SECRET)
+ * Env (Cloudflare Pages → Variables and Secrets):
+ *   SUPABASE_URL, SUPABASE_SERVICE_ROLE, BREVO_API_KEY, BREVO_LIST_ID,
+ *   SENDER_EMAIL, SENDER_NAME, COURSE_URL, GRANT_SECRET
  */
 
 const json = (obj, status = 200) =>
   new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
+const ok = () => new Response('OK', { status: 200 });
 
-// Health check, and a convenient browser test: /api/grant-access?email=you@x.com&secret=THE_SECRET
+// Health check + browser test: /api/grant-access?email=you@x.com&secret=THE_SECRET
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
@@ -35,16 +31,73 @@ export async function onRequestGet(context) {
   return json({ ok: true, endpoint: 'grant-access', ts: new Date().toISOString() });
 }
 
-// Real trigger (Cardcom webhook will POST here): { "email": "...", "secret": "..." }
+// Real trigger: Cardcom POSTs here (form-encoded); our own test can POST JSON {email, secret}.
 export async function onRequestPost(context) {
   const { request, env } = context;
-  const body = await request.json().catch(() => ({}));
-  const provided = request.headers.get('x-grant-secret') || body.secret || '';
+  const url = new URL(request.url);
+  const params = await parseBody(request);
+  url.searchParams.forEach((v, k) => { if (!(k in params)) params[k] = v; });
+
+  // auth: our secret (header/body) or a URL token (used by the Cardcom Notify URL)
+  const provided = request.headers.get('x-grant-secret') || params.secret || url.searchParams.get('token') || '';
   if (!env.GRANT_SECRET || provided !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
-  return runGrant(env, body.email);
+
+  // Setup phase: email ourselves exactly what arrived so we can lock the field mapping.
+  if (env.BREVO_API_KEY && env.SENDER_EMAIL) { try { await debugEmail(env, params); } catch (e) {} }
+
+  // Only grant on a successful payment (when this looks like a Cardcom notify).
+  if (looksLikeCardcom(params) && !cardcomSucceeded(params)) return ok();
+
+  const email = pickEmail(params);
+  if (!email) return ok(); // acknowledge; nothing to grant yet
+  await runGrant(env, email);
+  return ok(); // Cardcom just needs a 200
 }
 
-// Shared flow: open access → email a login link → add to the mailing list
+/* ---------------- request parsing / field mapping ---------------- */
+
+async function parseBody(request) {
+  const ct = (request.headers.get('content-type') || '').toLowerCase();
+  const raw = await request.text().catch(() => '');
+  if (ct.includes('application/json')) { try { return JSON.parse(raw || '{}'); } catch (e) { return {}; } }
+  const out = {};
+  try { new URLSearchParams(raw).forEach((v, k) => { out[k] = v; }); } catch (e) {}
+  return out;
+}
+
+function pickEmail(p) {
+  const keys = ['email', 'Email', 'EMail', 'mail', 'UserEmail', 'userEmail',
+    'cardownermail', 'CardOwnerEmail', 'cardOwnerEmail', 'owneremail', 'payeremail'];
+  for (const k of keys) { const v = p[k]; if (v && String(v).includes('@')) return String(v).trim().toLowerCase(); }
+  for (const k in p) { const v = String(p[k] || ''); if (v.includes('@') && v.includes('.')) return v.trim().toLowerCase(); }
+  return '';
+}
+
+function looksLikeCardcom(p) {
+  return ['terminalnumber', 'TerminalNumber', 'lowprofilecode', 'LowProfileCode',
+    'ResponseCode', 'OperationResponse', 'DealResponse'].some((k) => k in p);
+}
+
+function cardcomSucceeded(p) {
+  for (const k of ['ResponseCode', 'OperationResponse', 'DealResponse']) {
+    if (k in p) return String(p[k]) === '0';
+  }
+  return true; // can't tell → don't block (debug email will show us the real fields)
+}
+
+async function debugEmail(env, params) {
+  const rows = Object.keys(params).map((k) =>
+    `<tr><td style="padding:2px 8px;border:1px solid #ccc"><b>${k}</b></td><td style="padding:2px 8px;border:1px solid #ccc;word-break:break-all">${String(params[k])}</td></tr>`).join('');
+  const html = `<div dir="ltr"><h3>Cardcom webhook received</h3><table style="border-collapse:collapse">${rows || '<tr><td>(empty)</td></tr>'}</table></div>`;
+  await fetch('https://api.brevo.com/v3/smtp/email', {
+    method: 'POST',
+    headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ sender: { name: 'Webhook Debug', email: env.SENDER_EMAIL }, to: [{ email: env.SENDER_EMAIL }], subject: '🔧 Cardcom webhook debug', htmlContent: html }),
+  });
+}
+
+/* ---------------- grant flow ---------------- */
+
 async function runGrant(env, rawEmail) {
   try {
     const email = String(rawEmail || '').trim().toLowerCase();
@@ -64,49 +117,26 @@ async function runGrant(env, rawEmail) {
 /* ---------------- Supabase admin (REST, service_role) ---------------- */
 
 function sbHeaders(env) {
-  return {
-    apikey: env.SUPABASE_SERVICE_ROLE,
-    authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE,
-    'content-type': 'application/json',
-  };
+  return { apikey: env.SUPABASE_SERVICE_ROLE, authorization: 'Bearer ' + env.SUPABASE_SERVICE_ROLE, 'content-type': 'application/json' };
 }
 
-// create the auth user if missing; ignore "already registered"
 async function ensureUser(env, email) {
   const res = await fetch(env.SUPABASE_URL + '/auth/v1/admin/users', {
-    method: 'POST',
-    headers: sbHeaders(env),
-    body: JSON.stringify({ email, email_confirm: true }),
+    method: 'POST', headers: sbHeaders(env), body: JSON.stringify({ email, email_confirm: true }),
   });
-  if (!res.ok && res.status !== 422) {
-    // 422 = user already exists; anything else is a real error
-    const t = await res.text();
-    throw new Error('createUser failed (' + res.status + '): ' + t);
-  }
+  if (!res.ok && res.status !== 422) { throw new Error('createUser failed (' + res.status + '): ' + (await res.text())); }
 }
 
-// mark the profile as paid (has_access = true). Safe if already true.
 async function grantAccess(env, email) {
-  const res = await fetch(
-    env.SUPABASE_URL + '/rest/v1/profiles?email=eq.' + encodeURIComponent(email),
-    {
-      method: 'PATCH',
-      headers: { ...sbHeaders(env), Prefer: 'return=minimal' },
-      body: JSON.stringify({ has_access: true }),
-    }
-  );
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error('grantAccess failed (' + res.status + '): ' + t);
-  }
+  const res = await fetch(env.SUPABASE_URL + '/rest/v1/profiles?email=eq.' + encodeURIComponent(email), {
+    method: 'PATCH', headers: { ...sbHeaders(env), Prefer: 'return=minimal' }, body: JSON.stringify({ has_access: true }),
+  });
+  if (!res.ok) throw new Error('grantAccess failed (' + res.status + '): ' + (await res.text()));
 }
 
-// admin-generate a magic login link (does not send it — we send via Brevo)
 async function generateMagicLink(env, email) {
   const res = await fetch(env.SUPABASE_URL + '/auth/v1/admin/generate_link', {
-    method: 'POST',
-    headers: sbHeaders(env),
-    body: JSON.stringify({ type: 'magiclink', email, redirect_to: env.COURSE_URL }),
+    method: 'POST', headers: sbHeaders(env), body: JSON.stringify({ type: 'magiclink', email, redirect_to: env.COURSE_URL }),
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error('generateLink failed (' + res.status + '): ' + JSON.stringify(data));
@@ -115,51 +145,29 @@ async function generateMagicLink(env, email) {
   return link;
 }
 
-/* ---------------- Brevo (transactional email + contacts) ---------------- */
+/* ---------------- Brevo (email + contacts) ---------------- */
 
 async function sendLoginEmail(env, email, link) {
   const html = `
     <div dir="rtl" style="font-family:Arial,sans-serif;max-width:520px;margin:auto;color:#111">
       <h2 style="margin:0 0 6px">ברוך הבא לאתגר! 💪</h2>
-      <p style="font-size:15px;line-height:1.6;color:#333">
-        התשלום התקבל והגישה שלך לקורס נפתחה. לחץ על הכפתור כדי להיכנס — בלי סיסמה:
-      </p>
+      <p style="font-size:15px;line-height:1.6;color:#333">התשלום התקבל והגישה שלך לקורס נפתחה. לחץ על הכפתור כדי להיכנס — בלי סיסמה:</p>
       <p style="text-align:center;margin:26px 0">
-        <a href="${link}" style="background:#2563EB;color:#fff;text-decoration:none;
-           font-weight:800;font-size:16px;padding:14px 26px;border-radius:12px;display:inline-block">
-          כניסה לקורס ←
-        </a>
+        <a href="${link}" style="background:#2563EB;color:#fff;text-decoration:none;font-weight:800;font-size:16px;padding:14px 26px;border-radius:12px;display:inline-block">כניסה לקורס ←</a>
       </p>
-      <p style="font-size:12.5px;color:#777;line-height:1.6">
-        אם הכפתור לא עובד, העתק את הקישור הזה לדפדפן:<br>
-        <span style="word-break:break-all">${link}</span>
-      </p>
+      <p style="font-size:12.5px;color:#777;line-height:1.6">אם הכפתור לא עובד, העתק את הקישור לדפדפן:<br><span style="word-break:break-all">${link}</span></p>
     </div>`;
   const res = await fetch('https://api.brevo.com/v3/smtp/email', {
-    method: 'POST',
-    headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
-    body: JSON.stringify({
-      sender: { name: env.SENDER_NAME || 'הקורס', email: env.SENDER_EMAIL },
-      to: [{ email }],
-      subject: 'הכניסה שלך לקורס — 21 יום 🎉',
-      htmlContent: html,
-    }),
+    method: 'POST', headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ sender: { name: env.SENDER_NAME || 'הקורס', email: env.SENDER_EMAIL }, to: [{ email }], subject: 'הכניסה שלך לקורס — 21 יום 🎉', htmlContent: html }),
   });
-  if (!res.ok) {
-    const t = await res.text();
-    throw new Error('sendEmail failed (' + res.status + '): ' + t);
-  }
+  if (!res.ok) throw new Error('sendEmail failed (' + res.status + '): ' + (await res.text()));
 }
 
 async function addToList(env, email) {
   const res = await fetch('https://api.brevo.com/v3/contacts', {
-    method: 'POST',
-    headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json', accept: 'application/json' },
+    method: 'POST', headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
     body: JSON.stringify({ email, listIds: [Number(env.BREVO_LIST_ID)], updateEnabled: true }),
   });
-  // 201 created, 204 updated — both fine; Brevo returns 400 if already in list sometimes
-  if (!res.ok && res.status !== 204) {
-    const t = await res.text();
-    throw new Error('addToList failed (' + res.status + '): ' + t);
-  }
+  if (!res.ok && res.status !== 204) throw new Error('addToList failed (' + res.status + '): ' + (await res.text()));
 }
