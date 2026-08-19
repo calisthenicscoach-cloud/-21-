@@ -42,8 +42,8 @@ export async function onRequestPost(context) {
   const provided = request.headers.get('x-grant-secret') || params.secret || url.searchParams.get('token') || '';
   if (!env.GRANT_SECRET || provided !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
 
-  // Setup phase: email ourselves exactly what arrived so we can lock the field mapping.
-  if (env.BREVO_API_KEY && env.SENDER_EMAIL) { try { await debugEmail(env, params); } catch (e) {} }
+  // Optional debugging: set GRANT_DEBUG=1 to receive a copy of the raw fields.
+  if (env.GRANT_DEBUG === '1' && env.BREVO_API_KEY && env.SENDER_EMAIL) { try { await debugEmail(env, params); } catch (e) {} }
 
   // Only grant on a successful payment (when this looks like a Cardcom notify).
   if (looksLikeCardcom(params) && !cardcomSucceeded(params)) return ok();
@@ -66,8 +66,9 @@ async function parseBody(request) {
 }
 
 function pickEmail(p) {
-  const keys = ['email', 'Email', 'EMail', 'mail', 'UserEmail', 'userEmail',
-    'cardownermail', 'CardOwnerEmail', 'cardOwnerEmail', 'owneremail', 'payeremail'];
+  // Cardcom sends the buyer's address as CardOwnerEmail; the rest are safety nets.
+  const keys = ['CardOwnerEmail', 'cardOwnerEmail', 'cardownermail',
+    'email', 'Email', 'EMail', 'mail', 'UserEmail', 'userEmail', 'owneremail', 'payeremail'];
   for (const k of keys) { const v = p[k]; if (v && String(v).includes('@')) return String(v).trim().toLowerCase(); }
   for (const k in p) { const v = String(p[k] || ''); if (v.includes('@') && v.includes('.')) return v.trim().toLowerCase(); }
   return '';
@@ -78,11 +79,16 @@ function looksLikeCardcom(p) {
     'ResponseCode', 'OperationResponse', 'DealResponse'].some((k) => k in p);
 }
 
+// A Cardcom low-profile deal is approved when the deal response is 0. We do NOT
+// gate on OperationResponse — it can read 5119/"PENDING" on a successful auth.
+// ResponseCode is only a fallback when no deal field is present. Fail closed:
+// if it looks like Cardcom but we can't confirm success, don't grant.
 function cardcomSucceeded(p) {
-  for (const k of ['ResponseCode', 'OperationResponse', 'DealResponse']) {
-    if (k in p) return String(p[k]) === '0';
+  for (const k of ['DealResponse', 'DealRespone']) {
+    if (k in p) return String(p[k]).trim() === '0';
   }
-  return true; // can't tell → don't block (debug email will show us the real fields)
+  if ('ResponseCode' in p) return String(p.ResponseCode).trim() === '0';
+  return false;
 }
 
 async function debugEmail(env, params) {
