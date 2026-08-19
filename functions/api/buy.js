@@ -62,6 +62,16 @@ export async function onRequestGet(context) {
     ReturnValue: 'course-' + Date.now().toString(36),
     SuccessRedirectUrl: env.COURSE_URL,
     FailedRedirectUrl: failUrl,
+    // The terminal is set to auto-create a receipt, so Cardcom needs the document
+    // lines here. Name/email are left for the buyer to fill on the payment page;
+    // IsSendByEmail emails the receipt to that address automatically.
+    Document: {
+      DocumentTypeToCreate: 'Auto',
+      IsSendByEmail: true,
+      Products: [
+        { Description: product, Quantity: 1, UnitCost: amount },
+      ],
+    },
   };
 
   let data;
