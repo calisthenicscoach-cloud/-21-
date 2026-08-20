@@ -134,7 +134,7 @@
     <h2 class="sec-h">מה המטרה שלנו</h2>
     <p class="lead">להביא כל חייל — סדיר, קבע או מילואים — לגוף <span class="em">חטוב וחזק</span> דרך קליסטניקס.
     בלי חדר כושר ובלי ציוד, רק משקל הגוף שלך — כך שתתאמן בכל מקום, גם בלי לו״ז קבוע.
-    ובנוסף לאימון: <span class="em">תפריט תזונה מותאם אישית</span> שיביא אותך לתוצאה.</p>
+    <span id="goalMenu">ובנוסף לאימון: <span class="em">תפריט תזונה מותאם אישית</span> שיביא אותך לתוצאה.</span></p>
   </section>
 
   <section>
@@ -159,7 +159,7 @@
     <div class="card">
       <ul class="feat">
         <li><span class="ic">🥗</span><span><b>קורס תזונה דיגיטלי</b> — מותאם לחיים בצבא</span></li>
-        <li><span class="ic">📋</span><span><b>תפריט אישי</b> לפי המטרות שלך</span></li>
+        <li id="bonusMenu"><span class="ic">📋</span><span><b>תפריט אישי</b> לפי המטרות שלך</span></li>
         <li><span class="ic">📚</span><span>ספרים דיגיטליים: <b>החייל החטוב</b>, <b>חייל במסה</b>, ו-60+ מתכונים</span></li>
         <li><span class="ic">🧠</span><span>בונוסים: כלים מנטליים + קורסים (עמידת ידיים ועוד)</span></li>
         <li><span class="ic">👥</span><span><b>קהילה סגורה</b> + מפגשים אחת לחודשיים</span></li>
@@ -224,13 +224,22 @@
   };
   const ALIAS = { chodesh:'chodesh','1':'chodesh','3':'m3','4':'m3',m3:'m3','8':'m8','10':'m8',m8:'m8',minui:'minui' };
 
-  function currentTrack(){
+  function trackKey(){
     const p = new URLSearchParams(location.search).get('maslul');
-    const key = ALIAS[(p||'').toLowerCase().trim()] || 'm3';
-    return TRACKS[key] || TRACKS.m3;
+    return ALIAS[(p||'').toLowerCase().trim()] || 'm3';
   }
 
-  const t = currentTrack();
+  const key = trackKey();
+  const t = TRACKS[key] || TRACKS.m3;
+
+  // חודש ניסיון לא כולל תפריט אישי — מסתירים את האזכורים שלו
+  if (key === 'chodesh') {
+    ['goalMenu','bonusMenu'].forEach(function(id){
+      const el = document.getElementById(id);
+      if (el) el.style.display = 'none';
+    });
+  }
+
   document.getElementById('pName').textContent = t.name;
   document.getElementById('pAmount').innerHTML = t.amount + (t.per ? ' <small>' + t.per + '</small>' : '');
   document.getElementById('pNote').textContent = t.note;
