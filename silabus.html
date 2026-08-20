@@ -232,8 +232,8 @@
   const key = trackKey();
   const t = TRACKS[key] || TRACKS.m3;
 
-  // חודש ניסיון לא כולל תפריט אישי — מסתירים את האזכורים שלו
-  if (key === 'chodesh') {
+  // חודש ניסיון ומסלול ללא התחייבות לא כוללים תפריט אישי — מסתירים את האזכורים שלו
+  if (key === 'chodesh' || key === 'minui') {
     ['goalMenu','bonusMenu'].forEach(function(id){
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
