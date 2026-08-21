@@ -10,6 +10,10 @@
 <meta property="og:image" content="https://matankopel.pages.dev/assets/mk-logo.png">
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="יחידת הקליסטניקס — Matan Kopel">
+<meta name="theme-color" content="#2b2f1c">
+<link rel="manifest" href="kit.webmanifest">
+<link rel="apple-touch-icon" href="assets/kit-icon-180.png">
+<meta name="apple-mobile-web-app-title" content="יחידת הקליסטניקס">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -74,6 +78,24 @@
   footer{text-align:center;color:var(--mut);font-size:12px;padding:26px 0 4px;line-height:1.7}
   footer .rule{height:1px;background:var(--line);max-width:120px;margin:0 auto 12px}
 
+  /* הוסף למסך הבית */
+  .a2hs{margin:22px 0 4px;background:var(--surf);border:1px dashed var(--line2);
+    border-radius:var(--r);padding:15px 16px;text-align:center}
+  .a2hs-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    background:var(--mgrad);color:#2a2410;border:none;border-radius:12px;
+    font-family:inherit;font-weight:800;font-size:16px;padding:12px 20px;
+    box-shadow:0 10px 24px -12px rgba(230,205,124,.6)}
+  .a2hs-btn:active{transform:translateY(1px)}
+  .a2hs-sub{color:var(--ink2);font-size:13px;margin-top:9px}
+  .a2hs-help{margin-top:12px;text-align:right;color:var(--ink2);font-size:14px;line-height:1.7;
+    background:rgba(0,0,0,.2);border-radius:12px;padding:12px 14px}
+  .a2hs-help b{color:var(--mg)}
+  /* טיפ חשוב */
+  .tipnote{margin:20px 0 0;background:rgba(0,0,0,.2);border:1px solid var(--line);
+    border-right:4px solid var(--mg);border-radius:12px;padding:13px 15px;
+    color:var(--ink2);font-size:14.5px;line-height:1.65}
+  .tipnote b{color:var(--mg)}
+
   @media(max-width:420px){ .hero h1{font-size:25px} .btn{font-size:15.5px} .btn.primary{font-size:16.5px} }
 </style>
 </head>
@@ -90,8 +112,20 @@
   <p class="welcome">ברוך הבא ליחידת הקליסטניקס! כאן תמצא את כל הכלים והתכנים
   שיעזרו לך להפוך <b>ללוחם אמיתי</b> דרך שיטת הקליסטניקס.</p>
 
+  <div class="a2hs" id="a2hs">
+    <button class="a2hs-btn" id="a2hsBtn" type="button">📲 הוסף אותי למסך הבית</button>
+    <div class="a2hs-sub">גישה מהירה לכל הכלים שלך — בלי לחפש בהודעות</div>
+    <div class="a2hs-help" id="a2hsHelp" hidden></div>
+  </div>
+
   <div class="btns" id="btns">
     <!-- כפתור התפריט מוזרק כאן אם קיים -->
+    <a class="btn" id="video" href="https://youtu.be/PIe0jIqBB0M" target="_blank" rel="noopener">
+      <span class="ic">🎬</span><span class="tx">סרטון פתיחה — חובה לצפייה קודם</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="group" href="https://chat.whatsapp.com/FsyBAKToBhF3dWEep1mLMD" target="_blank" rel="noopener">
+      <span class="ic">💬</span><span class="tx">קבוצת יחידת הקליסטניקס</span><span class="arw">‹</span>
+    </a>
     <a class="btn" id="course" href="#" target="_blank" rel="noopener">
       <span class="ic">🥗</span><span class="tx">קורס התזונה של היחידה</span><span class="arw">‹</span>
     </a>
@@ -104,6 +138,11 @@
     <a class="btn" id="band" href="#" target="_blank" rel="noopener">
       <span class="ic">💪</span><span class="tx">רוטינת חיזוקים עם גומיה</span><span class="arw">‹</span>
     </a>
+  </div>
+
+  <div class="tipnote">
+    <b>טיפ חשוב להתקדמות:</b> צלם סרטונים מהאימונים — לפחות סט ראשון בכל תרגיל.
+    ככה נוכל לראות שאתה עושה נכון, לתת לך דגשים אישיים ולתקן מה שצריך. לכל שאלה — אנחנו פה בשבילך.
   </div>
 
   <footer>
@@ -158,6 +197,37 @@
     s.onerror = function () { /* אם הבדיקה נכשלת — מציגים בלי תפריט, לא שוברים כלום */ };
     document.head.appendChild(s);
   }
+
+  // הוסף למסך הבית — הדרכה מותאמת למכשיר, ו-prompt מקורי כשקיים (עצמאי, לא נוגע בשאר)
+  (function () {
+    const banner = document.getElementById('a2hs');
+    if (!banner) return;
+    const btn = document.getElementById('a2hsBtn');
+    const help = document.getElementById('a2hsHelp');
+
+    // אם הדף כבר "מותקן" ונפתח מהאייקון — אין טעם להציג את הפס
+    const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                      window.navigator.standalone === true;
+    if (installed) { banner.style.display = 'none'; return; }
+
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    let deferred = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+    window.addEventListener('appinstalled', function () { banner.style.display = 'none'; });
+
+    const iosHelp = 'באייפון (בדפדפן Safari): לחץ על כפתור <b>השיתוף</b> (ריבוע עם חץ למעלה) בסרגל התחתון, ' +
+                    'גלול ובחר <b>"הוסף למסך הבית"</b>, ואז <b>"הוסף"</b>.';
+    const andHelp = 'באנדרואיד (בדפדפן Chrome): לחץ על <b>⋮</b> (שלוש נקודות) בפינה העליונה, ' +
+                    'ואז בחר <b>"הוסף למסך הבית"</b> / <b>"התקן אפליקציה"</b>.';
+
+    btn.addEventListener('click', function () {
+      if (deferred) { deferred.prompt(); deferred = null; return; }
+      help.innerHTML = isIOS ? iosHelp : andHelp;
+      help.hidden = false;
+    });
+  })();
 </script>
 </body>
 </html>
