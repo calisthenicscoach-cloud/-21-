@@ -59,6 +59,16 @@ const VENDORS = [
     source:  'pdf',                              // הסכום ב-EUR בתוך PDF → מומר לשקל
     amount:  googleWorkspaceAmount_,
     month:   gwMonth_
+  },
+  {
+    name:   'עמלות אשראי חודשיות',
+    method: 'אשראי',
+    query:  'subject:(סיכום תשלומי)',
+    fromMatch:    /grow|matankopel/i,            // Grow (info@mail.grow.business) או פורוורד
+    subjectMatch: /סיכום תשלומי/,
+    source:  'xlsx',                             // הסכום בקובץ Excel מצורף (סכום עמודת "עמלת אשראי")
+    amount:  growFeeAmount_,
+    month:   growMonth_
   }
 ];
 
@@ -178,15 +188,18 @@ function run_(dryRun) {
         if (v.subjectMatch && !v.subjectMatch.test(msg.getSubject())) return;
         cSubj++;
 
-        const text = (v.source === 'pdf') ? extractPdfText_(msg) : (msg.getPlainBody() || '');
-        const amt = v.amount(text);
+        let data;
+        if (v.source === 'pdf') data = extractPdfText_(msg);
+        else if (v.source === 'xlsx') data = extractXlsxValues_(msg);
+        else data = msg.getPlainBody() || '';
+        const amt = v.amount(data);
         if (amt == null || !(amt > 0)) {
           const w = '⚠️ לא זוהה סכום: ' + msg.getSubject();
           report.push(w); Logger.log(w);
           return;
         }
         cAmt++;
-        const month = v.month ? v.month(text, msg.getDate()) : hebMonth_(text, msg.getDate());
+        const month = v.month ? v.month(data, msg.getDate()) : hebMonth_(data, msg.getDate());
 
         if (dryRun) {
           const line = v.name + ' | ' + amt + '₪ | חודש ' + month;
@@ -361,6 +374,63 @@ function gwMonth_(text, fallbackDate) {
   const map = { 'ינואר':1,'פברואר':2,'מרץ':3,'אפריל':4,'מאי':5,'יוני':6,'יולי':7,'אוגוסט':8,'ספטמבר':9,'אוקטובר':10,'נובמבר':11,'דצמבר':12 };
   const m = text.match(/(ינואר|פברואר|מרץ|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר)/);
   if (m) return map[m[1]];
+  return fallbackDate.getMonth() + 1;
+}
+
+/* ===== עמלות אשראי (Grow): הסכום בקובץ Excel מצורף ===== */
+const HEB_MONTHS = { 'ינואר':1,'פברואר':2,'מרץ':3,'אפריל':4,'מאי':5,'יוני':6,'יולי':7,'אוגוסט':8,'ספטמבר':9,'אוקטובר':10,'נובמבר':11,'דצמבר':12 };
+
+// ממיר את ה-Excel המצורף לגיליון זמני ומחזיר את כל הערכים (מערך דו-ממדי)
+function extractXlsxValues_(msg) {
+  const atts = msg.getAttachments();
+  let xls = null;
+  for (let i = 0; i < atts.length; i++) {
+    if (/sheet|excel|xlsx/i.test(atts[i].getContentType()) || /\.xlsx?$/i.test(atts[i].getName())) { xls = atts[i]; break; }
+  }
+  if (!xls) return null;
+  let tmpId = null, values = null;
+  try {
+    let tmp;
+    if (typeof Drive !== 'undefined' && Drive.Files && Drive.Files.create) {
+      tmp = Drive.Files.create({ name: 'tmp-xlsx', mimeType: 'application/vnd.google-apps.spreadsheet' }, xls.copyBlob());
+    } else {
+      tmp = Drive.Files.insert({ title: 'tmp-xlsx', mimeType: 'application/vnd.google-apps.spreadsheet' }, xls.copyBlob(), { convert: true });
+    }
+    tmpId = tmp.id;
+    values = SpreadsheetApp.openById(tmpId).getSheets()[0].getDataRange().getValues();
+  } catch (e) { Logger.log('קריאת Excel נכשלה: ' + e); }
+  if (tmpId) { try { DriveApp.getFileById(tmpId).setTrashed(true); } catch (e) {} }
+  return values;
+}
+
+// סכום עמודת "עמלת אשראי" (שורות נתונים בלבד — מדלג על שורת סיכום שאין בה "חודש חיוב")
+function growFeeAmount_(values) {
+  if (!values || !values.length) return null;
+  const head = values[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+  const feeCol = head.indexOf('עמלת אשראי');
+  const monCol = head.indexOf('חודש חיוב');
+  if (feeCol === -1) return null;
+  let sum = 0;
+  for (let r = 1; r < values.length; r++) {
+    if (monCol >= 0 && !String(values[r][monCol] == null ? '' : values[r][monCol]).trim()) continue;
+    const n = Number(values[r][feeCol]);
+    if (!isNaN(n)) sum += n;
+  }
+  return Math.round(sum * 100) / 100;
+}
+
+// חודש מתוך עמודת "חודש חיוב" (שם חודש בעברית)
+function growMonth_(values, fallbackDate) {
+  if (values && values.length) {
+    const head = values[0].map(function (h) { return String(h == null ? '' : h).trim(); });
+    const monCol = head.indexOf('חודש חיוב');
+    if (monCol >= 0) {
+      for (let r = 1; r < values.length; r++) {
+        const name = String(values[r][monCol] == null ? '' : values[r][monCol]).trim();
+        if (HEB_MONTHS[name]) return HEB_MONTHS[name];
+      }
+    }
+  }
   return fallbackDate.getMonth() + 1;
 }
 
