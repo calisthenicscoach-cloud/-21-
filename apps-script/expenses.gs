@@ -112,11 +112,14 @@ function run_(dryRun) {
   let added = 0;
 
   VENDORS.forEach(function (v) {
-    const afterClause = dryRun ? 'newer_than:180d' : ('after:' + START_AFTER);
-    const q = v.query + ' ' + afterClause + (dryRun ? '' : (' -label:' + PROCESSED_LABEL));
-    const threads = GmailApp.search(q, 0, 50);
+    // חיפוש לפי הנושא בלבד (תאריך ו"כבר נקלט" מסוננים בקוד — מקפים שוברים את חיפוש Gmail)
+    const threads = GmailApp.search(v.query, 0, 100);
 
     threads.forEach(function (th) {
+      if (!dryRun) {
+        const names = th.getLabels().map(function (l) { return l.getName(); });
+        if (names.indexOf(PROCESSED_LABEL) !== -1) return; // כבר נקלט
+      }
       let handled = false;
       th.getMessages().forEach(function (msg) {
         if (!dryRun && msg.getDate() < startDate) return;
