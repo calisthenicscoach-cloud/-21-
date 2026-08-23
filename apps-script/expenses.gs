@@ -246,22 +246,24 @@ function extractPdfText_(msg) {
     if (atts[i].getContentType() === 'application/pdf' || /\.pdf$/i.test(atts[i].getName())) { pdf = atts[i]; break; }
   }
   if (!pdf) return '';
-  let tmpId = null, text = '';
-  try {
-    let tmp;
-    if (Drive.Files.create) { // Drive API v3
-      tmp = Drive.Files.create(
-        { name: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' },
-        pdf.copyBlob(), { ocrLanguage: 'he' });
-    } else {                  // Drive API v2
-      tmp = Drive.Files.insert(
-        { title: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' },
-        pdf.copyBlob(), { ocr: true, ocrLanguage: 'he' });
-    }
-    tmpId = tmp.id;
-    text = DocumentApp.openById(tmpId).getBody().getText();
-  } catch (e) { Logger.log('OCR נכשל: ' + e); }
-  if (tmpId) { try { DriveApp.getFileById(tmpId).setTrashed(true); } catch (e) {} }
+  const meta3 = { name: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' };
+  const meta2 = { title: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' };
+  const attempts = (typeof Drive !== 'undefined' && Drive.Files && Drive.Files.create)
+    ? [ function () { return Drive.Files.create(meta3, pdf.copyBlob()); },
+        function () { return Drive.Files.create(meta3, pdf.copyBlob(), { ocrLanguage: 'iw' }); } ]
+    : [ function () { return Drive.Files.insert(meta2, pdf.copyBlob(), { ocr: true }); },
+        function () { return Drive.Files.insert(meta2, pdf.copyBlob(), { ocr: true, ocrLanguage: 'iw' }); } ];
+
+  let text = '';
+  for (let i = 0; i < attempts.length && !text; i++) {
+    let tmpId = null;
+    try {
+      const tmp = attempts[i]();
+      tmpId = tmp.id;
+      text = DocumentApp.openById(tmpId).getBody().getText();
+    } catch (e) { Logger.log('OCR ניסיון ' + (i + 1) + ' נכשל: ' + e); }
+    if (tmpId) { try { DriveApp.getFileById(tmpId).setTrashed(true); } catch (e) {} }
+  }
   return text;
 }
 
