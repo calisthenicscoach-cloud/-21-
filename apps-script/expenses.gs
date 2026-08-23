@@ -40,6 +40,15 @@ const VENDORS = [
     source:  'pdf',                              // הסכום נמצא בקובץ ה-PDF המצורף
     amount:  cardcomAmount_,
     month:   cardcomMonth_
+  },
+  {
+    name:   'וי כחול אינסטגרם',
+    method: 'אשראי',
+    query:  'subject:("automatic payment reminder")',
+    fromMatch:    /instagram|meta|facebook|matankopel/i, // עמיד גם לפורוורד ידני וגם אוטומטי
+    subjectMatch: /automatic payment reminder/i,
+    amount: metaVerifiedAmount_,
+    month:  metaVerifiedMonth_
   }
 ];
 
@@ -298,6 +307,26 @@ function cardcomAmount_(text) {
 // חודש מחשבונית קארדקום: תאריך DD/MM/YYYY; אם אין — לפי תאריך המייל
 function cardcomMonth_(text, fallbackDate) {
   const m = text.match(/(\d{1,2})\/(\d{1,2})\/20\d{2}/);
+  if (m) return Number(m[2]);
+  return fallbackDate.getMonth() + 1;
+}
+
+// סכום Meta Verified (וי כחול): "Total ₪42.89"; אם לא — הסכום הגדול ביותר עם ₪
+function metaVerifiedAmount_(text) {
+  const m = text.match(/(?:^|[\s>(])Total\b[\s\S]{0,12}?₪?\s*([0-9][0-9.,]*)/);
+  if (m && toNum_(m[1]) > 0) return toNum_(m[1]);
+  const nums = [];
+  let x, re = /₪\s*([0-9][0-9.,]*)/g;
+  while ((x = re.exec(text))) nums.push(toNum_(x[1]));
+  re = /([0-9][0-9.,]*)\s*₪/g;
+  while ((x = re.exec(text))) nums.push(toNum_(x[1]));
+  const pos = nums.filter(function (n) { return n > 0; });
+  return pos.length ? Math.max.apply(null, pos) : null;
+}
+
+// חודש Meta Verified: מתוך "charged on YYYY/MM/DD"; אם אין — לפי תאריך המייל
+function metaVerifiedMonth_(text, fallbackDate) {
+  const m = text.match(/charged on\s*(\d{4})\/(\d{1,2})\/(\d{1,2})/i);
   if (m) return Number(m[2]);
   return fallbackDate.getMonth() + 1;
 }
