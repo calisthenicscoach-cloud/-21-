@@ -64,6 +64,7 @@ function onOpen() {
     .addItem('קליטה עכשיו', 'scanExpenses')
     .addSeparator()
     .addItem('אבחון (בדיקת חיבור)', 'diagnoseExpenses')
+    .addItem('בדיקת קארדקום PDF', 'dumpCardcom')
     .addItem('הפעל קליטה אוטומטית (טריגר)', 'installExpensesTrigger')
     .addToUi();
 }
@@ -107,6 +108,23 @@ function dumpReceipt() {
     '\n\n700 תווים ראשונים:\n' + body.substring(0, 700);
   Logger.log(info);
   SpreadsheetApp.getUi().alert('בדיקת גוף המייל', info, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
+/* בדיקת חילוץ ה-PDF של קארדקום */
+function dumpCardcom() {
+  const th = GmailApp.search('subject:(חשבונית קארדקום)', 0, 1);
+  if (!th.length) { SpreadsheetApp.getUi().alert('לא נמצא מייל קארדקום'); return; }
+  const msg = th[0].getMessages()[0];
+  const names = msg.getAttachments().map(function (a) { return a.getName() + ' (' + a.getContentType() + ')'; }).join(', ');
+  const text = extractPdfText_(msg);
+  const money = (text.match(/[0-9][0-9,]*\.\d{2}/g) || []).join(', ');
+  const info = 'קבצים מצורפים: ' + (names || '(אין)') +
+    '\nאורך טקסט מה-PDF: ' + text.length +
+    '\nסכום שזוהה: ' + cardcomAmount_(text) +
+    '\nמספרים עם 2 ספרות: ' + (money || '(אין)') +
+    '\n\n500 תווים ראשונים:\n' + text.substring(0, 500);
+  Logger.log(info);
+  SpreadsheetApp.getUi().alert('בדיקת קארדקום PDF', info, SpreadsheetApp.getUi().ButtonSet.OK);
 }
 
 /* ===== מנוע ===== */
