@@ -55,7 +55,7 @@ const VENDORS = [
     method: 'אשראי',
     query:  'subject:(Google Workspace)',
     fromMatch:    /google\.com|payments-noreply/i,
-    subjectMatch: /Google Workspace/i,
+    subjectMatch: /חשבונית/,                      // רק מייל החשבונית, לא עדכוני מוצר/ניסיון
     source:  'pdf',                              // הסכום ב-EUR בתוך PDF → מומר לשקל
     amount:  googleWorkspaceAmount_,
     month:   gwMonth_
