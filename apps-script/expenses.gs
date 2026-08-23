@@ -110,10 +110,12 @@ function run_(dryRun) {
   const startDate = parseYmd_(START_AFTER);
   const report = [];
   let added = 0;
+  let cThreads = 0, cDate = 0, cFrom = 0, cSubj = 0, cAmt = 0;
 
   VENDORS.forEach(function (v) {
     // חיפוש לפי הנושא בלבד (תאריך ו"כבר נקלט" מסוננים בקוד — מקפים שוברים את חיפוש Gmail)
     const threads = GmailApp.search(v.query, 0, 100);
+    cThreads += threads.length;
 
     threads.forEach(function (th) {
       if (!dryRun) {
@@ -123,8 +125,11 @@ function run_(dryRun) {
       let handled = false;
       th.getMessages().forEach(function (msg) {
         if (!dryRun && msg.getDate() < startDate) return;
+        cDate++;
         if (v.fromMatch && !v.fromMatch.test(msg.getFrom())) return;
+        cFrom++;
         if (v.subjectMatch && !v.subjectMatch.test(msg.getSubject())) return;
+        cSubj++;
 
         const text = msg.getPlainBody() || '';
         const amt = v.amount(text);
@@ -133,6 +138,7 @@ function run_(dryRun) {
           report.push(w); Logger.log(w);
           return;
         }
+        cAmt++;
         const month = hebMonth_(text, msg.getDate());
 
         if (dryRun) {
@@ -152,13 +158,20 @@ function run_(dryRun) {
   Logger.log(dryRun ? '— סיום בדיקה (לא נכתב כלום) —' : ('— נקלטו ' + added + ' חיובים —'));
 
   // חלון סיכום (רק כשמריצים ידנית מהתפריט; בטריגר אין UI)
+  const funnel = 'מסלול הסינון:\n' +
+    'נמצאו בחיפוש: ' + cThreads + '\n' +
+    'עברו תאריך: ' + cDate + '\n' +
+    'עברו שולח: ' + cFrom + '\n' +
+    'עברו נושא: ' + cSubj + '\n' +
+    'חולץ סכום: ' + cAmt + '\n\n';
+  Logger.log(funnel);
   try {
     const ui = SpreadsheetApp.getUi();
     const head = dryRun
-      ? 'בדיקה בלבד — כלום לא נכתב בגיליון.\nאלו החיובים שהיו נקלטים:\n\n'
-      : ('נקלטו ' + added + ' חיובים לגיליון:\n\n');
+      ? 'בדיקה בלבד — כלום לא נכתב בגיליון.\n\n'
+      : ('נקלטו ' + added + ' חיובים לגיליון.\n\n');
     ui.alert(dryRun ? 'בדיקת קליטת הוצאות' : 'קליטת הוצאות',
-             head + (report.length ? report.join('\n') : 'לא נמצאו קבלות מתאימות.'),
+             head + funnel + (report.length ? report.join('\n') : 'לא נמצאו קבלות מתאימות.'),
              ui.ButtonSet.OK);
   } catch (e) { /* אין UI (הרצת טריגר) — מדלגים */ }
 }
