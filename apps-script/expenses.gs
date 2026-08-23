@@ -49,6 +49,16 @@ const VENDORS = [
     subjectMatch: /automatic payment reminder/i,
     amount: metaVerifiedAmount_,
     month:  metaVerifiedMonth_
+  },
+  {
+    name:   'מייל עסקי',
+    method: 'אשראי',
+    query:  'subject:(Google Workspace)',
+    fromMatch:    /google\.com|payments-noreply/i,
+    subjectMatch: /Google Workspace/i,
+    source:  'pdf',                              // הסכום ב-EUR בתוך PDF → מומר לשקל
+    amount:  googleWorkspaceAmount_,
+    month:   gwMonth_
   }
 ];
 
@@ -328,6 +338,29 @@ function metaVerifiedAmount_(text) {
 function metaVerifiedMonth_(text, fallbackDate) {
   const m = text.match(/charged on\s*(\d{4})\/(\d{1,2})\/(\d{1,2})/i);
   if (m) return Number(m[2]);
+  return fallbackDate.getMonth() + 1;
+}
+
+/* ===== מייל עסקי (Google Workspace): סכום ב-EUR מתוך PDF → המרה לשקל ===== */
+const FX_FALLBACK = { EURILS: 4.0, USDILS: 3.7 };
+function fxRate_(from, to) {
+  try {
+    const res = UrlFetchApp.fetch('https://api.frankfurter.app/latest?from=' + from + '&to=' + to, { muteHttpExceptions: true });
+    const j = JSON.parse(res.getContentText());
+    if (j && j.rates && j.rates[to]) return j.rates[to];
+  } catch (e) { Logger.log('שער חליפין נכשל: ' + e); }
+  return FX_FALLBACK[from + to] || 1;
+}
+function googleWorkspaceAmount_(text) {
+  const nums = (text.match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
+  if (!nums.length) return null;
+  const eur = Math.max.apply(null, nums);
+  return Math.round(eur * fxRate_('EUR', 'ILS') * 100) / 100;
+}
+function gwMonth_(text, fallbackDate) {
+  const map = { 'ינואר':1,'פברואר':2,'מרץ':3,'אפריל':4,'מאי':5,'יוני':6,'יולי':7,'אוגוסט':8,'ספטמבר':9,'אוקטובר':10,'נובמבר':11,'דצמבר':12 };
+  const m = text.match(/(ינואר|פברואר|מרץ|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר)/);
+  if (m) return map[m[1]];
   return fallbackDate.getMonth() + 1;
 }
 
