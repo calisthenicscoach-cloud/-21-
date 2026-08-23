@@ -24,7 +24,7 @@ const START_AFTER        = '2026/08/23';         // קולט רק קבלות מ�
 /* ===== כללי ספקים (להוספת ספק חדש – מוסיפים אובייקט לרשימה) ===== */
 const VENDORS = [
   {
-    name:   'מודעות Meta',                       // ← מה שייכתב בעמודה A
+    name:   'ממומן',                             // ← מה שייכתב בעמודה A (תואם לשם הקיים בגיליון)
     method: 'אשראי',                             // ← עמודה B (אשראי / העברה בנקאית / ביט)
     query:  'from:business-updates.facebook.com', // חיפוש Gmail
     fromMatch:    /business-updates\.facebook\.com/i,
