@@ -30,6 +30,16 @@ const VENDORS = [
     fromMatch:    /facebook/i,
     subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,      // רק קבלות אמת (עמיד לתווי כיווניות נסתרים)
     amount: metaAdsAmount_
+  },
+  {
+    name:   'קארדקום',
+    method: 'אשראי',
+    query:  'subject:(חשבונית קארדקום)',
+    fromMatch:    /cardcom/i,
+    subjectMatch: /חשבונית/,
+    source:  'pdf',                              // הסכום נמצא בקובץ ה-PDF המצורף
+    amount:  cardcomAmount_,
+    month:   cardcomMonth_
   }
 ];
 
@@ -131,7 +141,7 @@ function run_(dryRun) {
         if (v.subjectMatch && !v.subjectMatch.test(msg.getSubject())) return;
         cSubj++;
 
-        const text = msg.getPlainBody() || '';
+        const text = (v.source === 'pdf') ? extractPdfText_(msg) : (msg.getPlainBody() || '');
         const amt = v.amount(text);
         if (amt == null || !(amt > 0)) {
           const w = '⚠️ לא זוהה סכום: ' + msg.getSubject();
@@ -139,7 +149,7 @@ function run_(dryRun) {
           return;
         }
         cAmt++;
-        const month = hebMonth_(text, msg.getDate());
+        const month = v.month ? v.month(text, msg.getDate()) : hebMonth_(text, msg.getDate());
 
         if (dryRun) {
           const line = v.name + ' | ' + amt + '₪ | חודש ' + month;
@@ -226,6 +236,51 @@ function metaAdsAmount_(text) {
 }
 
 function toNum_(s) { return parseFloat(String(s).replace(/,/g, '')); }
+
+/* ===== קארדקום: חילוץ הסכום מתוך ה-PDF המצורף ===== */
+// דורש שירות מתקדם "Drive API" (Services → +). עובד גם ל-v2 וגם ל-v3.
+function extractPdfText_(msg) {
+  const atts = msg.getAttachments();
+  let pdf = null;
+  for (let i = 0; i < atts.length; i++) {
+    if (atts[i].getContentType() === 'application/pdf' || /\.pdf$/i.test(atts[i].getName())) { pdf = atts[i]; break; }
+  }
+  if (!pdf) return '';
+  let tmpId = null, text = '';
+  try {
+    let tmp;
+    if (Drive.Files.create) { // Drive API v3
+      tmp = Drive.Files.create(
+        { name: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' },
+        pdf.copyBlob(), { ocrLanguage: 'he' });
+    } else {                  // Drive API v2
+      tmp = Drive.Files.insert(
+        { title: 'tmp-ocr', mimeType: 'application/vnd.google-apps.document' },
+        pdf.copyBlob(), { ocr: true, ocrLanguage: 'he' });
+    }
+    tmpId = tmp.id;
+    text = DocumentApp.openById(tmpId).getBody().getText();
+  } catch (e) { Logger.log('OCR נכשל: ' + e); }
+  if (tmpId) { try { DriveApp.getFileById(tmpId).setTrashed(true); } catch (e) {} }
+  return text;
+}
+
+// סכום חשבונית קארדקום: "סה"כ שקל ₪177.00"; אם OCR ערבב — הסכום הגדול ביותר עם 2 ספרות אחרי הנקודה
+function cardcomAmount_(text) {
+  let m = text.match(/סה["״'`]?כ\s*שקל[\s\S]{0,12}?([0-9][0-9,]*\.\d{2})/);
+  if (m) return toNum_(m[1]);
+  m = text.match(/סה["״'`]?כ[\s\S]{0,20}?([0-9][0-9,]*\.\d{2})/);
+  if (m) return toNum_(m[1]);
+  const nums = (text.match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
+  return nums.length ? Math.max.apply(null, nums) : null;
+}
+
+// חודש מחשבונית קארדקום: תאריך DD/MM/YYYY; אם אין — לפי תאריך המייל
+function cardcomMonth_(text, fallbackDate) {
+  const m = text.match(/(\d{1,2})\/(\d{1,2})\/20\d{2}/);
+  if (m) return Number(m[2]);
+  return fallbackDate.getMonth() + 1;
+}
 
 // חודש מתוך תאריך עברי בגוף המייל ("28 במאי 2026"); אם אין — לפי תאריך המייל
 function hebMonth_(text, fallbackDate) {
