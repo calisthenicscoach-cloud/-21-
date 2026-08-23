@@ -53,8 +53,32 @@ function onOpen() {
     .addItem('בדיקה (ללא שינוי) — Log', 'previewExpenses')
     .addItem('קליטה עכשיו', 'scanExpenses')
     .addSeparator()
+    .addItem('אבחון (בדיקת חיבור)', 'diagnoseExpenses')
     .addItem('הפעל קליטה אוטומטית (טריגר)', 'installExpensesTrigger')
     .addToUi();
+}
+
+/* אבחון: מגלה איזה חשבון קורא את המייל ומה החיפושים מוצאים */
+function diagnoseExpenses() {
+  const lines = [];
+  try { lines.push('חשבון פעיל: ' + (Session.getActiveUser().getEmail() || '(ריק)')); } catch (e) { lines.push('חשבון פעיל: ?'); }
+  try { lines.push('חשבון אפקטיבי: ' + (Session.getEffectiveUser().getEmail() || '(ריק)')); } catch (e) {}
+
+  const queries = ['subject:(הקבלה מודעות Meta)', 'מודעות Meta', 'הקבלה שלך', 'facebook'];
+  queries.forEach(function (q) {
+    let th = [];
+    try { th = GmailApp.search(q, 0, 5); } catch (e) { lines.push('\n["' + q + '"] שגיאה: ' + e); return; }
+    lines.push('\n["' + q + '"] → ' + th.length + ' תוצאות');
+    th.slice(0, 2).forEach(function (t) {
+      const m = t.getMessages()[0];
+      lines.push('  from: ' + m.getFrom());
+      lines.push('  subj: ' + m.getSubject());
+    });
+  });
+
+  const out = lines.join('\n');
+  Logger.log(out);
+  try { SpreadsheetApp.getUi().alert('אבחון קליטת הוצאות', out, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
 }
 
 /* ===== מנוע ===== */
