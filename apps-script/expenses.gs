@@ -81,6 +81,24 @@ function diagnoseExpenses() {
   try { SpreadsheetApp.getUi().alert('אבחון קליטת הוצאות', out, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
 }
 
+/* מציץ בגוף הקבלה הראשונה כדי לראות איך נראה הטקסט (לצורך תיקון חילוץ הסכום) */
+function dumpReceipt() {
+  const th = GmailApp.search('subject:(הקבלה מודעות Meta)', 0, 1);
+  if (!th.length) { SpreadsheetApp.getUi().alert('אין תוצאות'); return; }
+  const msg = th[0].getMessages()[0];
+  const body = msg.getPlainBody() || '';
+  const money = body.split('\n').filter(function (l) { return /₪|ILS|סכום|סה/.test(l); })
+                    .slice(0, 12).map(function (l) { return l.trim(); });
+  const info =
+    'אורך גוף: ' + body.length +
+    '\n₪? ' + (body.indexOf('₪') >= 0) + ' | ILS? ' + (body.indexOf('ILS') >= 0) +
+    '\nסכום שזוהה: ' + metaAdsAmount_(body) +
+    '\n\nשורות עם סכום:\n' + (money.join('\n') || '(אין)') +
+    '\n\n700 תווים ראשונים:\n' + body.substring(0, 700);
+  Logger.log(info);
+  SpreadsheetApp.getUi().alert('בדיקת גוף המייל', info, SpreadsheetApp.getUi().ButtonSet.OK);
+}
+
 /* ===== מנוע ===== */
 function run_(dryRun) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
