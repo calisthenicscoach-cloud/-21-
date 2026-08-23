@@ -28,7 +28,7 @@ const VENDORS = [
     method: 'אשראי',                             // ← עמודה B (אשראי / העברה בנקאית / ביט)
     query:  'subject:(הקבלה מודעות Meta)',        // חיפוש לפי נושא (בשולח יש מקף שמבלבל את Gmail)
     fromMatch:    /facebook/i,
-    subjectMatch: /הקבלה שלך.{0,25}מודעות\s*Meta/, // רק קבלות אמת, לא מיילים שיווקיים
+    subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,      // רק קבלות אמת (עמיד לתווי כיווניות נסתרים)
     amount: metaAdsAmount_
   }
 ];
