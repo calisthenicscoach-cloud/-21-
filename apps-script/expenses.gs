@@ -66,6 +66,7 @@ function run_(dryRun) {
   const label = dryRun ? null :
     (GmailApp.getUserLabelByName(PROCESSED_LABEL) || GmailApp.createLabel(PROCESSED_LABEL));
   const startDate = parseYmd_(START_AFTER);
+  const report = [];
   let added = 0;
 
   VENDORS.forEach(function (v) {
@@ -83,18 +84,20 @@ function run_(dryRun) {
         const text = msg.getPlainBody() || '';
         const amt = v.amount(text);
         if (amt == null || !(amt > 0)) {
-          Logger.log('⚠️ לא הצלחתי לחלץ סכום: "%s"', msg.getSubject());
+          const w = '⚠️ לא זוהה סכום: ' + msg.getSubject();
+          report.push(w); Logger.log(w);
           return;
         }
         const month = hebMonth_(text, msg.getDate());
 
         if (dryRun) {
-          Logger.log('[בדיקה] %s | %s₪ | חודש %s | %s', v.name, amt, month, msg.getSubject());
+          const line = v.name + ' | ' + amt + '₪ | חודש ' + month;
+          report.push(line); Logger.log('[בדיקה] ' + line);
         } else {
           addExpense_(sh, v.name, v.method, amt, month);
-          handled = true;
-          added++;
-          Logger.log('✓ נקלט: %s | %s₪ | חודש %s', v.name, amt, month);
+          handled = true; added++;
+          const line = '✓ ' + v.name + ' | ' + amt + '₪ | חודש ' + month;
+          report.push(line); Logger.log(line);
         }
       });
       if (handled && label) th.addLabel(label);
@@ -102,6 +105,17 @@ function run_(dryRun) {
   });
 
   Logger.log(dryRun ? '— סיום בדיקה (לא נכתב כלום) —' : ('— נקלטו ' + added + ' חיובים —'));
+
+  // חלון סיכום (רק כשמריצים ידנית מהתפריט; בטריגר אין UI)
+  try {
+    const ui = SpreadsheetApp.getUi();
+    const head = dryRun
+      ? 'בדיקה בלבד — כלום לא נכתב בגיליון.\nאלו החיובים שהיו נקלטים:\n\n'
+      : ('נקלטו ' + added + ' חיובים לגיליון:\n\n');
+    ui.alert(dryRun ? 'בדיקת קליטת הוצאות' : 'קליטת הוצאות',
+             head + (report.length ? report.join('\n') : 'לא נמצאו קבלות מתאימות.'),
+             ui.ButtonSet.OK);
+  } catch (e) { /* אין UI (הרצת טריגר) — מדלגים */ }
 }
 
 /* מוצא שורת (ספק+חודש) קיימת ומוסיף לסכום, אחרת יוצר שורה חדשה */
