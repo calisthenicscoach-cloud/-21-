@@ -26,9 +26,9 @@ const VENDORS = [
   {
     name:   'ממומן',                             // ← מה שייכתב בעמודה A (תואם לשם הקיים בגיליון)
     method: 'אשראי',                             // ← עמודה B (אשראי / העברה בנקאית / ביט)
-    query:  'from:business-updates.facebook.com', // חיפוש Gmail
-    fromMatch:    /business-updates\.facebook\.com/i,
-    subjectMatch: /מודעות\s*Meta/i,               // "הקבלה שלך על מודעות Meta ..."
+    query:  'subject:(הקבלה מודעות Meta)',        // חיפוש לפי נושא (בשולח יש מקף שמבלבל את Gmail)
+    fromMatch:    /facebook/i,
+    subjectMatch: /הקבלה שלך.{0,25}מודעות\s*Meta/, // רק קבלות אמת, לא מיילים שיווקיים
     amount: metaAdsAmount_
   }
 ];
