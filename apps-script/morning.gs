@@ -32,13 +32,16 @@ function morningToken_() {
   return j.token;
 }
 
-/* בדיקת חיבור — הרץ מהעורך (בחר morningAuthTest → Run) */
+/* בדיקת חיבור — הרץ מהעורך (בחר morningAuthTest → Run), ותסתכל ב"יומן ביצוע" */
 function morningAuthTest() {
-  const ui = SpreadsheetApp.getUi();
+  let msg;
   try {
     const t = morningToken_();
-    ui.alert('מורנינג — בדיקת חיבור', 'התחברות הצליחה ✅\n\nהתקבל טוקן תקין (' + String(t).length + ' תווים).\nאפשר להמשיך לשלב הבא.', ui.ButtonSet.OK);
+    msg = 'התחברות הצליחה ✅  (טוקן תקין, ' + String(t).length + ' תווים)';
   } catch (e) {
-    ui.alert('מורנינג — בדיקת חיבור', 'ההתחברות נכשלה ❌\n\n' + e.message, ui.ButtonSet.OK);
+    msg = 'ההתחברות נכשלה ❌  ' + e.message;
   }
+  Logger.log(msg);
+  try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת חיבור', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  return msg;
 }
