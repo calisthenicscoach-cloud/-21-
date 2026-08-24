@@ -113,7 +113,8 @@ function morningTestExpense() {
       reportingDate: Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM') + '-01',
       currency: 'ILS',
       vatType: 0,
-      amount: 1
+      amount: 1,
+      accountingClassification: { id: '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24' }
     };
     const r = morningCreateExpense_(token, payload);
     out = 'קוד תשובה: ' + r.code + '\n\n' + r.body.substring(0, 1000);
