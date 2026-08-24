@@ -186,35 +186,36 @@ function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   return false;
 }
 
-/* בדיקה חד-פעמית: מגלה איך מורנינג מקבל קובץ מצורף (כתובת ההעלאה החתומה).
-   ה-API דורש מזהה הוצאה, אז שולפים אחת ומנסים את שתי צורות ה-URL. */
+/* בדיקה מכרעת: יוצר הוצאה טרייה ומנסה 4 צורות של כתובת העלאת קובץ.
+   הצורה שתחזיר 200 (עם url/שדות) היא הנכונה. נוצרת הוצאת בדיקה למחיקה. */
 function morningProbeFileUpload() {
   let out = '';
   try {
     const token = morningToken_();
-    const sres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
-      method: 'post', contentType: 'application/json',
-      headers: { Authorization: 'Bearer ' + token },
-      payload: JSON.stringify({ page: 1, pageSize: 1, sort: 'creationDate' }),
-      muteHttpExceptions: true
-    });
-    const sj = JSON.parse(sres.getContentText());
-    const item = (sj.items && sj.items[0]) || (sj.rows && sj.rows[0]) || null;
-    const id = item ? item.id : '(אין)';
-    out += 'expense id: ' + id + '\n\n';
+    const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
+    const rep = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM') + '-01';
+    const payload = {
+      description: 'בדיקת צירוף — נא למחוק', date: today, reportingDate: rep,
+      documentType: 305, number: '9001', currency: 'ILS', currencyRate: 1,
+      amount: 1, vatType: 0, vat: 0, amountExcludeVat: 1,
+      accountingClassification: { id: '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24' },
+      supplier: { name: 'בדיקת צירוף' }
+    };
+    const cr = morningCreateExpense_(token, payload);
+    let id = '', st = '';
+    try { const j = JSON.parse(cr.body); id = j.id || ''; st = j.status; } catch (e) {}
+    out += 'create -> ' + cr.code + '  id=' + id + '  status=' + st + '\n\n';
 
-    const r1 = UrlFetchApp.fetch(MORNING_BASE + '/expenses/' + id + '/file', {
-      method: 'get', headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true
-    });
-    out += 'A) /expenses/{id}/file -> ' + r1.getResponseCode() + '\n' + r1.getContentText().substring(0, 650) + '\n\n';
+    function g(url) { const r = UrlFetchApp.fetch(url, { method: 'get', headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true }); return r.getResponseCode() + ' ' + r.getContentText().substring(0, 170); }
+    function p(url, body) { const r = UrlFetchApp.fetch(url, { method: 'post', contentType: 'application/json', headers: { Authorization: 'Bearer ' + token }, payload: JSON.stringify(body || {}), muteHttpExceptions: true }); return r.getResponseCode() + ' ' + r.getContentText().substring(0, 170); }
 
-    const r2 = UrlFetchApp.fetch(MORNING_BASE + '/expenses/file?id=' + encodeURIComponent(id), {
-      method: 'get', headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true
-    });
-    out += 'B) /expenses/file?id= -> ' + r2.getResponseCode() + '\n' + r2.getContentText().substring(0, 650);
+    out += 'A GET /expenses/' + id + '/file:\n' + g(MORNING_BASE + '/expenses/' + id + '/file') + '\n\n';
+    out += 'B GET /expenses/file?id=:\n' + g(MORNING_BASE + '/expenses/file?id=' + encodeURIComponent(id)) + '\n\n';
+    out += 'C POST /expenses/file {id}:\n' + p(MORNING_BASE + '/expenses/file', { id: id }) + '\n\n';
+    out += 'D POST /expenses/file {expenseId}:\n' + p(MORNING_BASE + '/expenses/file', { expenseId: id });
   } catch (e) { out += 'שגיאה: ' + e.message; }
   Logger.log(out);
-  try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת העלאת קובץ', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת צירוף', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return out;
 }
 
