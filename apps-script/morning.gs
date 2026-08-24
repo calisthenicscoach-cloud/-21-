@@ -47,6 +47,24 @@ function morningAuthTest() {
 }
 
 /* יוצר הוצאה במורנינג ומחזיר את התשובה הגולמית (קוד + גוף) */
+/* שולף הוצאות קיימות ומדפיס אחת — כדי ללמוד את שמות השדות והפורמטים האמיתיים */
+function morningInspectExpense() {
+  let out;
+  try {
+    const token = morningToken_();
+    const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
+      method: 'post', contentType: 'application/json',
+      headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ page: 1, pageSize: 3, sort: 'creationDate' }),
+      muteHttpExceptions: true
+    });
+    out = 'קוד: ' + res.getResponseCode() + '\n\n' + res.getContentText().substring(0, 2500);
+  } catch (e) { out = 'שגיאה: ' + e.message; }
+  Logger.log(out);
+  try { SpreadsheetApp.getUi().alert('מורנינג — הוצאות קיימות', out.substring(0, 1400), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  return out;
+}
+
 function morningCreateExpense_(token, d) {
   const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses', {
     method: 'post',
