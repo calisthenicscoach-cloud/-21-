@@ -68,6 +68,7 @@ function morningTestExpense() {
       description: 'בדיקת אוטומציה — נא למחוק',
       date: Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd'),
       supplier: { name: 'בדיקה אוטומציה' },
+      number: 'TEST-001',
       currency: 'ILS',
       vatType: 0,
       amount: 1
