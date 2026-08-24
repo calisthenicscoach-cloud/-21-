@@ -29,7 +29,8 @@ const VENDORS = [
     query:  'subject:(הקבלה מודעות Meta)',        // חיפוש לפי נושא (בשולח יש מקף שמבלבל את Gmail)
     fromMatch:    /facebook/i,
     subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,      // רק קבלות אמת (עמיד לתווי כיווניות נסתרים)
-    amount: metaAdsAmount_
+    amount: metaAdsAmount_,
+    month:  emailMonth_                          // חודש לפי תאריך המייל (רגע החיוב)
   },
   {
     name:   'קארדקום',
@@ -39,7 +40,7 @@ const VENDORS = [
     subjectMatch: /חשבונית/,
     source:  'pdf',                              // הסכום נמצא בקובץ ה-PDF המצורף
     amount:  cardcomAmount_,
-    month:   cardcomMonth_
+    month:   emailMonth_                         // חודש לפי תאריך המייל (רגע החיוב)
   },
   {
     name:   'וי כחול אינסטגרם',
@@ -48,7 +49,7 @@ const VENDORS = [
     fromMatch:    /instagram|meta|facebook|matankopel/i, // עמיד גם לפורוורד ידני וגם אוטומטי
     subjectMatch: /automatic payment reminder/i,
     amount: metaVerifiedAmount_,
-    month:  metaVerifiedMonth_
+    month:  emailMonth_                          // חודש לפי תאריך המייל (רגע החיוב)
   },
   {
     name:   'מייל עסקי',
@@ -58,7 +59,7 @@ const VENDORS = [
     subjectMatch: /חשבונית/,                      // רק מייל החשבונית, לא עדכוני מוצר/ניסיון
     source:  'pdf',                              // הסכום ב-EUR בתוך PDF → מומר לשקל
     amount:  googleWorkspaceAmount_,
-    month:   gwMonth_
+    month:   emailMonth_                         // חודש לפי תאריך המייל (רגע החיוב)
   },
   {
     name:   'עמלות אשראי חודשיות',
@@ -78,7 +79,7 @@ const VENDORS = [
     subjectMatch: /receipt from Anthropic/i,
     source:  'pdf',                             // הסכום ב-USD בתוך PDF → מומר לשקל
     amount:  claudeAmount_,
-    month:   claudeMonth_
+    month:   emailMonth_                         // חודש לפי תאריך המייל (רגע החיוב)
   },
   {
     name:   'canva',
