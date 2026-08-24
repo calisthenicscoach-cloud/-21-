@@ -187,15 +187,21 @@ function run_(dryRun) {
   let added = 0;
   let cThreads = 0, cDate = 0, cFrom = 0, cSubj = 0, cAmt = 0;
 
+  // מורנינג (קובץ morning.gs): שולח כל קבלה גם כהוצאה במורנינג. אופציונלי — אם הקובץ/המפתחות לא קיימים, מדלגים.
+  const mEnabled = !dryRun && (typeof morningEnabled_ === 'function') && morningEnabled_();
+  const mStart = mEnabled ? morningStartDate_() : null;
+  let mSent = 0, mFail = 0;
+
   VENDORS.forEach(function (v) {
     // חיפוש לפי הנושא בלבד (תאריך ו"כבר נקלט" מסוננים בקוד — מקפים שוברים את חיפוש Gmail)
     const threads = GmailApp.search(v.query, 0, 100);
     cThreads += threads.length;
 
     threads.forEach(function (th) {
+      let sheetDone = false;
       if (!dryRun) {
         const names = th.getLabels().map(function (l) { return l.getName(); });
-        if (names.indexOf(PROCESSED_LABEL) !== -1) return; // כבר נקלט
+        sheetDone = names.indexOf(PROCESSED_LABEL) !== -1; // כבר נקלט לשיטס
       }
       let handled = false;
       th.getMessages().forEach(function (msg) {
@@ -205,6 +211,10 @@ function run_(dryRun) {
         cFrom++;
         if (v.subjectMatch && !v.subjectMatch.test(msg.getSubject())) return;
         cSubj++;
+
+        const needSheet   = !dryRun && !sheetDone;
+        const needMorning = !dryRun && mEnabled && msg.getDate() >= mStart && !morningSentHas_(msg.getId());
+        if (!dryRun && !needSheet && !needMorning) return; // כבר טופל גם בשיטס וגם במורנינג — לא קוראים שוב PDF/Excel
 
         let data;
         if (v.source === 'pdf') data = extractPdfText_(msg);
@@ -222,12 +232,20 @@ function run_(dryRun) {
         if (dryRun) {
           const line = v.name + ' | ' + amt + '₪ | חודש ' + month;
           report.push(line); Logger.log('[בדיקה] ' + line);
-        } else {
-          addExpense_(sh, v.name, v.method, amt, month);
-          handled = true; added++;
-          const line = '✓ ' + v.name + ' | ' + amt + '₪ | חודש ' + month;
-          report.push(line); Logger.log(line);
+          return;
         }
+
+        let tag = '✓';
+        if (needSheet) { addExpense_(sh, v.name, v.method, amt, month); handled = true; added++; }
+        if (needMorning) {
+          let ok = false;
+          try { ok = sendToMorning_(v.name, amt, msg.getDate(), month, msg.getId()); }
+          catch (e) { Logger.log('מורנינג נכשל: ' + e); }
+          if (ok) { morningSentAdd_(msg.getId()); mSent++; tag += ' + מורנינג'; }
+          else { mFail++; tag += ' (מורנינג נכשל)'; }
+        }
+        const line = tag + ' ' + v.name + ' | ' + amt + '₪ | חודש ' + month;
+        report.push(line); Logger.log(line);
       });
       if (handled && label) th.addLabel(label);
     });
@@ -241,13 +259,14 @@ function run_(dryRun) {
     'עברו תאריך: ' + cDate + '\n' +
     'עברו שולח: ' + cFrom + '\n' +
     'עברו נושא: ' + cSubj + '\n' +
-    'חולץ סכום: ' + cAmt + '\n\n';
+    'חולץ סכום: ' + cAmt + '\n' +
+    'נשלחו למורנינג: ' + mSent + (mFail ? (' (נכשלו: ' + mFail + ')') : '') + '\n\n';
   Logger.log(funnel);
   try {
     const ui = SpreadsheetApp.getUi();
     const head = dryRun
       ? 'בדיקה בלבד — כלום לא נכתב בגיליון.\n\n'
-      : ('נקלטו ' + added + ' חיובים לגיליון.\n\n');
+      : ('נקלטו ' + added + ' חיובים לגיליון' + (mSent ? (', ' + mSent + ' נשלחו למורנינג') : '') + '.\n\n');
     ui.alert(dryRun ? 'בדיקת קליטת הוצאות' : 'קליטת הוצאות',
              head + funnel + (report.length ? report.join('\n') : 'לא נמצאו קבלות מתאימות.'),
              ui.ButtonSet.OK);

@@ -87,6 +87,105 @@ function morningCreateExpense_(token, d) {
   return { code: res.getResponseCode(), body: res.getContentText() };
 }
 
+/* ===================================================================== */
+/* חיבור לקליטת ההוצאות (expenses.gs): כל קבלה שנקלטת → הוצאה במורנינג      */
+/* ===================================================================== */
+
+// שולח למורנינג רק קבלות מהתאריך הזה והלאה (מונע כפילות עם מה שהוזן ידנית).
+// ניתן לשנות ב-Script Properties: MORNING_START_AFTER (פורמט YYYY/MM/DD)
+const MORNING_START_AFTER = '2026/08/24';
+// סיווג הוצאה לצורכי מס ("עלויות אחרות"). ניתן לעקוף ב-Script Properties: MORNING_CLASS_ID
+const MORNING_CLASS_ID_DEFAULT = '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24';
+
+// שם הספק במורנינג לפי שם הספק בגיליון (ברירת מחדל: שם הספק עצמו)
+const MORNING_SUPPLIER = {
+  'ממומן':                 'Meta Platforms Ireland',
+  'וי כחול אינסטגרם':       'Meta Platforms Ireland',
+  'קארדקום':               'Cardcom',
+  'מייל עסקי':             'Google',
+  'עמלות אשראי חודשיות':    'Grow',
+  'קלוד':                  'Anthropic',
+  'canva':                 'Canva'
+};
+
+let _morningToken = null;
+function morningTokenCached_() {
+  if (!_morningToken) _morningToken = morningToken_();
+  return _morningToken;
+}
+
+// האם החיבור פעיל (מפתחות קיימים ולא כובה ידנית)
+function morningEnabled_() {
+  const p = PropertiesService.getScriptProperties();
+  if (p.getProperty('MORNING_DISABLED') === '1') return false;
+  return !!(p.getProperty('MORNING_KEY_ID') && p.getProperty('MORNING_KEY_SECRET'));
+}
+
+function morningClassId_() {
+  return PropertiesService.getScriptProperties().getProperty('MORNING_CLASS_ID') || MORNING_CLASS_ID_DEFAULT;
+}
+
+function morningStartDate_() {
+  const s = PropertiesService.getScriptProperties().getProperty('MORNING_START_AFTER') || MORNING_START_AFTER;
+  const p = s.split('/');
+  return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+}
+
+/* מזהי מיילים שכבר נשלחו למורנינג — מונע כפילות (נשמר ב-Script Properties) */
+let _morningSent = null;
+function morningSentLoad_() {
+  if (_morningSent === null) {
+    _morningSent = {};
+    const raw = PropertiesService.getScriptProperties().getProperty('MORNING_SENT') || '';
+    raw.split('\n').forEach(function (x) { if (x) _morningSent[x] = 1; });
+  }
+  return _morningSent;
+}
+function morningSentHas_(id) { return !!morningSentLoad_()[id]; }
+function morningSentAdd_(id) {
+  const s = morningSentLoad_(); s[id] = 1;
+  let keys = Object.keys(s);
+  if (keys.length > 1000) keys = keys.slice(keys.length - 1000);
+  PropertiesService.getScriptProperties().setProperty('MORNING_SENT', keys.join('\n'));
+}
+
+/* מספר מסמך נומרי דטרמיניסטי מתוך מזהה המייל (אותו מייל → אותו מספר תמיד) */
+function morningNumber_(seed) {
+  const bytes = Utilities.computeDigest(Utilities.DigestAlgorithm.MD5, String(seed));
+  let digits = '';
+  for (let i = 0; i < bytes.length && digits.length < 14; i++) {
+    digits += ('00' + (bytes[i] & 0xff)).slice(-3);
+  }
+  return digits.substring(0, 12);
+}
+
+/* יוצר הוצאה אחת במורנינג מתוך קבלה שנקלטה. מחזיר true אם הצליח.
+   הסכום כבר בשקלים (מומר במחלצים של expenses.gs). כעוסק פטור: vat=0, כל הסכום כהוצאה. */
+function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
+  const token = morningTokenCached_();
+  const amt = Math.round(Number(amountILS) * 100) / 100;
+  const mm = ('0' + month).slice(-2);
+  const payload = {
+    description: vendorName,
+    date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'),
+    reportingDate: dateObj.getFullYear() + '-' + mm + '-01',
+    documentType: 305,
+    number: morningNumber_(seed),
+    currency: 'ILS',
+    currencyRate: 1,
+    amount: amt,
+    vatType: 0,
+    vat: 0,
+    amountExcludeVat: amt,
+    accountingClassification: { id: morningClassId_() },
+    supplier: { name: MORNING_SUPPLIER[vendorName] || vendorName }
+  };
+  const r = morningCreateExpense_(token, payload);
+  if (r.code === 200 || r.code === 201) return true;
+  Logger.log('מורנינג יצירת הוצאה נכשלה (' + r.code + '): ' + String(r.body).substring(0, 200));
+  return false;
+}
+
 /* בדיקה חכמה: מנסה כמה גרסאות payload עד שאחת עוברת. עוצר בהצלחה הראשונה
    (כך נוצרת לכל היותר הוצאת בדיקה אחת של 1 ₪ למחיקה). */
 function morningTestExpense() {
