@@ -1,16 +1,10 @@
 /**
  * אינטגרציה למורנינג (Green Invoice) — יצירת הוצאות אוטומטית מהקבלות
- * ---------------------------------------------------------------
- * קובץ נפרד בתוך אותו פרויקט Apps Script של גיליון הכספים.
- * המפתחות נשמרים ב-Script Properties (Project Settings → Script Properties),
- * לא בקוד: MORNING_KEY_ID , MORNING_KEY_SECRET
- *
- * שלב 1 (הקובץ הזה): חיבור בלבד — morningAuthTest() מוודא שהמפתח עובד.
+ * המפתחות נשמרים ב-Script Properties: MORNING_KEY_ID , MORNING_KEY_SECRET
  */
 
 const MORNING_BASE = 'https://api.greeninvoice.co.il/api/v1';
 
-/* מקבל טוקן גישה מהמפתחות ששמורים ב-Script Properties */
 function morningToken_() {
   const props = PropertiesService.getScriptProperties();
   const id = props.getProperty('MORNING_KEY_ID');
@@ -32,26 +26,23 @@ function morningToken_() {
   return j.token;
 }
 
-/* בדיקת חיבור — הרץ מהעורך (בחר morningAuthTest → Run), ותסתכל ב"יומן ביצוע" */
 function morningAuthTest() {
   let msg;
   try {
     const t = morningToken_();
-    msg = 'התחברות הצליחה ✅  (טוקן תקין, ' + String(t).length + ' תווים)';
+    msg = 'התחברות הצליחה  (טוקן תקין, ' + String(t).length + ' תווים)';
   } catch (e) {
-    msg = 'ההתחברות נכשלה ❌  ' + e.message;
+    msg = 'ההתחברות נכשלה  ' + e.message;
   }
   Logger.log(msg);
   try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת חיבור', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return msg;
 }
 
-/* שולף הוצאה אמיתית אחת בפירוט מלא — כדי ללמוד את שם השדה של "סוג הוצאה" */
 function morningInspectExpense() {
   let out;
   try {
     const token = morningToken_();
-    // 1) מחפשים הוצאה קיימת אחת
     const sres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
       method: 'post', contentType: 'application/json',
       headers: { Authorization: 'Bearer ' + token },
@@ -63,14 +54,12 @@ function morningInspectExpense() {
     if (!item) { out = 'לא נמצאו הוצאות. תשובת search:\n' + sres.getContentText().substring(0, 1200); }
     else {
       const id = item.id;
-      // 2) מושכים את ההוצאה בפירוט מלא
       const dres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/' + id, {
         method: 'get',
         headers: { Authorization: 'Bearer ' + token },
         muteHttpExceptions: true
       });
       const full = JSON.parse(dres.getContentText());
-      // 3) בונים רשימת שדות קומפקטית: שם שדה = ערך מקוצר
       const lines = [];
       Object.keys(full).forEach(function (k) {
         let v = full[k];
@@ -98,28 +87,54 @@ function morningCreateExpense_(token, d) {
   return { code: res.getResponseCode(), body: res.getContentText() };
 }
 
-/* שלב 2: יוצר הוצאת בדיקה אחת (סכום 1 ₪) ומדפיס את התשובה של ה-API.
-   מריצים מהעורך (בחר morningTestExpense → Run) ובודקים ב"יומן ביצוע". */
+/* בדיקה חכמה: מנסה כמה גרסאות payload עד שאחת עוברת. עוצר בהצלחה הראשונה
+   (כך נוצרת לכל היותר הוצאת בדיקה אחת של 1 ₪ למחיקה). */
 function morningTestExpense() {
   let out;
   try {
     const token = morningToken_();
-    const payload = {
+    const today = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd');
+    const rep = Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM') + '-01';
+    const CLS = { id: '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24' };
+
+    const base = {
       description: 'בדיקת אוטומציה — נא למחוק',
-      date: Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd'),
-      supplier: { name: 'בדיקה אוטומציה' },
-      number: 'TEST-001',
+      date: today,
+      reportingDate: rep,
       documentType: 305,
-      reportingDate: Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM') + '-01',
+      number: '1001',
       currency: 'ILS',
-      vatType: 0,
+      currencyRate: 1,
       amount: 1,
-      accountingClassification: { id: '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24' }
+      accountingClassification: CLS
     };
-    const r = morningCreateExpense_(token, payload);
-    out = 'קוד תשובה: ' + r.code + '\n\n' + r.body.substring(0, 1000);
+    function clone(extra) { return Object.assign({}, base, extra); }
+
+    const variants = [
+      ['V1 sup.name',        clone({ supplier: { name: 'בדיקה אוטומציה' } })],
+      ['V2 vatType0',        clone({ supplier: { name: 'בדיקה אוטומציה' }, vatType: 0 })],
+      ['V3 country',         clone({ supplier: { name: 'בדיקה אוטומציה', country: 'IL' } })],
+      ['V4 taxId',           clone({ supplier: { name: 'בדיקה אוטומציה', taxId: '212739486' } })],
+      ['V5 vat0+excl',       clone({ supplier: { name: 'בדיקה אוטומציה' }, vatType: 0, vat: 0, amountExcludeVat: 1 })],
+      ['V6 docType320',      clone({ supplier: { name: 'בדיקה אוטומציה' }, documentType: 320 })],
+      ['V7 docType400',      clone({ supplier: { name: 'בדיקה אוטומציה' }, documentType: 400 })],
+      ['V8 payment[]',       clone({ supplier: { name: 'בדיקה אוטומציה' }, payment: [{ type: 4, price: 1, currency: 'ILS' }] })]
+    ];
+
+    const lines = [];
+    let done = false;
+    for (let i = 0; i < variants.length && !done; i++) {
+      const nm = variants[i][0], p = variants[i][1];
+      const r = morningCreateExpense_(token, p);
+      let msg;
+      try { const j = JSON.parse(r.body); msg = 'ec=' + j.errorCode + ' ' + (j.errorMessage || ''); }
+      catch (e) { msg = r.body.substring(0, 120); }
+      lines.push(nm + ' -> ' + r.code + '  ' + msg);
+      if (r.code === 200 || r.code === 201) { lines.push('*** הצליח: ' + nm + ' ***'); done = true; }
+    }
+    out = lines.join('\n');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
-  try { SpreadsheetApp.getUi().alert('מורנינג — הוצאת בדיקה', out, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  try { SpreadsheetApp.getUi().alert('מורנינג — בדיקות', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return out;
 }
