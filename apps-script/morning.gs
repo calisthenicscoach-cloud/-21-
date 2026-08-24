@@ -164,11 +164,11 @@ function morningNumber_(seed) {
 function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   const token = morningTokenCached_();
   const amt = Math.round(Number(amountILS) * 100) / 100;
-  const mm = ('0' + month).slice(-2);
+  // חודש הדיווח לפי תאריך המייל בפועל — תמיד תקופה עדכנית ותקינה (לא לפי החודש שזוהה לשיטס, שיכול להיות בעבר)
   const payload = {
     description: vendorName,
     date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'),
-    reportingDate: dateObj.getFullYear() + '-' + mm + '-01',
+    reportingDate: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM') + '-01',
     documentType: 305,
     number: morningNumber_(seed),
     currency: 'ILS',
