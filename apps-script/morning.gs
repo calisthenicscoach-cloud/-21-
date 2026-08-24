@@ -45,3 +45,37 @@ function morningAuthTest() {
   try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת חיבור', msg, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return msg;
 }
+
+/* יוצר הוצאה במורנינג ומחזיר את התשובה הגולמית (קוד + גוף) */
+function morningCreateExpense_(token, d) {
+  const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses', {
+    method: 'post',
+    contentType: 'application/json',
+    headers: { Authorization: 'Bearer ' + token },
+    payload: JSON.stringify(d),
+    muteHttpExceptions: true
+  });
+  return { code: res.getResponseCode(), body: res.getContentText() };
+}
+
+/* שלב 2: יוצר הוצאת בדיקה אחת (סכום 1 ₪) ומדפיס את התשובה של ה-API.
+   מריצים מהעורך (בחר morningTestExpense → Run) ובודקים ב"יומן ביצוע". */
+function morningTestExpense() {
+  let out;
+  try {
+    const token = morningToken_();
+    const payload = {
+      description: 'בדיקת אוטומציה — נא למחוק',
+      date: Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'yyyy-MM-dd'),
+      supplier: { name: 'בדיקה אוטומציה' },
+      currency: 'ILS',
+      vatType: 0,
+      amount: 1
+    };
+    const r = morningCreateExpense_(token, payload);
+    out = 'קוד תשובה: ' + r.code + '\n\n' + r.body.substring(0, 1000);
+  } catch (e) { out = 'שגיאה: ' + e.message; }
+  Logger.log(out);
+  try { SpreadsheetApp.getUi().alert('מורנינג — הוצאת בדיקה', out, SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  return out;
+}
