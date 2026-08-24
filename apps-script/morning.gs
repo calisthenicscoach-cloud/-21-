@@ -46,22 +46,44 @@ function morningAuthTest() {
   return msg;
 }
 
-/* יוצר הוצאה במורנינג ומחזיר את התשובה הגולמית (קוד + גוף) */
-/* שולף הוצאות קיימות ומדפיס אחת — כדי ללמוד את שמות השדות והפורמטים האמיתיים */
+/* שולף הוצאה אמיתית אחת בפירוט מלא — כדי ללמוד את שם השדה של "סוג הוצאה" */
 function morningInspectExpense() {
   let out;
   try {
     const token = morningToken_();
-    const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
+    // 1) מחפשים הוצאה קיימת אחת
+    const sres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
       method: 'post', contentType: 'application/json',
       headers: { Authorization: 'Bearer ' + token },
-      payload: JSON.stringify({ page: 1, pageSize: 3, sort: 'creationDate' }),
+      payload: JSON.stringify({ page: 1, pageSize: 1, sort: 'creationDate' }),
       muteHttpExceptions: true
     });
-    out = 'קוד: ' + res.getResponseCode() + '\n\n' + res.getContentText().substring(0, 2500);
+    const sj = JSON.parse(sres.getContentText());
+    const item = (sj.items && sj.items[0]) || (sj.rows && sj.rows[0]) || null;
+    if (!item) { out = 'לא נמצאו הוצאות. תשובת search:\n' + sres.getContentText().substring(0, 1200); }
+    else {
+      const id = item.id;
+      // 2) מושכים את ההוצאה בפירוט מלא
+      const dres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/' + id, {
+        method: 'get',
+        headers: { Authorization: 'Bearer ' + token },
+        muteHttpExceptions: true
+      });
+      const full = JSON.parse(dres.getContentText());
+      // 3) בונים רשימת שדות קומפקטית: שם שדה = ערך מקוצר
+      const lines = [];
+      Object.keys(full).forEach(function (k) {
+        let v = full[k];
+        if (v && typeof v === 'object') v = JSON.stringify(v);
+        v = (v === null || v === undefined) ? '' : String(v);
+        if (v.length > 80) v = v.substring(0, 80) + '…';
+        lines.push(k + ': ' + v);
+      });
+      out = 'שדות ההוצאה האמיתית:\n\n' + lines.join('\n');
+    }
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
-  try { SpreadsheetApp.getUi().alert('מורנינג — הוצאות קיימות', out.substring(0, 1400), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  try { SpreadsheetApp.getUi().alert('מורנינג — שדות הוצאה אמיתית', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return out;
 }
 
