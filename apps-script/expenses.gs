@@ -79,6 +79,14 @@ const VENDORS = [
     source:  'pdf',                             // הסכום ב-USD בתוך PDF → מומר לשקל
     amount:  claudeAmount_,
     month:   claudeMonth_
+  },
+  {
+    name:   'canva',
+    method: 'אשראי',
+    query:  'subject:(Canva)',
+    fromMatch:    /canva|matankopel/i,          // Canva או פורוורד מ-matankopel02
+    subjectMatch: /חשבונית/,                     // רק החשבונית, לא מיילים אחרים של Canva
+    amount:  canvaAmount_                        // הסכום ב-USD בגוף המייל → מומר לשקל; חודש לפי hebMonth_
   }
 ];
 
@@ -406,6 +414,19 @@ function claudeMonth_(text, fallbackDate) {
   const m = text.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i);
   if (m) return em[m[1].toLowerCase()];
   return fallbackDate.getMonth() + 1;
+}
+
+/* ===== canva: סכום ב-USD בגוף המייל → המרה לשקל ===== */
+function canvaAmount_(text) {
+  let m = text.match(/סכום שחויב[\s\S]{0,20}?\$?\s*([0-9][0-9,]*\.\d{2})/);
+  let usd;
+  if (m) usd = toNum_(m[1]);
+  else {
+    const nums = (text.match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
+    if (!nums.length) return null;
+    usd = Math.max.apply(null, nums);
+  }
+  return Math.round(usd * fxRate_('USD', 'ILS') * 100) / 100;
 }
 
 /* ===== עמלות אשראי (Grow): הסכום בקובץ Excel מצורף ===== */
