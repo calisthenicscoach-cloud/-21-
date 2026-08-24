@@ -186,18 +186,33 @@ function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   return false;
 }
 
-/* בדיקה חד-פעמית: מגלה איך מורנינג מקבל קובץ מצורף (כתובת ההעלאה החתומה) */
+/* בדיקה חד-פעמית: מגלה איך מורנינג מקבל קובץ מצורף (כתובת ההעלאה החתומה).
+   ה-API דורש מזהה הוצאה, אז שולפים אחת ומנסים את שתי צורות ה-URL. */
 function morningProbeFileUpload() {
-  let out;
+  let out = '';
   try {
     const token = morningToken_();
-    const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses/file', {
-      method: 'get',
+    const sres = UrlFetchApp.fetch(MORNING_BASE + '/expenses/search', {
+      method: 'post', contentType: 'application/json',
       headers: { Authorization: 'Bearer ' + token },
+      payload: JSON.stringify({ page: 1, pageSize: 1, sort: 'creationDate' }),
       muteHttpExceptions: true
     });
-    out = 'GET /expenses/file\nקוד: ' + res.getResponseCode() + '\n\n' + res.getContentText().substring(0, 1800);
-  } catch (e) { out = 'שגיאה: ' + e.message; }
+    const sj = JSON.parse(sres.getContentText());
+    const item = (sj.items && sj.items[0]) || (sj.rows && sj.rows[0]) || null;
+    const id = item ? item.id : '(אין)';
+    out += 'expense id: ' + id + '\n\n';
+
+    const r1 = UrlFetchApp.fetch(MORNING_BASE + '/expenses/' + id + '/file', {
+      method: 'get', headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true
+    });
+    out += 'A) /expenses/{id}/file -> ' + r1.getResponseCode() + '\n' + r1.getContentText().substring(0, 650) + '\n\n';
+
+    const r2 = UrlFetchApp.fetch(MORNING_BASE + '/expenses/file?id=' + encodeURIComponent(id), {
+      method: 'get', headers: { Authorization: 'Bearer ' + token }, muteHttpExceptions: true
+    });
+    out += 'B) /expenses/file?id= -> ' + r2.getResponseCode() + '\n' + r2.getContentText().substring(0, 650);
+  } catch (e) { out += 'שגיאה: ' + e.message; }
   Logger.log(out);
   try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת העלאת קובץ', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return out;
