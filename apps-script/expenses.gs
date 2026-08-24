@@ -69,6 +69,16 @@ const VENDORS = [
     source:  'xlsx',                             // הסכום בקובץ Excel מצורף (סכום עמודת "עמלת אשראי")
     amount:  growFeeAmount_,
     month:   growMonth_
+  },
+  {
+    name:   'קלוד',
+    method: 'אשראי',
+    query:  'subject:(receipt Anthropic)',
+    fromMatch:    /anthropic/i,
+    subjectMatch: /receipt from Anthropic/i,
+    source:  'pdf',                             // הסכום ב-USD בתוך PDF → מומר לשקל
+    amount:  claudeAmount_,
+    month:   claudeMonth_
   }
 ];
 
@@ -374,6 +384,27 @@ function gwMonth_(text, fallbackDate) {
   const map = { 'ינואר':1,'פברואר':2,'מרץ':3,'אפריל':4,'מאי':5,'יוני':6,'יולי':7,'אוגוסט':8,'ספטמבר':9,'אוקטובר':10,'נובמבר':11,'דצמבר':12 };
   const m = text.match(/(ינואר|פברואר|מרץ|אפריל|מאי|יוני|יולי|אוגוסט|ספטמבר|אוקטובר|נובמבר|דצמבר)/);
   if (m) return map[m[1]];
+  return fallbackDate.getMonth() + 1;
+}
+
+/* ===== קלוד (Anthropic): סכום ב-USD מתוך PDF → המרה לשקל ===== */
+function claudeAmount_(text) {
+  let m = text.match(/Amount due[\s\S]{0,20}?\$?\s*([0-9][0-9,]*\.\d{2})/i);
+  if (!m) m = text.match(/\bTotal\b[\s\S]{0,20}?\$?\s*([0-9][0-9,]*\.\d{2})/i);
+  let usd;
+  if (m) usd = toNum_(m[1]);
+  else {
+    const nums = (text.match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
+    if (!nums.length) return null;
+    usd = Math.max.apply(null, nums);
+  }
+  return Math.round(usd * fxRate_('USD', 'ILS') * 100) / 100;
+}
+function claudeMonth_(text, fallbackDate) {
+  const em = { january:1,february:2,march:3,april:4,may:5,june:6,july:7,august:8,september:9,october:10,november:11,december:12,
+               jan:1,feb:2,mar:3,apr:4,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12 };
+  const m = text.match(/\b(January|February|March|April|May|June|July|August|September|October|November|December|Jan|Feb|Mar|Apr|Jun|Jul|Aug|Sep|Sept|Oct|Nov|Dec)\b/i);
+  if (m) return em[m[1].toLowerCase()];
   return fallbackDate.getMonth() + 1;
 }
 
