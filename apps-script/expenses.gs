@@ -86,7 +86,8 @@ const VENDORS = [
     query:  'subject:(Canva)',
     fromMatch:    /canva|matankopel/i,          // Canva או פורוורד מ-matankopel02
     subjectMatch: /חשבונית/,                     // רק החשבונית, לא מיילים אחרים של Canva
-    amount:  canvaAmount_                        // הסכום ב-USD בגוף המייל → מומר לשקל; חודש לפי hebMonth_
+    amount:  canvaAmount_,                       // הסכום ב-USD בגוף המייל → מומר לשקל
+    month:   emailMonth_                         // חודש לפי תאריך המייל (בגוף אין תאריך חיוב אמין)
   }
 ];
 
@@ -502,6 +503,11 @@ function growMonth_(values, fallbackDate) {
       }
     }
   }
+  return fallbackDate.getMonth() + 1;
+}
+
+// חודש לפי תאריך המייל בפועל (הכי אמין לחיובים חודשיים שנשלחים ברגע החיוב)
+function emailMonth_(text, fallbackDate) {
   return fallbackDate.getMonth() + 1;
 }
 

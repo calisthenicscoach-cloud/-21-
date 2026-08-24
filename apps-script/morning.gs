@@ -186,6 +186,23 @@ function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   return false;
 }
 
+/* בדיקה חד-פעמית: מגלה איך מורנינג מקבל קובץ מצורף (כתובת ההעלאה החתומה) */
+function morningProbeFileUpload() {
+  let out;
+  try {
+    const token = morningToken_();
+    const res = UrlFetchApp.fetch(MORNING_BASE + '/expenses/file', {
+      method: 'get',
+      headers: { Authorization: 'Bearer ' + token },
+      muteHttpExceptions: true
+    });
+    out = 'GET /expenses/file\nקוד: ' + res.getResponseCode() + '\n\n' + res.getContentText().substring(0, 1800);
+  } catch (e) { out = 'שגיאה: ' + e.message; }
+  Logger.log(out);
+  try { SpreadsheetApp.getUi().alert('מורנינג — בדיקת העלאת קובץ', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  return out;
+}
+
 /* בדיקה חכמה: מנסה כמה גרסאות payload עד שאחת עוברת. עוצר בהצלחה הראשונה
    (כך נוצרת לכל היותר הוצאת בדיקה אחת של 1 ₪ למחיקה). */
 function morningTestExpense() {
