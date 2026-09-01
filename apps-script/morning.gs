@@ -96,6 +96,8 @@ function morningCreateExpense_(token, d) {
 const MORNING_START_AFTER = '2026/08/24';
 // סיווג הוצאה לצורכי מס ("עלויות אחרות"). ניתן לעקוף ב-Script Properties: MORNING_CLASS_ID
 const MORNING_CLASS_ID_DEFAULT = '8c0a94f2-49fa-4432-8ac9-f7fd98cf1e24';
+// אמצעי תשלום ברירת מחדל: 3=אשראי (1=מזומן, 2=צ'ק, 4=העברה בנקאית, 10=אפליקציה/ביט)
+const MORNING_PAYMENT_TYPE = 3;
 
 // שם הספק במורנינג לפי שם הספק בגיליון (ברירת מחדל: שם הספק עצמו)
 const MORNING_SUPPLIER = {
@@ -181,6 +183,8 @@ function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
     vatType: 0,
     vat: 0,
     amountExcludeVat: amt,
+    // רישום תשלום על מלוא הסכום → ההוצאה נסגרת כ"שולם" (לא אדום)
+    payment: [{ date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'), price: amt, type: MORNING_PAYMENT_TYPE }],
     accountingClassification: { id: morningClassId_() },
     supplier: { name: MORNING_SUPPLIER[vendorName] || vendorName }
   };
