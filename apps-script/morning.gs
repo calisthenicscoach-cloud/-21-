@@ -164,11 +164,15 @@ function morningNumber_(seed) {
 function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   const token = morningTokenCached_();
   const amt = Math.round(Number(amountILS) * 100) / 100;
-  // חודש הדיווח לפי תאריך המייל בפועל — תמיד תקופה עדכנית ותקינה (לא לפי החודש שזוהה לשיטס, שיכול להיות בעבר)
+  // חודש הדיווח לפי תאריך המייל — אך לא לפני החודש הנוכחי (מורנינג דוחה דיווח לתקופה שכבר עברה/נסגרה)
+  const now = new Date();
+  let rep = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
+  const curFirst = new Date(now.getFullYear(), now.getMonth(), 1);
+  if (rep < curFirst) rep = curFirst;
   const payload = {
     description: vendorName,
     date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'),
-    reportingDate: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM') + '-01',
+    reportingDate: Utilities.formatDate(rep, 'Asia/Jerusalem', 'yyyy-MM-dd'),
     documentType: 305,
     number: morningNumber_(seed),
     currency: 'ILS',
