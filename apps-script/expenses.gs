@@ -30,7 +30,8 @@ const VENDORS = [
     fromMatch:    /facebook/i,
     subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,      // רק קבלות אמת (עמיד לתווי כיווניות נסתרים)
     amount: metaAdsAmount_,
-    month:  emailMonth_                          // חודש לפי תאריך המייל (רגע החיוב)
+    month:  emailMonth_,                         // חודש לפי תאריך המייל (רגע החיוב)
+    dedupKey: metaTxnId_                         // מטא שולחת לפעמים 2 מיילים לאותו חיוב — דדופ לפי מזהה עסקה
   },
   {
     name:   'קארדקום',
@@ -231,11 +232,23 @@ function run_(dryRun) {
         cAmt++;
         const month = v.month ? v.month(data, msg.getDate()) : hebMonth_(data, msg.getDate());
 
+        // מזהה חיוב ייחודי (אם לספק יש) — מונע ספירה כפולה כשמגיעים כמה מיילים על אותו חיוב
+        let dupKey = null;
+        if (v.dedupKey) { const dk = v.dedupKey(data); if (dk) dupKey = v.name + '|' + dk; }
+
         if (dryRun) {
-          const line = v.name + ' | ' + amt + '₪ | חודש ' + month;
+          const line = v.name + ' | ' + amt + '₪ | חודש ' + month + (dupKey && expenseSeenHas_(dupKey) ? ' (כבר נקלט)' : '');
           report.push(line); Logger.log('[בדיקה] ' + line);
           return;
         }
+
+        if (dupKey && expenseSeenHas_(dupKey)) {   // אותו חיוב כבר נקלט ממייל אחר — מדלגים
+          handled = true;                          // מסמנים את ה-thread כמטופל כדי שלא ייסרק שוב
+          const w = '↩︎ חיוב כפול דולג: ' + v.name + ' | ' + amt + '₪';
+          report.push(w); Logger.log(w);
+          return;
+        }
+        if (dupKey) expenseSeenAdd_(dupKey);
 
         let tag = '✓';
         if (needSheet) { addExpense_(sh, v.name, v.method, amt, month); handled = true; added++; }
@@ -325,6 +338,30 @@ function metaAdsAmount_(text) {
 }
 
 function toNum_(s) { return parseFloat(String(s).replace(/,/g, '')); }
+
+// מזהה עסקה של מטא (שני רצפי ספרות ארוכים עם מקף) — למניעת ספירה כפולה כשמטא שולחת 2 מיילים לאותו חיוב
+function metaTxnId_(text) {
+  const m = String(text || '').match(/\d{12,}-\d{12,}/);
+  return m ? m[0] : null;
+}
+
+/* מזהי חיובים שכבר נקלטו (למניעת כפילות) — נשמר ב-Script Properties */
+let _expenseSeen = null;
+function expenseSeenLoad_() {
+  if (_expenseSeen === null) {
+    _expenseSeen = {};
+    const raw = PropertiesService.getScriptProperties().getProperty('EXPENSE_SEEN') || '';
+    raw.split('\n').forEach(function (x) { if (x) _expenseSeen[x] = 1; });
+  }
+  return _expenseSeen;
+}
+function expenseSeenHas_(k) { return !!expenseSeenLoad_()[k]; }
+function expenseSeenAdd_(k) {
+  const s = expenseSeenLoad_(); s[k] = 1;
+  let keys = Object.keys(s);
+  if (keys.length > 2000) keys = keys.slice(keys.length - 2000);
+  PropertiesService.getScriptProperties().setProperty('EXPENSE_SEEN', keys.join('\n'));
+}
 
 /* ===== קארדקום: חילוץ הסכום מתוך ה-PDF המצורף ===== */
 // דורש שירות מתקדם "Drive API" (Services → +). עובד גם ל-v2 וגם ל-v3.
