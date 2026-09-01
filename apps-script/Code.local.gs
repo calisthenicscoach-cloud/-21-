@@ -477,7 +477,8 @@ function installMenuBillingTrigger() {
   return 'טריגר חודשי הופעל ✓';
 }
 
-/* סופר את התפריטים שנוצרו בחודש שעבר (לשונית "קישורי תפריט") ושולח סיכום לתשלום ל-NOTIFY_EMAIL. */
+/* סופר את שאלוני התזונה שהתקבלו בחודש שעבר (לשונית "תפריט תזונה") ושולח סיכום לתשלום ל-NOTIFY_EMAIL.
+   סופרים משם כי כל שאלון נרשם שם תמיד — גם אם יצירת התפריט האוטומטית נכשלה. שורות בדיקה מדולגות. */
 function sendMenuBillingSummary() {
   if (!NOTIFY_EMAIL || !SHEET_ID) return;
   const months = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
@@ -485,21 +486,25 @@ function sendMenuBillingSummary() {
   const lm = (now.getMonth() === 0) ? 11 : now.getMonth() - 1;
   const ly = (now.getMonth() === 0) ? now.getFullYear() - 1 : now.getFullYear();
 
-  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(MENU_LINKS_SHEET);
+  const sheet = SpreadsheetApp.openById(SHEET_ID).getSheetByName(NUTRITION_SHEET);
   const names = [];
-  if (sheet && sheet.getLastRow() >= 2) {
-    const vals = sheet.getRange(2, 1, sheet.getLastRow() - 1, 4).getValues();  // טלפון, שם, קישור, תאריך
-    vals.forEach(function (r) {
-      let d = r[3];
-      if (!(d instanceof Date)) d = d ? new Date(d) : null;
-      if (d && !isNaN(d) && d.getMonth() === lm && d.getFullYear() === ly) names.push(r[1] || '(ללא שם)');
-    });
+  if (sheet && sheet.getLastRow() >= 2 && sheet.getLastColumn() >= 1) {
+    const values = sheet.getRange(1, 1, sheet.getLastRow(), sheet.getLastColumn()).getValues();
+    const header = values[0].map(function (h) { return String(h).trim(); });
+    let dateCol = header.indexOf('תאריך ושעה'); if (dateCol === -1) dateCol = 0;
+    let nameCol = header.indexOf('שם ושם משפחה'); if (nameCol === -1) nameCol = header.indexOf('שם');
+    for (let r = 1; r < values.length; r++) {
+      const nm = nameCol > -1 ? String(values[r][nameCol] == null ? '' : values[r][nameCol]).trim() : '';
+      if (/בדיקה|טסט/.test(nm)) continue;                 // מדלגים על שורות בדיקה
+      const my = monthYearOf_(values[r][dateCol]);
+      if (my && my.m === lm && my.y === ly) names.push(nm || '(ללא שם)');
+    }
   }
   const count = names.length;
   const total = count * MENU_RATE;
   const list = count
     ? ('<ol style="margin:6px 0;padding-inline-start:22px">' + names.map(function (n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ol>')
-    : '<p style="color:#777">לא הוכנו תפריטים בחודש שעבר.</p>';
+    : '<p style="color:#777">לא התקבלו שאלוני תזונה בחודש שעבר.</p>';
 
   MailApp.sendEmail({
     to: NOTIFY_EMAIL,
@@ -511,8 +516,18 @@ function sendMenuBillingSummary() {
       '<b>לתשלום:</b> ' + count + ' × ' + MENU_RATE + ' ₪ = <b style="color:#2e7d32">' + total + ' ₪</b></p>' +
       '<h3 style="margin:14px 0 4px">המתאמנים:</h3>' + list +
       '<hr style="border:none;border-top:1px solid #ddd;margin:16px 0">' +
-      '<p style="color:#999;font-size:12px">נשלח אוטומטית בכל 1 לחודש. הספירה לפי תאריך יצירת התפריט (לשונית "קישורי תפריט").</p></div>'
+      '<p style="color:#999;font-size:12px">נשלח אוטומטית בכל 1 לחודש. הספירה לפי שאלוני התזונה שהתקבלו (לשונית "תפריט תזונה").</p></div>'
   });
+}
+
+/* חודש (0-11) ושנה מתוך ערך תאריך — תומך גם ב-Date וגם בטקסט עברי ("24.8.2026, ..." / "24/08/2026"). */
+function monthYearOf_(v) {
+  if (v instanceof Date && !isNaN(v)) return { m: v.getMonth(), y: v.getFullYear() };
+  const s = String(v == null ? '' : v).replace(/[‎‏‪-‮]/g, '').trim();
+  const m = s.match(/(\d{1,2})[.\/](\d{1,2})[.\/](\d{4})/);
+  if (m) return { m: Number(m[2]) - 1, y: Number(m[3]) };
+  const d = new Date(s);
+  return isNaN(d) ? null : { m: d.getMonth(), y: d.getFullYear() };
 }
 
 function esc(s) {
