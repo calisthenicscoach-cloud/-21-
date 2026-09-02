@@ -692,6 +692,16 @@ async function init(){
     setUserUI(); renderDash(); go('dash'); return;
   }
   if(!sb){ go('auth'); return; }
+  // one-click login from the post-payment welcome email (token_hash link)
+  try{
+    const q=new URLSearchParams(location.search);
+    const th=q.get('token_hash'), ty=q.get('type');
+    if(th && ty){
+      const { data, error } = await sb.auth.verifyOtp({ token_hash:th, type:ty });
+      try{ history.replaceState({}, '', location.pathname); }catch(e){}
+      if(!error && data && data.session && data.session.user){ await enterApp(data.session.user); return; }
+    }
+  }catch(e){}
   try{
     const { data:{ session } } = await sb.auth.getSession();
     if(session && session.user){ await enterApp(session.user); } else { go('auth'); }

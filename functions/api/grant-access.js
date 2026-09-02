@@ -146,8 +146,17 @@ async function generateMagicLink(env, email) {
   });
   const data = await res.json().catch(() => ({}));
   if (!res.ok) throw new Error('generateLink failed (' + res.status + '): ' + JSON.stringify(data));
-  const link = data.action_link || (data.properties && data.properties.action_link);
-  if (!link) throw new Error('no action_link in generateLink response');
+  const props = data.properties || data;
+  // Prefer a token_hash link: the course verifies it with verifyOtp, which works
+  // in any browser (unlike the raw action_link, which needs a PKCE verifier the
+  // buyer's browser doesn't have — that dropped buyers on the login screen).
+  const hashed = props.hashed_token || data.hashed_token;
+  if (hashed) {
+    const base = env.COURSE_URL;
+    return base + (base.includes('?') ? '&' : '?') + 'token_hash=' + encodeURIComponent(hashed) + '&type=magiclink';
+  }
+  const link = props.action_link || data.action_link;
+  if (!link) throw new Error('no login link in generateLink response');
   return link;
 }
 
