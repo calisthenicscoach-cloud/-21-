@@ -18,7 +18,8 @@
  *   CARDCOM_AMOUNT       course price in ILS, e.g. 147
  *   CARDCOM_MAX_PAYMENTS max installments the buyer may choose, e.g. 2 (optional, default 1)
  *   CARDCOM_PRODUCT      product name shown on the page (optional)
- *   COURSE_URL           where to send the buyer after a successful payment
+ *   COURSE_URL           the course URL (used elsewhere; also default fallback)
+ *   CARDCOM_SUCCESS_URL  thank-you page after payment (optional; default /thanks)
  *   CARDCOM_FAIL_URL     where to send the buyer if payment fails (optional)
  */
 
@@ -72,9 +73,10 @@ export async function onRequestGet(context) {
     // The buyer's email travels in ReturnValue so it's echoed back to our webhook
     // even for Bit payments, where Cardcom doesn't collect an email itself.
     ReturnValue: email,
-    // Land on our /thanks page first (fires the Purchase pixel), which then
-    // forwards the buyer into the course.
-    SuccessRedirectUrl: url.origin + '/thanks',
+    // Where Cardcom sends the buyer after a successful payment. Defaults to our
+    // own /thanks page (fires the Purchase pixel); override with CARDCOM_SUCCESS_URL
+    // to use an external thank-you page (which must then fire the Purchase pixel).
+    SuccessRedirectUrl: env.CARDCOM_SUCCESS_URL || (url.origin + '/thanks'),
     FailedRedirectUrl: failUrl,
     // Pre-fill + require the email on the card form (buyer can still confirm it).
     UIDefinition: {
