@@ -72,7 +72,9 @@ export async function onRequestGet(context) {
     // The buyer's email travels in ReturnValue so it's echoed back to our webhook
     // even for Bit payments, where Cardcom doesn't collect an email itself.
     ReturnValue: email,
-    SuccessRedirectUrl: env.COURSE_URL,
+    // Land on our /thanks page first (fires the Purchase pixel), which then
+    // forwards the buyer into the course.
+    SuccessRedirectUrl: url.origin + '/thanks',
     FailedRedirectUrl: failUrl,
     // Pre-fill + require the email on the card form (buyer can still confirm it).
     UIDefinition: {
