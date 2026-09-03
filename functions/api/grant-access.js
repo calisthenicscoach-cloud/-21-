@@ -26,6 +26,21 @@ export async function onRequestGet(context) {
   const url = new URL(request.url);
   const email = url.searchParams.get('email');
   const secret = url.searchParams.get('secret');
+
+  // Diagnostic: /api/grant-access?diag=1&secret=THE_SECRET — reports whether the
+  // Make forward is configured and sends one test POST to it, returning the status.
+  if (url.searchParams.get('diag') === '1') {
+    if (!env.GRANT_SECRET || secret !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
+    const out = { makeConfigured: !!env.MAKE_FORWARD_URL, makeUrlTail: env.MAKE_FORWARD_URL ? env.MAKE_FORWARD_URL.slice(-8) : null };
+    if (env.MAKE_FORWARD_URL) {
+      try {
+        const r = await fetch(env.MAKE_FORWARD_URL, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: 'diag=1&from=grant-access' });
+        out.makePostStatus = r.status;
+      } catch (e) { out.makeError = String((e && e.message) || e); }
+    }
+    return json(out);
+  }
+
   if (email || secret) {
     if (!env.GRANT_SECRET || secret !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
     return runGrant(env, email);
