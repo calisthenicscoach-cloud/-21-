@@ -12,6 +12,8 @@
  * Env (Cloudflare Pages → Variables and Secrets):
  *   SUPABASE_URL, SUPABASE_SERVICE_ROLE, BREVO_API_KEY, BREVO_LIST_ID,
  *   SENDER_EMAIL, SENDER_NAME, COURSE_URL, GRANT_SECRET
+ *   MAKE_FORWARD_URL (optional) — a webhook to receive a copy of each Cardcom
+ *     notification (e.g. the marketer's Make.com scenario for their tracking).
  */
 
 const json = (obj, status = 200) =>
@@ -35,12 +37,21 @@ export async function onRequestGet(context) {
 export async function onRequestPost(context) {
   const { request, env } = context;
   const url = new URL(request.url);
-  const params = await parseBody(request);
+  const ct = request.headers.get('content-type') || '';
+  const raw = await request.text().catch(() => '');
+  const params = parseParams(raw, ct);
   url.searchParams.forEach((v, k) => { if (!(k in params)) params[k] = v; });
 
   // auth: our secret (header/body) or a URL token (used by the Cardcom Notify URL)
   const provided = request.headers.get('x-grant-secret') || params.secret || url.searchParams.get('token') || '';
   if (!env.GRANT_SECRET || provided !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
+
+  // Forward a copy of the Cardcom payload to the marketer's Make webhook so their
+  // tracking keeps working through our single Notify URL. Fire-and-forget.
+  if (env.MAKE_FORWARD_URL) {
+    const p = forwardToMake(env.MAKE_FORWARD_URL, raw, ct);
+    if (context.waitUntil) context.waitUntil(p); else p.catch(() => {});
+  }
 
   // Optional debugging: set GRANT_DEBUG=1 to receive a copy of the raw fields.
   if (env.GRANT_DEBUG === '1' && env.BREVO_API_KEY && env.SENDER_EMAIL) { try { await debugEmail(env, params); } catch (e) {} }
@@ -56,13 +67,19 @@ export async function onRequestPost(context) {
 
 /* ---------------- request parsing / field mapping ---------------- */
 
-async function parseBody(request) {
-  const ct = (request.headers.get('content-type') || '').toLowerCase();
-  const raw = await request.text().catch(() => '');
-  if (ct.includes('application/json')) { try { return JSON.parse(raw || '{}'); } catch (e) { return {}; } }
+function parseParams(raw, ct) {
+  if ((ct || '').toLowerCase().includes('application/json')) { try { return JSON.parse(raw || '{}'); } catch (e) { return {}; } }
   const out = {};
   try { new URLSearchParams(raw).forEach((v, k) => { out[k] = v; }); } catch (e) {}
   return out;
+}
+
+// Best-effort copy of the incoming payload to an external webhook (the marketer's
+// Make.com), sent in the same shape Cardcom sent it. Never blocks the response.
+async function forwardToMake(target, raw, ct) {
+  try {
+    await fetch(target, { method: 'POST', headers: { 'content-type': ct || 'application/x-www-form-urlencoded' }, body: raw });
+  } catch (e) {}
 }
 
 function pickEmail(p) {
