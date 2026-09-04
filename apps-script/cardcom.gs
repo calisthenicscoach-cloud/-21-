@@ -15,10 +15,11 @@ function cardcomCreds_() {
   const p = PropertiesService.getScriptProperties();
   const term = p.getProperty('CARDCOM_TERMINAL');
   const apiName = p.getProperty('CARDCOM_API_NAME');
+  const apiPassword = p.getProperty('CARDCOM_API_PASSWORD') || '';
   if (!term || !apiName) {
     throw new Error('חסרים מפתחות. הוסף ב-Script Properties: CARDCOM_TERMINAL ו-CARDCOM_API_NAME');
   }
-  return { terminal: Number(term), apiName: apiName };
+  return { terminal: Number(term), apiName: apiName, apiPassword: apiPassword };
 }
 
 /* תאריך בפורמט DDMMYYYY שקארדקום מצפה לו */
@@ -31,6 +32,7 @@ function cardcomListTransactions_(fromDate, toDate, status, page, pageSize) {
   const c = cardcomCreds_();
   const body = {
     ApiName: c.apiName,
+    ApiPassword: c.apiPassword,
     TerminalNumber: c.terminal,
     FromDate: cardcomDate_(fromDate),
     ToDate: cardcomDate_(toDate),
