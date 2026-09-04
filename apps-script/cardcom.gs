@@ -46,6 +46,20 @@ function cardcomWeekStart_(d) {
   return x;
 }
 
+/* קבוצת השבוע של עסקה: החודש נקבע לפי תאריך העסקה בפועל (לא לפי תחילת השבוע).
+   כשהשבוע חוצה חודשים — התווית מוצמדת לתחילת חודש העסקה, כך שכל עסקה נכנסת לחודש הנכון. */
+function cardcomWeekBucket_(d) {
+  const ws = cardcomWeekStart_(d);
+  let labelDate = ws;
+  if (ws.getMonth() !== d.getMonth() || ws.getFullYear() !== d.getFullYear()) {
+    labelDate = new Date(d.getFullYear(), d.getMonth(), 1);  // תחילת חודש העסקה
+  }
+  return {
+    month: d.getMonth() + 1,
+    label: COURSE_PREFIX + Utilities.formatDate(labelDate, 'Asia/Jerusalem', 'dd/MM/yy')
+  };
+}
+
 /* ===== עזרים ===== */
 function safeUi_() { try { return SpreadsheetApp.getUi(); } catch (e) { return null; } }
 
@@ -134,18 +148,16 @@ function cardcomPreview() {
         const amt = cardcomSaleAmount_(body);
         if (amt == null || !(amt > 0)) { bad.push(msg.getSubject()); return; }
         ok++;
-        const ws = cardcomWeekStart_(msg.getDate());
-        const key = Utilities.formatDate(ws, 'Asia/Jerusalem', 'yyyy-MM-dd');
-        const lbl = Utilities.formatDate(ws, 'Asia/Jerusalem', 'dd/MM/yy');
-        if (!weeks[key]) weeks[key] = { lbl: lbl, sum: 0, count: 0 };
-        weeks[key].sum = Math.round((weeks[key].sum + amt) * 100) / 100;
-        weeks[key].count++;
+        const b = cardcomWeekBucket_(msg.getDate());
+        if (!weeks[b.label]) weeks[b.label] = { lbl: b.label.replace(COURSE_PREFIX, ''), month: b.month, sum: 0, count: 0 };
+        weeks[b.label].sum = Math.round((weeks[b.label].sum + amt) * 100) / 100;
+        weeks[b.label].count++;
       });
     });
     const ks = Object.keys(weeks).sort();
     out = 'מיילי רכישה שנמצאו: ' + found + '  |  עסקאות תקינות: ' + ok + '\n\n' +
       'סיכום שבועי (שבוע מתחיל ביום ראשון):\n' +
-      (ks.length ? ks.map(function (k) { return 'שבוע ' + weeks[k].lbl + ':  ' + weeks[k].count + ' מכירות  ·  ' + weeks[k].sum + ' ₪'; }).join('\n') : '(לא נמצאו עסקאות)') +
+      (ks.length ? ks.map(function (k) { return 'שבוע ' + weeks[k].lbl + ' (חודש ' + weeks[k].month + '):  ' + weeks[k].count + ' מכירות  ·  ' + weeks[k].sum + ' ₪'; }).join('\n') : '(לא נמצאו עסקאות)') +
       (bad.length ? ('\n\n⚠️ לא זוהה סכום ב-' + bad.length + ' מיילים') : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
@@ -175,12 +187,11 @@ function cardcomSync() {
         if (amt == null || !(amt > 0)) { report.push('⚠️ לא זוהה סכום: ' + msg.getSubject()); return; }
         const key = cardcomTxnId_(body) || msg.getId();
         if (cardcomSeenHas_(key)) { dup++; return; }
-        const ws = cardcomWeekStart_(msg.getDate());
-        const label = COURSE_PREFIX + Utilities.formatDate(ws, 'Asia/Jerusalem', 'dd/MM/yy');
-        cardcomAddToWeek_(sh, label, CARDCOM_METHOD, amt, ws.getMonth() + 1);
+        const b = cardcomWeekBucket_(msg.getDate());
+        cardcomAddToWeek_(sh, b.label, CARDCOM_METHOD, amt, b.month);
         cardcomSeenAdd_(key);
         added++;
-        report.push('✓ ' + amt + ' ₪ → ' + label);
+        report.push('✓ ' + amt + ' ₪ → ' + b.label + ' (חודש ' + b.month + ')');
       });
     });
     out = 'נוספו ' + added + ' מכירות חדשות' + (dup ? ('  ·  דילוג על ' + dup + ' שכבר נקלטו') : '') +
@@ -206,10 +217,9 @@ function cardcomAddManual() {
   let d = new Date();
   const t = (rD.getResponseText() || '').trim();
   if (t) { const p = t.split('/'); if (p.length === 3) d = new Date(Number(p[2]), Number(p[1]) - 1, Number(p[0])); }
-  const ws = cardcomWeekStart_(d);
-  const label = COURSE_PREFIX + Utilities.formatDate(ws, 'Asia/Jerusalem', 'dd/MM/yy');
-  const total = cardcomAddToWeek_(sh, label, CARDCOM_METHOD, amt, ws.getMonth() + 1);
-  ui.alert('נוסף ' + amt + ' ₪ ל“' + label + '”.\nסה"כ בשבוע כעת: ' + total + ' ₪.');
+  const b = cardcomWeekBucket_(d);
+  const total = cardcomAddToWeek_(sh, b.label, CARDCOM_METHOD, amt, b.month);
+  ui.alert('נוסף ' + amt + ' ₪ ל“' + b.label + '” (חודש ' + b.month + ').\nסה"כ בשבוע כעת: ' + total + ' ₪.');
 }
 
 /* ===== טריגר אוטומטי ===== */
