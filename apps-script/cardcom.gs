@@ -1,83 +1,73 @@
 /**
- * קארדקום → גיליון התזרים (הכנסות קורס 21 יום)
+ * קארדקום → גיליון התזרים: הכנסות קורס "אתגר 21 יום"
  * ---------------------------------------------------------------
- * קובץ נפרד בפרויקט של גיליון התזרים (ליד קוד.gs ו-morning.gs).
- * המפתחות נשמרים ב-Script Properties: CARDCOM_TERMINAL , CARDCOM_API_NAME , CARDCOM_API_PASSWORD
+ * קובץ נפרד בפרויקט של גיליון התזרים (ליד קוד.gs / morning.gs).
+ * קורא מיילי רכישה מקארדקום (purchase@out.cardcom.co.il), מסכם לפי שבוע.
+ * (משתמש מחדש ב-toNum_ מ-קוד.gs.)
  *
- * קריאה בלבד — שולף עסקאות (לא מחייב/מזכה/מבטל).
- * שלב 3 (כרגע): cardcomAuthTest() — מוודא חיבור + מציג את מבנה שדות העסקה.
+ * שלב נוכחי: cardcomPreview() — בדיקת קריאה בלבד, לא כותב כלום.
+ * (בהמשך נוסיף כתיבה ללשונית "הכנסות" + טריגר.)
  */
 
-const CARDCOM_BASE = 'https://secure.cardcom.solutions/api/v11';
-
-/* פרטי החיבור מ-Script Properties (לקריאה מספיק Terminal + ApiName) */
-function cardcomCreds_() {
-  const p = PropertiesService.getScriptProperties();
-  const term = p.getProperty('CARDCOM_TERMINAL');
-  const apiName = p.getProperty('CARDCOM_API_NAME');
-  const apiPassword = p.getProperty('CARDCOM_API_PASSWORD') || '';
-  if (!term || !apiName) {
-    throw new Error('חסרים מפתחות. הוסף ב-Script Properties: CARDCOM_TERMINAL ו-CARDCOM_API_NAME');
-  }
-  return { terminal: Number(term), apiName: apiName, apiPassword: apiPassword };
+/* חילוץ מגוף מייל הרכישה של קארדקום */
+function cardcomSaleAmount_(body) {
+  // ליד "סכום לחיוב"
+  let m = body.match(/סכום לחיוב[\s\S]{0,15}?([0-9][0-9,]*\.\d{2})/);
+  if (m && toNum_(m[1]) > 0) return toNum_(m[1]);
+  // אחרת: הסכום הגדול ביותר עם 2 ספרות עשרוניות (מדלג על כמות "1.0000")
+  const nums = (body.match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 1; });
+  return nums.length ? Math.max.apply(null, nums) : null;
 }
 
-/* תאריך בפורמט DDMMYYYY שקארדקום מצפה לו */
-function cardcomDate_(d) {
-  return Utilities.formatDate(d, 'Asia/Jerusalem', 'ddMMyyyy');
+function cardcomTxnId_(body) {
+  const m = body.match(/מספר עסקה פנימי[\s\S]{0,8}?(\d{5,})/);
+  return m ? m[1] : null;
 }
 
-/* שולף עסקאות לטווח תאריכים. status: 'Success' | 'All' | 'Failure'. מחזיר את ה-JSON המפוענח. */
-function cardcomListTransactions_(fromDate, toDate, status, page, pageSize) {
-  const c = cardcomCreds_();
-  const body = {
-    ApiName: c.apiName,
-    ApiPassword: c.apiPassword,
-    TerminalNumber: c.terminal,
-    FromDate: cardcomDate_(fromDate),
-    ToDate: cardcomDate_(toDate),
-    TranStatus: status || 'Success',
-    Page: page || 1,
-    Page_size: pageSize || 100
-  };
-  const res = UrlFetchApp.fetch(CARDCOM_BASE + '/Transactions/ListTransactions', {
-    method: 'post',
-    contentType: 'application/json',
-    payload: JSON.stringify(body),
-    muteHttpExceptions: true
-  });
-  return { code: res.getResponseCode(), json: JSON.parse(res.getContentText() || '{}') };
+function cardcomSuccess_(body) {
+  return /בוצעה בהצלחה/.test(body) || /חיוב כרטיס[\s\S]{0,6}?0(\D|$)/.test(body);
 }
 
-/* בדיקת חיבור — הרץ מהעורך (בחר cardcomAuthTest → Run) ותסתכל בחלון/ביומן.
-   שולף עסקאות מ-7 הימים האחרונים, מוודא הצלחה, ומדפיס את שדות העסקה הראשונה כדי שנדע איך לסכם. */
-function cardcomAuthTest() {
+/* תחילת השבוע (יום ראשון) של תאריך */
+function cardcomWeekStart_(d) {
+  const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+  x.setDate(x.getDate() - x.getDay());  // 0 = ראשון
+  return x;
+}
+
+/* בדיקת קריאה בלבד — סורק מיילי רכישה, מחלץ סכומים, ומקבץ לשבועות. לא כותב כלום. */
+function cardcomPreview() {
   let out;
   try {
-    const to = new Date();
-    const from = new Date(); from.setDate(from.getDate() - 7);
-    const r = cardcomListTransactions_(from, to, 'Success', 1, 50);
-    const j = r.json;
-    const list = j.Tranzactions || [];
-    let msg = 'HTTP ' + r.code + '  |  ResponseCode ' + j.ResponseCode + '  ' + (j.Description || '');
-    msg += '\nעסקאות ב-7 ימים אחרונים: ' + list.length;
-    if (list.length) {
-      const t0 = list[0];
-      const lines = [];
-      Object.keys(t0).forEach(function (k) {
-        let v = t0[k];
-        if (v && typeof v === 'object') v = JSON.stringify(v);
-        v = (v === null || v === undefined) ? '' : String(v);
-        if (v.length > 60) v = v.substring(0, 60) + '…';
-        lines.push(k + ': ' + v);
+    const threads = GmailApp.search('subject:(רכישה מאתר)', 0, 300);
+    const weeks = {};
+    let found = 0, ok = 0;
+    const bad = [];
+    threads.forEach(function (th) {
+      th.getMessages().forEach(function (msg) {
+        if (!/cardcom/i.test(msg.getFrom())) return;
+        if (!/רכישה מאתר/.test(msg.getSubject())) return;
+        found++;
+        const body = msg.getPlainBody() || '';
+        if (!cardcomSuccess_(body)) return;               // רק עסקאות שבוצעו בהצלחה
+        const amt = cardcomSaleAmount_(body);
+        if (amt == null || !(amt > 0)) { bad.push(msg.getSubject()); return; }
+        ok++;
+        const ws = cardcomWeekStart_(msg.getDate());
+        const key = Utilities.formatDate(ws, 'Asia/Jerusalem', 'yyyy-MM-dd');
+        const lbl = Utilities.formatDate(ws, 'Asia/Jerusalem', 'dd/MM/yy');
+        if (!weeks[key]) weeks[key] = { lbl: lbl, sum: 0, count: 0 };
+        weeks[key].sum = Math.round((weeks[key].sum + amt) * 100) / 100;
+        weeks[key].count++;
       });
-      msg += '\n\nשדות עסקה ראשונה:\n' + lines.join('\n');
-    } else {
-      msg += '\n(אין עסקאות בטווח — אם אתה יודע שהיו, ננסה טווח רחב יותר)';
-    }
-    out = msg;
+    });
+    const ks = Object.keys(weeks).sort();
+    out = 'מיילי רכישה שנמצאו: ' + found + '  |  עסקאות תקינות: ' + ok + '\n\n' +
+      'סיכום שבועי (שבוע מתחיל ביום ראשון):\n' +
+      (ks.length ? ks.map(function (k) { return 'שבוע ' + weeks[k].lbl + ':  ' + weeks[k].count + ' מכירות  ·  ' + weeks[k].sum + ' ₪'; }).join('\n') : '(לא נמצאו עסקאות)') +
+      (bad.length ? ('\n\n⚠️ לא זוהה סכום ב-' + bad.length + ' מיילים') : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
-  try { SpreadsheetApp.getUi().alert('קארדקום — בדיקת חיבור', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
+  try { SpreadsheetApp.getUi().alert('קארדקום — בדיקת קריאה', out.substring(0, 1450), SpreadsheetApp.getUi().ButtonSet.OK); } catch (e) {}
   return out;
 }
