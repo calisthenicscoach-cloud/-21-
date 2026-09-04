@@ -86,14 +86,17 @@ function cardcomSeenAdd_(k) {
   PropertiesService.getScriptProperties().setProperty('CARDCOM_SEEN', keys.join('\n'));
 }
 
-/* מוסיף סכום לשורת השבוע (מגדיל אם קיימת, אחרת יוצר שורה חדשה בסוף — לא דורס שורות ריקות באמצע) */
+/* מוסיף סכום לשורת השבוע (מגדיל אם קיימת, אחרת יוצר שורה חדשה מיד אחרי הלקוח האחרון).
+   מוסיף לפי השורה האחרונה עם שם בעמודה A — לא לפי getLastRow (שמושפע מנוסחאות ריקות למטה). */
 function cardcomAddToWeek_(sh, label, method, amount, month) {
   const last = Math.max(sh.getLastRow(), 1);
   const n = Math.max(last - 1, 1);
   const aVals = sh.getRange(2, 1, n, 1).getValues();  // עמודה A (שם)
   const eVals = sh.getRange(2, 5, n, 1).getValues();  // עמודה E (חודש)
+  let lastNameRow = 1;  // שורת הכותרת
   for (let i = 0; i < aVals.length; i++) {
     const a = (aVals[i][0] == null ? '' : String(aVals[i][0])).trim();
+    if (a !== '') lastNameRow = i + 2;
     if (a === label && Number(eVals[i][0]) === Number(month)) {
       const target = i + 2;
       const cur = Number(sh.getRange(target, 3).getValue()) || 0;
@@ -101,8 +104,16 @@ function cardcomAddToWeek_(sh, label, method, amount, month) {
       return sh.getRange(target, 3).getValue();
     }
   }
-  writeExpenseRow_(sh, last + 1, label, method, amount, month);  // מ-קוד.gs
+  writeExpenseRow_(sh, lastNameRow + 1, label, method, amount, month);  // מ-קוד.gs
   return amount;
+}
+
+/* איפוס זיכרון המכירות — כדי לקלוט מחדש (למשל אחרי תיקון מיקום שורה) */
+function cardcomReset() {
+  PropertiesService.getScriptProperties().deleteProperty('CARDCOM_SEEN');
+  _cardcomSeen = null;
+  const ui = safeUi_();
+  if (ui) try { ui.alert('אופס זיכרון קארדקום', 'הזיכרון אופס. ההרצה הבאה של cardcomSync תקלוט מחדש את כל המכירות מ-' + CARDCOM_START_AFTER + ' והלאה.', ui.ButtonSet.OK); } catch (e) {}
 }
 
 /* ===== בדיקת קריאה בלבד — לא כותב כלום ===== */
