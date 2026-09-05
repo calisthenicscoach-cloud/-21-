@@ -21,10 +21,10 @@
 
 /* ===== ההודעה שתיפתח בוואטסאפ (אפשר לערוך את הנוסח; {{NAME}} = שם הליד) ===== */
 const LEAD_WA_MESSAGE =
-  'היי {{NAME}}! 💪\n' +
-  'כאן מתן — מאמן הכושר לחיילים.\n' +
-  'ראיתי שהשארת פרטים לגבי האימונים 🙌\n' +
-  'מתי נוח לך שנדבר 2 דקות כדי להבין מה אתה מחפש ואיך אני יכול לעזור?';
+  'היי{{NAME}}, מה נשמע? 😁\n' +
+  'זה מתן קופל מיחידת הקליסטניקס,\n' +
+  'ראיתי שהשארת פרטים לגבי הצטרפות ליחידה ⚜️, אשמח לדבר בטלפון להסביר על התוכנית ולראות אם היא מתאימה לך!\n' +
+  'באיזה שעה פנוי לדבר?';
 
 /* מקורות לדלג עליהם (הליד כבר יצר קשר ישיר) — אם אחת מהמילים מופיעה ב"מאיפה הגיע".
    כאן: כל ליד שהגיע דרך וואטסאפ (למשל "מודעה לוואצאפ"). אפשר להוסיף מילים (למשל 'אינסטגרם'). */
@@ -81,7 +81,8 @@ function leadFirstTouchEmail_(name, phone) {
   const to = leadNotifyEmail_();
   if (!to) return;
   const waNum = waIntl_(phone);
-  const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', name || 'שלום');
+  const first = String(name || '').trim().split(/\s+/)[0] || '';   // שם פרטי בלבד
+  const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', first ? (' ' + first) : '');
   const btn = waNum
     ? ('<div style="margin:18px 0">' +
        '<a href="https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg) + '" ' +
