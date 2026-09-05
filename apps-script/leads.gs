@@ -26,6 +26,10 @@ const LEAD_WA_MESSAGE =
   'ראיתי שהשארת פרטים לגבי האימונים 🙌\n' +
   'מתי נוח לך שנדבר 2 דקות כדי להבין מה אתה מחפש ואיך אני יכול לעזור?';
 
+/* מקורות לדלג עליהם (הליד כבר יצר קשר ישיר) — אם אחת מהמילים מופיעה ב"מאיפה הגיע".
+   כאן: כל ליד שהגיע דרך וואטסאפ (למשל "מודעה לוואצאפ"). אפשר להוסיף מילים (למשל 'אינסטגרם'). */
+const LEAD_SKIP_SOURCE_WORDS = ['וואצאפ', 'וואטסאפ', 'וואטסאף', 'ואטסאפ', 'וואטס', 'whatsapp'];
+
 /* ===== עזרים ===== */
 function leadsSafeUi_() { try { return SpreadsheetApp.getUi(); } catch (e) { return null; } }
 
@@ -43,9 +47,19 @@ function leadColIndexes_(sheet) {
     return -1;
   }
   return {
-    name:  find(['שם מלא', 'שם', 'שם פרטי', 'full name', 'name']),
-    phone: find(['מס טלפון', 'מספר טלפון', 'טלפון', 'נייד', 'phone'])
+    name:   find(['שם מלא', 'שם', 'שם פרטי', 'full name', 'name']),
+    phone:  find(['מס טלפון', 'מספר טלפון', 'טלפון', 'נייד', 'phone']),
+    source: find(['מאיפה הגיע', 'מקור', 'מאיפה', 'source', 'פלטפורמה'])
   };
+}
+
+/* האם לדלג על הליד לפי המקור (הגיע דרך וואטסאפ / יצר קשר ישיר) */
+function leadSourceSkip_(source) {
+  const s = String(source || '').toLowerCase();
+  for (let i = 0; i < LEAD_SKIP_SOURCE_WORDS.length; i++) {
+    if (s.indexOf(String(LEAD_SKIP_SOURCE_WORDS[i]).toLowerCase()) > -1) return true;
+  }
+  return false;
 }
 
 /* זיכרון הלידים שכבר טופלו: { phoneKey: { t: זמן } } — נשמר ב-Script Properties */
@@ -103,7 +117,7 @@ function leadsWaRun_(dryRun) {
 
     const lastRow = sheet.getLastRow();
     const report = [];
-    let firstTouch = 0, seen = 0;
+    let firstTouch = 0, seen = 0, skipped = 0;
 
     if (lastRow >= 2) {
       const vals = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
@@ -113,17 +127,19 @@ function leadsWaRun_(dryRun) {
         const phone = String(row[cols.phone] == null ? '' : row[cols.phone]).trim();
         const pk = phoneKey_(phone);
         if (!pk) return;
+        const source = cols.source >= 0 ? String(row[cols.source] == null ? '' : row[cols.source]).trim() : '';
+        if (leadSourceSkip_(source)) { skipped++; return; }   // הגיע דרך וואטסאפ — כבר בשיחה
         const name = cols.name >= 0 ? String(row[cols.name] == null ? '' : row[cols.name]).trim() : '';
         if (state[pk]) { seen++; return; }        // כבר טופל — מדלגים
         firstTouch++;
-        report.push('🆕 ' + (name || phone));
+        report.push('🆕 ' + (name || phone) + (source ? (' — ' + source) : ''));
         if (!dryRun) { leadFirstTouchEmail_(name, phone); state[pk] = { t: now }; }
       });
       if (!dryRun) leadsWaSaveState_(state);
     }
 
     out = (dryRun ? '[בדיקה — לא נשלח כלום] ' : '') +
-      'לידים חדשים: ' + firstTouch + '  ·  כבר טופלו: ' + seen +
+      'לידים חדשים: ' + firstTouch + '  ·  כבר טופלו: ' + seen + '  ·  דילוג (וואטסאפ): ' + skipped +
       (report.length ? ('\n\n' + report.join('\n')) : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
