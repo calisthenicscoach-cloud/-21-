@@ -49,7 +49,8 @@ function leadColIndexes_(sheet) {
   return {
     name:   find(['שם מלא', 'שם', 'שם פרטי', 'full name', 'name']),
     phone:  find(['מס טלפון', 'מספר טלפון', 'טלפון', 'נייד', 'phone']),
-    source: find(['מאיפה הגיע', 'מקור', 'מאיפה', 'source', 'פלטפורמה'])
+    source: find(['מאיפה הגיע', 'מקור', 'מאיפה', 'source', 'פלטפורמה']),
+    goal:   find(['המטרה שלי היא:', 'המטרה שלי היא', 'המטרה', 'מטרה', 'goal'])
   };
 }
 
@@ -77,12 +78,16 @@ function leadsWaSaveState_(state) {
 }
 
 /* ===== מייל פעולה — כפתור וואטסאפ מוכן ===== */
-function leadFirstTouchEmail_(name, phone) {
+function leadFirstTouchEmail_(name, phone, extra) {
+  extra = extra || {};
   const to = leadNotifyEmail_();
   if (!to) return;
   const waNum = waIntl_(phone);
   const first = String(name || '').trim().split(/\s+/)[0] || '';   // שם פרטי בלבד
   const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', first ? (' ' + first) : '');
+  let details = '<b>שם:</b> ' + esc(name || '(ללא שם)') + '<br><b>טלפון:</b> ' + esc(phone || '');
+  if (extra.source) details += '<br><b>מאיפה הגיע:</b> ' + esc(extra.source);
+  if (extra.goal)   details += '<br><b>המטרה שלו:</b> ' + esc(extra.goal);
   const btn = waNum
     ? ('<div style="margin:18px 0">' +
        '<a href="https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg) + '" ' +
@@ -94,7 +99,7 @@ function leadFirstTouchEmail_(name, phone) {
     subject: '🔥 ליד חדש — ' + (name || phone),
     htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
       '<h2 style="margin:0 0 6px;color:#2e7d32">🔥 ליד חדש נכנס</h2>' +
-      '<p style="margin:0 0 10px"><b>שם:</b> ' + esc(name || '(ללא שם)') + '<br><b>טלפון:</b> ' + esc(phone || '') + '</p>' +
+      '<p style="margin:0 0 10px">' + details + '</p>' +
       '<p style="margin:0 0 4px;color:#555">ההודעה שתישלח:</p>' +
       '<blockquote style="margin:0 0 6px;padding:10px 14px;background:#f4f7f4;border-right:3px solid #25D366;white-space:pre-line">' + esc(msg) + '</blockquote>' +
       btn +
@@ -131,10 +136,11 @@ function leadsWaRun_(dryRun) {
         const source = cols.source >= 0 ? String(row[cols.source] == null ? '' : row[cols.source]).trim() : '';
         if (leadSourceSkip_(source)) { skipped++; return; }   // הגיע דרך וואטסאפ — כבר בשיחה
         const name = cols.name >= 0 ? String(row[cols.name] == null ? '' : row[cols.name]).trim() : '';
+        const goal = cols.goal >= 0 ? String(row[cols.goal] == null ? '' : row[cols.goal]).trim() : '';
         if (state[pk]) { seen++; return; }        // כבר טופל — מדלגים
         firstTouch++;
         report.push('🆕 ' + (name || phone) + (source ? (' — ' + source) : ''));
-        if (!dryRun) { leadFirstTouchEmail_(name, phone); state[pk] = { t: now }; }
+        if (!dryRun) { leadFirstTouchEmail_(name, phone, { source: source, goal: goal }); state[pk] = { t: now }; }
       });
       if (!dryRun) leadsWaSaveState_(state);
     }
@@ -191,7 +197,7 @@ function installLeadsWaTrigger() {
 
 /* שולח אליך מייל דוגמה (למספר שלך) כדי לראות איך זה נראה */
 function leadsWaTestSelf() {
-  leadFirstTouchEmail_('מתן (בדיקה)', '0587979678');
+  leadFirstTouchEmail_('מתן (בדיקה)', '0587979678', { source: 'אתר', goal: 'לבנות גוף ולהתחזק (טקסט לדוגמה)' });
   const ui = leadsSafeUi_();
   if (ui) try {
     ui.alert('נשלח מייל בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') מייל דוגמה. פתח אותו בטלפון ולחץ על הכפתור הירוק לראות איך זה עובד.', ui.ButtonSet.OK);
