@@ -50,7 +50,8 @@ function leadColIndexes_(sheet) {
     name:   find(['שם מלא', 'שם', 'שם פרטי', 'full name', 'name']),
     phone:  find(['מס טלפון', 'מספר טלפון', 'טלפון', 'נייד', 'phone']),
     source: find(['מאיפה הגיע', 'מקור', 'מאיפה', 'source', 'פלטפורמה']),
-    goal:   find(['המטרה שלי היא:', 'המטרה שלי היא', 'המטרה', 'מטרה', 'goal'])
+    goal:   find(['המטרה שלי היא:', 'המטרה שלי היא', 'המטרה', 'מטרה', 'goal']),
+    notes:  find(['הערות', 'הערה', 'notes'])
   };
 }
 
@@ -86,8 +87,8 @@ function leadFirstTouchEmail_(name, phone, extra) {
   const first = String(name || '').trim().split(/\s+/)[0] || '';   // שם פרטי בלבד
   const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', first ? (' ' + first) : '');
   let details = '<b>שם:</b> ' + esc(name || '(ללא שם)') + '<br><b>טלפון:</b> ' + esc(phone || '');
-  if (extra.source) details += '<br><b>מאיפה הגיע:</b> ' + esc(extra.source);
-  if (extra.goal)   details += '<br><b>המטרה שלו:</b> ' + esc(extra.goal);
+  if (extra.goal)  details += '<br><b>המטרה שלו:</b> ' + esc(extra.goal);
+  if (extra.notes) details += '<br><b>הערות:</b> ' + esc(extra.notes);
   const btn = waNum
     ? ('<div style="margin:18px 0">' +
        '<a href="https://wa.me/' + waNum + '?text=' + encodeURIComponent(msg) + '" ' +
@@ -137,10 +138,11 @@ function leadsWaRun_(dryRun) {
         if (leadSourceSkip_(source)) { skipped++; return; }   // הגיע דרך וואטסאפ — כבר בשיחה
         const name = cols.name >= 0 ? String(row[cols.name] == null ? '' : row[cols.name]).trim() : '';
         const goal = cols.goal >= 0 ? String(row[cols.goal] == null ? '' : row[cols.goal]).trim() : '';
+        const notes = cols.notes >= 0 ? String(row[cols.notes] == null ? '' : row[cols.notes]).trim() : '';
         if (state[pk]) { seen++; return; }        // כבר טופל — מדלגים
         firstTouch++;
         report.push('🆕 ' + (name || phone) + (source ? (' — ' + source) : ''));
-        if (!dryRun) { leadFirstTouchEmail_(name, phone, { source: source, goal: goal }); state[pk] = { t: now }; }
+        if (!dryRun) { leadFirstTouchEmail_(name, phone, { goal: goal, notes: notes }); state[pk] = { t: now }; }
       });
       if (!dryRun) leadsWaSaveState_(state);
     }
@@ -197,7 +199,7 @@ function installLeadsWaTrigger() {
 
 /* שולח אליך מייל דוגמה (למספר שלך) כדי לראות איך זה נראה */
 function leadsWaTestSelf() {
-  leadFirstTouchEmail_('מתן (בדיקה)', '0587979678', { source: 'אתר', goal: 'לבנות גוף ולהתחזק (טקסט לדוגמה)' });
+  leadFirstTouchEmail_('מתן (בדיקה)', '0587979678', { goal: 'לבנות גוף ולהתחזק (טקסט לדוגמה)', notes: 'הגיע מהמודעה, מתעניין ב-3 חודשים (דוגמה)' });
   const ui = leadsSafeUi_();
   if (ui) try {
     ui.alert('נשלח מייל בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') מייל דוגמה. פתח אותו בטלפון ולחץ על הכפתור הירוק לראות איך זה עובד.', ui.ButtonSet.OK);
