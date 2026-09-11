@@ -51,8 +51,55 @@ function leadColIndexes_(sheet) {
     phone:  find(['מס טלפון', 'מספר טלפון', 'טלפון', 'נייד', 'phone']),
     source: find(['מאיפה הגיע', 'מקור', 'מאיפה', 'source', 'פלטפורמה']),
     goal:   find(['המטרה שלי היא:', 'המטרה שלי היא', 'המטרה', 'מטרה', 'goal']),
-    notes:  find(['הערות', 'הערה', 'notes'])
+    notes:  find(['הערות', 'הערה', 'notes']),
+    date:   find(['תאריך השארת פרטים', 'תאריך', 'date'])
   };
+}
+
+/* ===== גיבוי: קליטת לידי אתר ישירות מהמייל (Elementor) — עצמאי מ-Make ===== */
+// קורא מיילי "הודעה חדשה מאת..." מהאתר, מחלץ שם/טלפון/מטרה.
+function leadsFromEmail_() {
+  const out = [];
+  let threads = [];
+  try { threads = GmailApp.search('subject:(הודעה חדשה מאת) newer_than:14d', 0, 50); } catch (e) { return out; }
+  threads.forEach(function (th) {
+    th.getMessages().forEach(function (msg) {
+      const body = msg.getPlainBody() || '';
+      const mPhone = body.match(/מס\s*טלפון[\s:]*([0-9][0-9\-\s]{6,})/);
+      if (!mPhone) return;                                  // חייב להיראות כמו ליד
+      const mName = body.match(/שם\s*מלא[\s:]*([^\n\r]+)/);
+      const mGoal = body.match(/המטרה שלי היא[\s:]*([^\n\r]+)/);
+      out.push({
+        name:  (mName ? mName[1] : '').trim(),
+        phone: mPhone[1].replace(/\s/g, '').trim(),
+        goal:  (mGoal ? mGoal[1] : '').trim(),
+        source: 'אתר'
+      });
+    });
+  });
+  return out;
+}
+
+/* מוסיף ליד לטאב הלידים אם הטלפון עוד לא קיים שם. מחזיר true אם נוסף. */
+function leadsAddToSheet_(sheet, cols, L) {
+  const pk = phoneKey_(L.phone);
+  const last = sheet.getLastRow();
+  let lastNameRow = 1;
+  if (last >= 2) {
+    const vals = sheet.getRange(2, 1, last - 1, sheet.getLastColumn()).getValues();
+    for (let i = 0; i < vals.length; i++) {
+      if (cols.phone >= 0 && phoneKey_(String(vals[i][cols.phone] || '')) === pk) return false;  // כבר קיים
+      const a = String(vals[i][cols.name >= 0 ? cols.name : 0] || '').trim();
+      if (a !== '') lastNameRow = i + 2;
+    }
+  }
+  const row = lastNameRow + 1;
+  if (cols.name   >= 0)            sheet.getRange(row, cols.name   + 1).setValue(L.name);
+  if (cols.phone  >= 0)            sheet.getRange(row, cols.phone  + 1).setValue(L.phone);
+  if (cols.goal   >= 0 && L.goal)  sheet.getRange(row, cols.goal   + 1).setValue(L.goal);
+  if (cols.source >= 0)            sheet.getRange(row, cols.source + 1).setValue(L.source);
+  if (cols.date   >= 0)            sheet.getRange(row, cols.date   + 1).setValue(Utilities.formatDate(new Date(), 'Asia/Jerusalem', 'd.M'));
+  return true;
 }
 
 /* האם לדלג על הליד לפי המקור (הגיע דרך וואטסאפ / יצר קשר ישיר) */
@@ -122,14 +169,15 @@ function leadsWaRun_(dryRun) {
     const cols = leadColIndexes_(sheet);
     if (cols.phone < 0) throw new Error('לא נמצאה עמודת טלפון בטאב הלידים.');
 
-    const lastRow = sheet.getLastRow();
+    const state = leadsWaState_();
+    const now = Date.now();
     const report = [];
-    let firstTouch = 0, seen = 0, skipped = 0;
+    let firstTouch = 0, seen = 0, skipped = 0, addedToSheet = 0;
 
+    // מעבר 1: מהשיטס (מה ש-Make/האוטומציה כתבו)
+    const lastRow = sheet.getLastRow();
     if (lastRow >= 2) {
       const vals = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
-      const state = leadsWaState_();
-      const now = Date.now();
       vals.forEach(function (row) {
         const phone = String(row[cols.phone] == null ? '' : row[cols.phone]).trim();
         const pk = phoneKey_(phone);
@@ -144,11 +192,27 @@ function leadsWaRun_(dryRun) {
         report.push('🆕 ' + (name || phone) + (source ? (' — ' + source) : ''));
         if (!dryRun) { leadFirstTouchEmail_(name, phone, { goal: goal, notes: notes }); state[pk] = { t: now }; }
       });
-      if (!dryRun) leadsWaSaveState_(state);
     }
+
+    // מעבר 2: גיבוי מהמייל (לידי אתר שלא הגיעו לשיטס, למשל אם Make נפל)
+    leadsFromEmail_().forEach(function (L) {
+      const pk = phoneKey_(L.phone);
+      if (!pk) return;
+      if (state[pk]) { seen++; return; }
+      firstTouch++;
+      report.push('🆕📧 ' + (L.name || L.phone) + ' — ' + L.source + ' (מהמייל)');
+      if (!dryRun) {
+        if (leadsAddToSheet_(sheet, cols, L)) addedToSheet++;
+        leadFirstTouchEmail_(L.name, L.phone, { goal: L.goal, notes: '' });
+        state[pk] = { t: now };
+      }
+    });
+
+    if (!dryRun) leadsWaSaveState_(state);
 
     out = (dryRun ? '[בדיקה — לא נשלח כלום] ' : '') +
       'לידים חדשים: ' + firstTouch + '  ·  כבר טופלו: ' + seen + '  ·  דילוג (וואטסאפ): ' + skipped +
+      (addedToSheet ? ('  ·  נוספו לשיטס: ' + addedToSheet) : '') +
       (report.length ? ('\n\n' + report.join('\n')) : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
