@@ -229,16 +229,22 @@ function leadsWaPrimeExisting() {
   if (!sheet) throw new Error('לא נמצא טאב לידים בגיליון ה-CRM.');
   const cols = leadColIndexes_(sheet);
   const state = {};
-  const lastRow = sheet.getLastRow();
+  const now = Date.now();
   let c = 0;
+  // 1) כל הלידים בשיטס
+  const lastRow = sheet.getLastRow();
   if (lastRow >= 2 && cols.phone >= 0) {
     const vals = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
-    const now = Date.now();
     vals.forEach(function (row) {
       const pk = phoneKey_(String(row[cols.phone] == null ? '' : row[cols.phone]).trim());
       if (pk) { state[pk] = { t: now }; c++; }
     });
   }
+  // 2) גם לידי אתר שהגיעו במייל ב-14 הימים האחרונים — בסיס נקי
+  leadsFromEmail_().forEach(function (L) {
+    const pk = phoneKey_(L.phone);
+    if (pk && !state[pk]) { state[pk] = { t: now }; c++; }
+  });
   leadsWaSaveState_(state);
   const msg = 'סומנו ' + c + ' לידים קיימים כ"כבר טופלו". מכאן והלאה רק לידים חדשים יקבלו התראה.';
   Logger.log(msg);
