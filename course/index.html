@@ -673,6 +673,14 @@ async function loadProfile(user){
   if(!Array.isArray(profile.done)) profile.done=[];
 }
 let entered=false;
+// open a lesson by id if it exists and is unlocked (used by ?lesson= deep-links)
+function openLessonById(id){
+  const f=FLAT.find(x=>x.id===id);
+  if(!f || !isUnlocked(f.mi)) return false;
+  openLesson(id);
+  return true;
+}
+
 async function enterApp(user){
   if(entered) return; entered=true;
   await loadProfile(user);
@@ -682,10 +690,15 @@ async function enterApp(user){
     if(b && SALES_URL){ b.href=SALES_URL; b.style.display='inline-flex'; }
     go('noaccess'); return;
   }
-  renderDash(); go('dash');
+  renderDash();
+  // deep-link from a reminder email: open a specific lesson (stored so it survives login)
+  let want=null; try{ want=localStorage.getItem('ec_open_lesson'); }catch(e){}
+  if(want){ try{ localStorage.removeItem('ec_open_lesson'); }catch(e){} if(openLessonById(want)) return; }
+  go('dash');
 }
 
 async function init(){
+  try{ const wl=new URLSearchParams(location.search).get('lesson'); if(wl) localStorage.setItem('ec_open_lesson', wl); }catch(e){}
   if(demoOn()){
     document.body.classList.add('demo');
     profile={ id:'demo', email:'demo@local', started_at:new Date(Date.now()-3*DAY_MS).toISOString(), done:[], has_access:true };
