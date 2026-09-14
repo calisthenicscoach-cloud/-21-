@@ -21,6 +21,8 @@
  *   COURSE_URL           the course URL (used elsewhere; also default fallback)
  *   CARDCOM_SUCCESS_URL  thank-you page after payment (optional; default /thanks)
  *   CARDCOM_FAIL_URL     where to send the buyer if payment fails (optional)
+ *   BREVO_API_KEY        Brevo key — to capture leads at checkout (optional)
+ *   BREVO_LEADS_LIST_ID  Brevo list id for leads/abandoned-cart (optional; enables capture)
  */
 
 const CREATE_URL = 'https://secure.cardcom.solutions/api/v11/LowProfile/Create';
@@ -59,6 +61,15 @@ export async function onRequestGet(context) {
   const email = String(url.searchParams.get('email') || '').trim().toLowerCase();
   if (!email) return emailForm(url.pathname, product, amount, '');
   if (!EMAIL_RE.test(email)) return emailForm(url.pathname, product, amount, email);
+
+  // Capture the email as a lead (for cart-abandonment follow-up) the moment they
+  // reach checkout. Buyers who pay also land in the buyers list via grant-access,
+  // so leads-minus-buyers = the people who entered an email but didn't purchase.
+  // Fire-and-forget so it never delays the redirect to payment.
+  if (env.BREVO_API_KEY && env.BREVO_LEADS_LIST_ID) {
+    const p = addLead(env, email);
+    if (context.waitUntil) context.waitUntil(p); else p.catch(() => {});
+  }
 
   const failUrl = env.CARDCOM_FAIL_URL || (env.COURSE_URL + (env.COURSE_URL.includes('?') ? '&' : '?') + 'pay=failed');
 
@@ -128,6 +139,18 @@ export async function onRequestGet(context) {
 
 function json(obj, status = 200) {
   return new Response(JSON.stringify(obj), { status, headers: { 'content-type': 'application/json' } });
+}
+
+// Add an email to the leads list (everyone who reached checkout). Best-effort;
+// updateEnabled means an existing contact is simply added to the list.
+async function addLead(env, email) {
+  try {
+    await fetch('https://api.brevo.com/v3/contacts', {
+      method: 'POST',
+      headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
+      body: JSON.stringify({ email, listIds: [Number(env.BREVO_LEADS_LIST_ID)], updateEnabled: true }),
+    });
+  } catch (e) {}
 }
 
 function esc(s) {

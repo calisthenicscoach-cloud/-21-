@@ -14,6 +14,7 @@
  *   SENDER_EMAIL, SENDER_NAME, COURSE_URL, GRANT_SECRET
  *   MAKE_FORWARD_URL (optional) — a webhook to receive a copy of each Cardcom
  *     notification (e.g. the marketer's Make.com scenario for their tracking).
+ *   BREVO_LEADS_LIST_ID (optional) — leads list to remove the buyer from on purchase.
  */
 
 const json = (obj, status = 200) =>
@@ -146,6 +147,8 @@ async function runGrant(env, rawEmail) {
     await sendLoginEmail(env, email, link);
     let listed = true;
     try { await addToList(env, email); } catch (e) { listed = false; }
+    // Buyer paid → take them off the leads/abandoned-cart list.
+    try { if (env.BREVO_LEADS_LIST_ID) await removeFromLeads(env, email); } catch (e) {}
     return json({ ok: true, email, listed });
   } catch (e) {
     return json({ error: String((e && e.message) || e) }, 500);
@@ -217,4 +220,12 @@ async function addToList(env, email) {
     body: JSON.stringify({ email, listIds: [Number(env.BREVO_LIST_ID)], updateEnabled: true }),
   });
   if (!res.ok && res.status !== 204) throw new Error('addToList failed (' + res.status + '): ' + (await res.text()));
+}
+
+// Remove a buyer from the leads/abandoned-cart list once they've paid.
+async function removeFromLeads(env, email) {
+  await fetch('https://api.brevo.com/v3/contacts/lists/' + Number(env.BREVO_LEADS_LIST_ID) + '/contacts/remove', {
+    method: 'POST', headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
+    body: JSON.stringify({ emails: [email] }),
+  });
 }
