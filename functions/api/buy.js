@@ -23,6 +23,12 @@
  *   CARDCOM_FAIL_URL     where to send the buyer if payment fails (optional)
  *   BREVO_API_KEY        Brevo key — to capture leads at checkout (optional)
  *   BREVO_LEADS_LIST_ID  Brevo list id for leads/abandoned-cart (optional; enables capture)
+ *   CART_COUPON_CODE     coupon code for the abandonment emails (optional, default "COMEBACK")
+ *   CART_COUPON_PERCENT  discount % that code applies (optional, default 10)
+ *
+ * Coupon: the cart-abandonment emails link to /api/buy?coupon=<code>. A matching
+ * code reduces the price by CART_COUPON_PERCENT automatically — the buyer types
+ * nothing. Defaults mean it works with no extra Cloudflare config.
  */
 
 const CREATE_URL = 'https://secure.cardcom.solutions/api/v11/LowProfile/Create';
@@ -52,15 +58,28 @@ export async function onRequestGet(context) {
     .filter((k) => !env[k]);
   if (missing.length) return errorPage('חסרות הגדרות בשרת: ' + missing.join(', '));
 
-  const amount = Number(env.CARDCOM_AMOUNT);
-  if (!Number.isFinite(amount) || amount <= 0) return errorPage('סכום התשלום לא מוגדר כראוי.');
+  const baseAmount = Number(env.CARDCOM_AMOUNT);
+  if (!Number.isFinite(baseAmount) || baseAmount <= 0) return errorPage('סכום התשלום לא מוגדר כראוי.');
 
   const product = env.CARDCOM_PRODUCT || 'אתגר 21 יום';
 
+  // Optional marketing coupon carried in the link (?coupon=CODE) — used by the
+  // cart-abandonment emails. The code and percentage live in env with sensible
+  // defaults, so a matching link applies the discount automatically; the buyer
+  // never types anything. An unknown/absent coupon simply charges full price.
+  const couponInput = String(url.searchParams.get('coupon') || '').trim();
+  const couponCode = String(env.CART_COUPON_CODE || 'COMEBACK').trim();
+  const couponPct = Math.min(90, Math.max(0, Number(env.CART_COUPON_PERCENT ?? 10)));
+  const couponOk = !!couponInput && !!couponCode &&
+    couponInput.toLowerCase() === couponCode.toLowerCase() && couponPct > 0;
+  const amount = couponOk ? Math.max(1, Math.round(baseAmount * (100 - couponPct) / 100)) : baseAmount;
+  // What to carry through the email-capture form so the coupon survives that step.
+  const couponForForm = couponOk ? couponInput : '';
+
   // Step 1 — collect the buyer's email before sending them to pay.
   const email = String(url.searchParams.get('email') || '').trim().toLowerCase();
-  if (!email) return emailForm(url.pathname, product, amount, '');
-  if (!EMAIL_RE.test(email)) return emailForm(url.pathname, product, amount, email);
+  if (!email) return emailForm(url.pathname, product, amount, '', couponForForm, couponOk ? baseAmount : 0);
+  if (!EMAIL_RE.test(email)) return emailForm(url.pathname, product, amount, email, couponForForm, couponOk ? baseAmount : 0);
 
   // Capture the email as a lead (for cart-abandonment follow-up) the moment they
   // reach checkout. Buyers who pay also land in the buyers list via grant-access,
@@ -159,8 +178,17 @@ function esc(s) {
 }
 
 // Step-1 page: ask for the email the course login + receipt will be sent to.
-function emailForm(action, product, amount, prevValue) {
+// `coupon` (when non-empty) is carried through as a hidden field so a valid
+// coupon survives this step; `original` (when > 0) is the pre-discount price,
+// shown struck through so the buyer sees the deal.
+function emailForm(action, product, amount, prevValue, coupon, original) {
   const invalid = prevValue ? `<p class="err">כתובת המייל לא תקינה — נסה שוב 🙏</p>` : '';
+  const couponField = coupon ? `<input type="hidden" name="coupon" value="${esc(coupon)}">` : '';
+  const priceHtml = (original && original > amount)
+    ? `<span><s style="opacity:.55;font-weight:600">${esc(original)} ₪</s> ${esc(amount)} ₪</span>`
+    : `<span>${esc(amount)} ₪</span>`;
+  const couponNote = (original && original > amount)
+    ? `<p class="note" style="color:#5fd39a;margin-top:-6px">✓ הקופון הופעל — ההנחה כבר כלולה במחיר</p>` : '';
   const html = `<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <title>${esc(product)} — כניסה לתשלום</title>
@@ -190,12 +218,14 @@ function emailForm(action, product, amount, prevValue) {
       .note{margin:16px 0 0;font-size:12.5px;color:#7f8a9c;line-height:1.6;text-align:center}
     </style></head><body>
     <form class="card" method="get" action="${esc(action)}">
-      <div class="prod"><b>${esc(product)}</b><span>${esc(amount)} ₪</span></div>
+      <div class="prod"><b>${esc(product)}</b>${priceHtml}</div>
       <h1>כמעט שם! 💪</h1>
       <p class="sub">הכנס את כתובת המייל שאיתה תיכנס לקורס. לכתובת הזו נשלח את <b>קישור הכניסה</b> ואת <b>הקבלה</b> מיד אחרי התשלום.</p>
+      ${couponNote}
       <label for="email">כתובת מייל</label>
       <input id="email" name="email" type="email" inputmode="email" required autofocus
         placeholder="you@email.com" value="${esc(prevValue)}">
+      ${couponField}
       ${invalid}
       <button type="submit">המשך לתשלום ←</button>
       <p class="note">תשלום מאובטח דרך Cardcom · אשראי או ביט</p>
