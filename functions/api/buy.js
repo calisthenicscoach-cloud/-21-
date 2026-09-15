@@ -54,6 +54,47 @@ export async function onRequestGet(context) {
     });
   }
 
+  // Self-test: /api/buy?leadtest=1 — adds a fixed, clearly-marked test contact to
+  // the leads list and reports Brevo's result, so lead capture can be verified in
+  // the browser without a real checkout. It always uses the same test address, so
+  // there's nothing to abuse. Delete that one contact from Brevo afterwards.
+  if (url.searchParams.get('leadtest') === '1') {
+    if (!env.BREVO_API_KEY || !env.BREVO_LEADS_LIST_ID) {
+      return json({
+        ok: false,
+        capture: 'לא מוגדר',
+        hasBrevoKey: !!env.BREVO_API_KEY,
+        leadsListId: env.BREVO_LEADS_LIST_ID || null,
+        note: 'חסר BREVO_API_KEY או BREVO_LEADS_LIST_ID — לכידת הלידים לא פעילה',
+      });
+    }
+    const testEmail = 'brevo-selftest@matankopel.co.il';
+    let status = 0, bodyText = '';
+    try {
+      const r = await fetch('https://api.brevo.com/v3/contacts', {
+        method: 'POST',
+        headers: { 'api-key': env.BREVO_API_KEY, 'content-type': 'application/json' },
+        body: JSON.stringify({ email: testEmail, listIds: [Number(env.BREVO_LEADS_LIST_ID)], updateEnabled: true }),
+      });
+      status = r.status;
+      bodyText = await r.text().catch(() => '');
+    } catch (e) {
+      return json({ ok: false, note: 'הבקשה ל-Brevo נכשלה', error: String(e) });
+    }
+    // 201 = contact created, 204 = existing contact updated/added to list — both OK.
+    const ok = status === 201 || status === 204;
+    return json({
+      ok,
+      leadsListId: Number(env.BREVO_LEADS_LIST_ID),
+      testEmail,
+      brevoStatus: status,
+      note: ok
+        ? '✅ לכידת לידים עובדת — הליד נכנס לרשימה מס׳ ' + Number(env.BREVO_LEADS_LIST_ID)
+        : '❌ Brevo החזיר שגיאה — לכידת הלידים לא עבדה',
+      brevo: bodyText.slice(0, 300),
+    });
+  }
+
   const missing = ['CARDCOM_TERMINAL', 'CARDCOM_API_NAME', 'CARDCOM_AMOUNT', 'COURSE_URL']
     .filter((k) => !env[k]);
   if (missing.length) return errorPage('חסרות הגדרות בשרת: ' + missing.join(', '));
