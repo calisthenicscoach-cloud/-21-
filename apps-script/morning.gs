@@ -167,11 +167,15 @@ function morningNumber_(seed) {
 function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
   const token = morningTokenCached_();
   const amt = Math.round(Number(amountILS) * 100) / 100;
-  // חודש הדיווח לפי תאריך המייל — אך לא לפני החודש הנוכחי (מורנינג דוחה דיווח לתקופה שכבר עברה/נסגרה)
+  // חודש הדיווח לפי תאריך המסמך — אך לא לפני החודש הנוכחי (מורנינג דוחה דיווח לתקופה שכבר עברה/נסגרה)
   const now = new Date();
   let rep = new Date(dateObj.getFullYear(), dateObj.getMonth(), 1);
   const curFirst = new Date(now.getFullYear(), now.getMonth(), 1);
-  if (rep < curFirst) rep = curFirst;
+  // תאריך התשלום — כברירת מחדל תאריך המסמך. אך אם הדיווח נדחה לחודש הנוכחי (הוצאה מחודש שעבר),
+  // גם התשלום חייב להיות בחודש הדיווח — אחרת מורנינג רואה תשלום בתקופה אחרת ומציג "לא שולם" (אדום).
+  let payDate = dateObj;
+  if (rep < curFirst) { rep = curFirst; payDate = now; }
+  const payStr = Utilities.formatDate(payDate, 'Asia/Jerusalem', 'yyyy-MM-dd');
   const payload = {
     description: vendorName,
     date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'),
@@ -184,8 +188,8 @@ function sendToMorning_(vendorName, amountILS, dateObj, month, seed) {
     vatType: 0,
     vat: 0,
     amountExcludeVat: amt,
-    // רישום תשלום על מלוא הסכום → ההוצאה נסגרת כ"שולם" (לא אדום)
-    payment: [{ date: Utilities.formatDate(dateObj, 'Asia/Jerusalem', 'yyyy-MM-dd'), price: amt, type: MORNING_PAYMENT_TYPE }],
+    // רישום תשלום על מלוא הסכום → ההוצאה נסגרת כ"שולם" (לא אדום). התאריך תואם את חודש הדיווח.
+    payment: [{ date: payStr, price: amt, type: MORNING_PAYMENT_TYPE }],
     accountingClassification: { id: morningClassId_() },
     supplier: { name: MORNING_SUPPLIER[vendorName] || vendorName }
   };

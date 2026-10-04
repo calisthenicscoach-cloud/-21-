@@ -590,6 +590,8 @@ function adSpendAdd_(name) {
   const mt = (rM.getResponseText() || '').trim();
   const month = mt ? parseInt(mt, 10) : defMonth;
   if (!(month >= 1 && month <= 12)) { ui.alert('חודש לא תקין.'); return; }
+  // השנה הנכונה: חודש "קדימה" מהחודש הנוכחי = שנה שעברה (למשל דצמבר שנרשם בתחילת ינואר)
+  const year = (month > now.getMonth() + 1) ? now.getFullYear() - 1 : now.getFullYear();
 
   const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(EXPENSE_SHEET_NAME);
   if (!sh) { ui.alert('לא נמצא טאב "' + EXPENSE_SHEET_NAME + '".'); return; }
@@ -597,13 +599,13 @@ function adSpendAdd_(name) {
 
   // מורנינג — פעם אחת לחודש (דדופ לפי seed)
   let mMsg = '';
-  const seed = 'adspend|' + name + '|' + now.getFullYear() + '-' + month;
+  const seed = 'adspend|' + name + '|' + year + '-' + month;
   if (typeof morningEnabled_ === 'function' && morningEnabled_()) {
     if (typeof morningSentHas_ === 'function' && morningSentHas_(seed)) {
       mMsg = '\n(כבר נשלח למורנינג לחודש זה — דולג. לתיקון סכום: ישירות במורנינג)';
     } else {
       try {
-        const dateObj = new Date(now.getFullYear(), month - 1, 15);
+        const dateObj = new Date(year, month - 1, 15);
         const ok = sendToMorning_(name, amt, dateObj, month, seed);
         if (ok) { morningSentAdd_(seed); mMsg = '\n+ נוסף למורנינג'; }
         else { mMsg = '\n(מורנינג נכשל)'; }
