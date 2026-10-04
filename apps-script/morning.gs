@@ -102,6 +102,7 @@ const MORNING_PAYMENT_TYPE = 3;
 // שם הספק במורנינג לפי שם הספק בגיליון (ברירת מחדל: שם הספק עצמו)
 const MORNING_SUPPLIER = {
   'ממומן':                 'Meta Platforms Ireland',
+  'מודעות קורס 21 יום':     'Meta Platforms Ireland',   // חשבון המודעות של הקורס — אותו ספק (Meta)
   'וי כחול אינסטגרם':       'Meta Platforms Ireland',
   'קארדקום':               'Cardcom',
   'מייל עסקי':             'Google',

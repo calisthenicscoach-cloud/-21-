@@ -22,27 +22,19 @@ const PROCESSED_LABEL    = 'הוצאות-נקלט';        // תווית Gmail �
 const START_AFTER        = '2026/08/23';         // קולט רק קבלות מהתאריך הזה והלאה (פורמט YYYY/MM/DD)
 
 /* ===== כללי ספקים (להוספת ספק חדש – מוסיפים אובייקט לרשימה) ===== */
+/* הערה: הוצאות מודעות Meta (קליסטניקס + קורס 21 יום) נרשמות חודשית ידנית מ-Payment Activity
+   (adSpendCalisthenicsAdd / adSpendCourseAdd בתחתית) — אמין יותר ממייל. הכלל הישן למטה רדום
+   (Meta הפסיקה את מיילי "הקבלה מודעות Meta" בעברית); נשאר רק כגיבוי ולא פוגע. */
 const VENDORS = [
   {
-    name:   'ממומן',                             // ← מה שייכתב בעמודה A (תואם לשם הקיים בגיליון)
-    method: 'אשראי',                             // ← עמודה B (אשראי / העברה בנקאית / ביט)
-    query:  'subject:(הקבלה מודעות Meta)',        // חיפוש לפי נושא (בשולח יש מקף שמבלבל את Gmail)
-    fromMatch:    /facebook/i,
-    subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,      // רק קבלות אמת (עמיד לתווי כיווניות נסתרים)
-    amount: metaAdsAmount_,
-    month:  emailMonth_,                         // חודש לפי תאריך המייל (רגע החיוב)
-    dedupKey: metaTxnId_                         // מטא שולחת לפעמים 2 מיילים לאותו חיוב — דדופ לפי מזהה עסקה
-  },
-  {
-    name:   'ממומן',                             // פורמט חדש של Meta (אנגלית) — "Meta Invoice" עם PDF מצורף
+    name:   'ממומן',
     method: 'אשראי',
-    query:  'subject:(Meta Invoice)',
-    fromMatch:    /facebookmail\.com|facebook/i,
-    subjectMatch: /Meta Invoice/i,
-    source:  'pdf',                              // הסכום ב-PDF המצורף (Statement_*.pdf), ב-USD → מומר לשקל
-    amount:  metaInvoiceAmount_,
-    month:   emailMonth_,
-    dedupKey: metaInvoiceId_                     // דדופ לפי מספר החשבונית
+    query:  'subject:(הקבלה מודעות Meta)',
+    fromMatch:    /facebook/i,
+    subjectMatch: /הקבלה[\s\S]{0,40}מודעות/,
+    amount: metaAdsAmount_,
+    month:  emailMonth_,
+    dedupKey: metaTxnId_
   },
   {
     name:   'קארדקום',
@@ -123,6 +115,9 @@ function onOpen() {
     .createMenu('הוצאות אוטומטיות')
     .addItem('בדיקה (ללא שינוי) — Log', 'previewExpenses')
     .addItem('קליטה עכשיו', 'scanExpenses')
+    .addSeparator()
+    .addItem('➕ הוצאת פרסום — קליסטניקס (חודשי)', 'adSpendCalisthenicsAdd')
+    .addItem('➕ הוצאת פרסום — קורס 21 יום (חודשי)', 'adSpendCourseAdd')
     .addSeparator()
     .addItem('אבחון (בדיקת חיבור)', 'diagnoseExpenses')
     .addItem('בדיקת קארדקום PDF', 'dumpCardcom')
@@ -356,20 +351,6 @@ function metaTxnId_(text) {
   return m ? m[0] : null;
 }
 
-/* Meta Invoice (פורמט אנגלי חדש): הסכום מתוך ה-PDF (Statement) — ב-USD, מומר לשקל.
-   לוקח את הסכום הגדול ביותר עם 2 ספרות עשרוניות = סה"כ החשבונית. */
-function metaInvoiceAmount_(text) {
-  const nums = (String(text || '').match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
-  if (!nums.length) return null;
-  const usd = Math.max.apply(null, nums);
-  return Math.round(usd * fxRate_('USD', 'ILS') * 100) / 100;
-}
-/* מזהה חשבונית Meta (למניעת כפילות) — רצף הספרות הארוך הראשון בטקסט ה-PDF */
-function metaInvoiceId_(text) {
-  const m = String(text || '').match(/\d{7,}/);
-  return m ? m[0] : null;
-}
-
 /* מזהי חיובים שכבר נקלטו (למניעת כפילות) — נשמר ב-Script Properties */
 let _expenseSeen = null;
 function expenseSeenLoad_() {
@@ -586,4 +567,63 @@ function hebMonth_(text, fallbackDate) {
 function parseYmd_(s) {
   const p = s.split('/');
   return new Date(Number(p[0]), Number(p[1]) - 1, Number(p[2]));
+}
+
+/* ===================================================================== */
+/* הוצאות פרסום Meta — רישום חודשי ידני מ-Payment Activity (אמין יותר ממייל) */
+/* ===================================================================== */
+function adSpendCalisthenicsAdd() { return adSpendAdd_('ממומן'); }               // חשבון הקליסטניקס (ממשיך את ההיסטוריה הקיימת)
+function adSpendCourseAdd()        { return adSpendAdd_('מודעות קורס 21 יום'); }  // חשבון הקורס
+
+function adSpendAdd_(name) {
+  const ui = SpreadsheetApp.getUi();
+  const rA = ui.prompt('הוצאת פרסום — ' + name,
+    'סכום ההוצאה החודשית (₪) מ-Payment Activity:', ui.ButtonSet.OK_CANCEL);
+  if (rA.getSelectedButton() !== ui.Button.OK) return;
+  const amt = toNum_(rA.getResponseText());
+  if (!(amt > 0)) { ui.alert('סכום לא תקין.'); return; }
+
+  const now = new Date();
+  const defMonth = now.getMonth() === 0 ? 12 : now.getMonth();   // ברירת מחדל = החודש הקודם
+  const rM = ui.prompt('חודש', 'מספר חודש 1-12 (ריק = ' + defMonth + ', החודש הקודם):', ui.ButtonSet.OK_CANCEL);
+  if (rM.getSelectedButton() !== ui.Button.OK) return;
+  const mt = (rM.getResponseText() || '').trim();
+  const month = mt ? parseInt(mt, 10) : defMonth;
+  if (!(month >= 1 && month <= 12)) { ui.alert('חודש לא תקין.'); return; }
+
+  const sh = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(EXPENSE_SHEET_NAME);
+  if (!sh) { ui.alert('לא נמצא טאב "' + EXPENSE_SHEET_NAME + '".'); return; }
+  adSpendSet_(sh, name, 'אשראי', amt, month);   // SET (דורס), כדי שלא ייכפל אם מריצים שוב לאותו חודש
+
+  // מורנינג — פעם אחת לחודש (דדופ לפי seed)
+  let mMsg = '';
+  const seed = 'adspend|' + name + '|' + now.getFullYear() + '-' + month;
+  if (typeof morningEnabled_ === 'function' && morningEnabled_()) {
+    if (typeof morningSentHas_ === 'function' && morningSentHas_(seed)) {
+      mMsg = '\n(כבר נשלח למורנינג לחודש זה — דולג. לתיקון סכום: ישירות במורנינג)';
+    } else {
+      try {
+        const dateObj = new Date(now.getFullYear(), month - 1, 15);
+        const ok = sendToMorning_(name, amt, dateObj, month, seed);
+        if (ok) { morningSentAdd_(seed); mMsg = '\n+ נוסף למורנינג'; }
+        else { mMsg = '\n(מורנינג נכשל)'; }
+      } catch (e) { mMsg = '\n(מורנינג: ' + e.message + ')'; }
+    }
+  }
+  ui.alert('נרשם ✅', amt + ' ₪ — ' + name + ', חודש ' + month + mMsg, ui.ButtonSet.OK);
+}
+
+/* קובע (דורס) את ערך ההוצאה לחודש מסוים — או יוצר שורה חדשה. לא מחבר, כדי שלא ייכפל. */
+function adSpendSet_(sh, name, method, amount, month) {
+  const last = Math.max(sh.getLastRow(), 1), n = Math.max(last - 1, 1);
+  const aVals = sh.getRange(2, 1, n, 1).getValues();
+  const eVals = sh.getRange(2, 5, n, 1).getValues();
+  let firstEmpty = -1;
+  for (let i = 0; i < aVals.length; i++) {
+    const a = (aVals[i][0] == null ? '' : String(aVals[i][0])).trim();
+    if (a === '' && firstEmpty === -1) firstEmpty = i + 2;
+    if (a === name && Number(eVals[i][0]) === Number(month)) { sh.getRange(i + 2, 3).setValue(amount); return; }
+  }
+  const row = firstEmpty !== -1 ? firstEmpty : (last + 1);
+  writeExpenseRow_(sh, row, name, method, amount, month);
 }
