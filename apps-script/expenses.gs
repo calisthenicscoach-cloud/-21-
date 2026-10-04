@@ -34,6 +34,17 @@ const VENDORS = [
     dedupKey: metaTxnId_                         // מטא שולחת לפעמים 2 מיילים לאותו חיוב — דדופ לפי מזהה עסקה
   },
   {
+    name:   'ממומן',                             // פורמט חדש של Meta (אנגלית) — "Meta Invoice" עם PDF מצורף
+    method: 'אשראי',
+    query:  'subject:(Meta Invoice)',
+    fromMatch:    /facebookmail\.com|facebook/i,
+    subjectMatch: /Meta Invoice/i,
+    source:  'pdf',                              // הסכום ב-PDF המצורף (Statement_*.pdf), ב-USD → מומר לשקל
+    amount:  metaInvoiceAmount_,
+    month:   emailMonth_,
+    dedupKey: metaInvoiceId_                     // דדופ לפי מספר החשבונית
+  },
+  {
     name:   'קארדקום',
     method: 'אשראי',
     query:  'subject:(חשבונית קארדקום)',
@@ -342,6 +353,20 @@ function toNum_(s) { return parseFloat(String(s).replace(/,/g, '')); }
 // מזהה עסקה של מטא (שני רצפי ספרות ארוכים עם מקף) — למניעת ספירה כפולה כשמטא שולחת 2 מיילים לאותו חיוב
 function metaTxnId_(text) {
   const m = String(text || '').match(/\d{12,}-\d{12,}/);
+  return m ? m[0] : null;
+}
+
+/* Meta Invoice (פורמט אנגלי חדש): הסכום מתוך ה-PDF (Statement) — ב-USD, מומר לשקל.
+   לוקח את הסכום הגדול ביותר עם 2 ספרות עשרוניות = סה"כ החשבונית. */
+function metaInvoiceAmount_(text) {
+  const nums = (String(text || '').match(/[0-9][0-9,]*\.\d{2}/g) || []).map(toNum_).filter(function (x) { return x > 0; });
+  if (!nums.length) return null;
+  const usd = Math.max.apply(null, nums);
+  return Math.round(usd * fxRate_('USD', 'ILS') * 100) / 100;
+}
+/* מזהה חשבונית Meta (למניעת כפילות) — רצף הספרות הארוך הראשון בטקסט ה-PDF */
+function metaInvoiceId_(text) {
+  const m = String(text || '').match(/\d{7,}/);
   return m ? m[0] : null;
 }
 
