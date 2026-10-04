@@ -627,3 +627,52 @@ function adSpendSet_(sh, name, method, amount, month) {
   const row = firstEmpty !== -1 ? firstEmpty : (last + 1);
   writeExpenseRow_(sh, row, name, method, amount, month);
 }
+
+/* ===================================================================== */
+/* תזכורת חודשית במייל — לרשום הוצאות פרסום Meta (ב-2 לכל חודש)          */
+/* ===================================================================== */
+const ADSPEND_REMINDER_TO = 'calisthenics.coach@matankopel.co.il';
+
+// שולח את מייל התזכורת (לחודש שעבר). אפשר להריץ ידנית לבדיקה.
+function sendAdSpendReminder() {
+  const now = new Date();
+  const prev = new Date(now.getFullYear(), now.getMonth() - 1, 1);   // החודש שצריך לרשום = הקודם
+  const names = ['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+  const monthName = names[prev.getMonth()];
+  const monthNum  = prev.getMonth() + 1;
+
+  const subject = '🔔 תזכורת: לרשום הוצאות פרסום Meta — ' + monthName;
+  const html =
+    '<div dir="rtl" style="font-family:Arial,sans-serif;font-size:15px;color:#222;line-height:1.8;max-width:560px">' +
+      '<h2 style="margin:0 0 12px">🔔 תזכורת חודשית — הוצאות פרסום Meta</h2>' +
+      '<p style="margin:0 0 14px">הגיע הזמן לרשום את הוצאות הפרסום של <b>' + monthName + '</b> (חודש ' + monthNum + '). ' +
+        'לוקח 2 דקות:</p>' +
+      '<ol style="padding-right:20px;margin:0 0 16px">' +
+        '<li style="margin-bottom:8px">היכנס ל-Meta → <b>Billing → Payment Activity</b> בשני החשבונות ' +
+          '(קורס + קליסטניקס).</li>' +
+        '<li style="margin-bottom:8px">סכם לכל חשבון את החיובים של <b>' + monthName + '</b> (₪).</li>' +
+        '<li style="margin-bottom:8px">בגיליון הכספים → תפריט <b>"הוצאות אוטומטיות"</b>:<br>' +
+          '• <b>➕ הוצאת פרסום — קורס 21 יום</b><br>' +
+          '• <b>➕ הוצאת פרסום — קליסטניקס</b><br>' +
+          'הזן לכל אחד את הסכום + חודש <b>' + monthNum + '</b>.</li>' +
+        '<li>הורד את קובצי החשבוניות (FBADS-…) לתיקיית <b>"חשבוניות Meta"</b> בדרייב.</li>' +
+      '</ol>' +
+      '<p style="margin:0;color:#666;font-size:13px">זה נכנס אוטומטית לגיליון "הוצאות" וגם למורנינג. ✅</p>' +
+    '</div>';
+
+  MailApp.sendEmail({ to: ADSPEND_REMINDER_TO, subject: subject, htmlBody: html });
+  Logger.log('תזכורת פרסום נשלחה ל-' + ADSPEND_REMINDER_TO + ' (חודש ' + monthNum + ')');
+}
+
+// מתקין טריגר חודשי: ה-2 לכל חודש, בסביבות 9:00. מריצים פעם אחת.
+function installAdSpendReminder() {
+  ScriptApp.getProjectTriggers().forEach(function (t) {
+    if (t.getHandlerFunction() === 'sendAdSpendReminder') ScriptApp.deleteTrigger(t);
+  });
+  ScriptApp.newTrigger('sendAdSpendReminder').timeBased().onMonthDay(2).atHour(9).create();
+  Logger.log('תזכורת חודשית הותקנה: ה-2 לכל חודש בשעה 9.');
+  try {
+    SpreadsheetApp.getUi().alert('תזכורת חודשית הותקנה ✅',
+      'תישלח ב-2 לכל חודש (בסביבות 9:00) אל ' + ADSPEND_REMINDER_TO + '.', SpreadsheetApp.getUi().ButtonSet.OK);
+  } catch (e) {}
+}
