@@ -9,6 +9,8 @@
 <meta name="apple-mobile-web-app-title" content="פרוטוקול בראור">
 <title>פרוטוקול בראור</title>
 <meta name="description" content="תוכנית חינמית לחבר'ה בהכשרה: 15 מתח, 30 מקבילים וגוף גדול יותר — בלי חדר כושר ובלי זמן פנוי.">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-180.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Karantina:wght@400;700&family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -237,6 +239,29 @@
     .tab{font-size:13px}
   }
 
+
+  /* ---------- SCREENS ---------- */
+  .screen[hidden]{display:none!important}
+  .topbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;display:flex;align-items:center;gap:12px;
+    padding:10px 16px;background:color-mix(in srgb,var(--bg) 82%,transparent);
+    -webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .back{border:1px solid var(--line-2);background:var(--surface);color:var(--ink);font-size:14px;font-weight:700;
+    padding:9px 13px;border-radius:6px}
+  .back:active{background:var(--surface2)}
+  .tb-brand{margin-inline-start:auto;font-family:var(--display);font-size:22px;font-weight:700;color:var(--orange)}
+  .plan-hero{padding:26px 16px 22px;border-bottom:1px solid var(--line)}
+  .plan-hero h1{font-size:clamp(46px,13vw,70px)}
+  .after{margin-top:14px;font-size:13.5px;line-height:1.65;color:var(--muted);padding:0 2px}
+  .wk-tag{display:inline-flex;align-items:center;gap:8px;font-size:13px;font-weight:800;color:var(--on-acc);
+    background:var(--acc);padding:6px 12px;border-radius:3px}
+  .os-tabs{display:flex;gap:5px;background:rgba(0,0,0,.25);border:1px solid var(--line);border-radius:6px;padding:4px;margin-bottom:12px}
+  .os{flex:1;border:none;background:transparent;color:var(--muted);font-size:14px;font-weight:700;padding:9px 4px;border-radius:4px}
+  .os.active{background:var(--grad);color:var(--on-acc)}
+  .how{margin:14px 22px 0 0;display:flex;flex-direction:column;gap:9px;font-size:14.5px;line-height:1.6;color:var(--ink2)}
+  .how b{color:var(--ink)}
+  .how[hidden]{display:none}
+  .key{display:inline-block;min-width:26px;text-align:center;font-weight:800;color:var(--ink);background:var(--surface2);
+    border:1px solid var(--line-2);border-radius:5px;padding:0 6px;margin:0 2px}
   /* ---------- MILITARY LAYER ---------- */
   body::before{background:
       linear-gradient(rgba(var(--ink-rgb),.035) 1px, transparent 1px) 0 0/44px 44px,
@@ -271,6 +296,7 @@
 </head>
 <body>
 
+<div id="intro" class="screen">
 <header class="hero">
   <div class="hero-inner">
     <span class="eyebrow"><span class="dot"></span>תדריך · חינם לחבר'ה בהכשרה</span>
@@ -289,7 +315,7 @@
 
   <!-- STEP 1 · TEST -->
   <section class="step" id="test">
-    <div class="step-h"><span class="step-n">1</span>
+    <div class="step-h"><span class="step-n">▶</span>
       <div><div class="step-t">המבחן — דקה אחת</div><div class="step-s">מקסימום חזרות נקיות, עם מנוחה מלאה בין התרגילים</div></div>
     </div>
     <div class="card">
@@ -301,10 +327,10 @@
         <div class="test-lbl">מקבילים<small>ירידה עד 90° במרפק ועלייה עד יישור · <a href="https://youtu.be/lpC8OJC255Q" target="_blank" rel="noopener noreferrer">טכניקה ▶</a></small></div>
         <div class="stepper"><button type="button" aria-label="הוסף" data-step="dip" data-d="1">+</button><input id="dip" type="number" inputmode="numeric" min="0" max="100" value="0" aria-label="מקסימום מקבילים"><button type="button" aria-label="הורד" data-step="dip" data-d="-1">−</button></div>
       </div>
-      <button class="btn" type="button" id="calc">תן לי את המספר שלי</button>
+      <button class="btn" type="button" id="calc">פתח לי את התוכנית שלי</button>
     </div>
 
-    <div id="result" aria-live="polite"></div>
+    <p class="after">אחרי המבחן נפתח לך דף אישי: המספר שלך, החוק של לפני האוכל, אימון הגוף ברמה שלך ומה לאכול בצבא.</p>
 
     <details class="explain">
       <summary>איך עובדות הרמות?</summary>
@@ -313,6 +339,31 @@
         <div class="lvls" id="lvlTable"></div>
       </div>
     </details>
+  </section>
+</main>
+</div>
+
+<div id="plan" class="screen" hidden>
+<nav class="topbar">
+  <button type="button" class="back" data-retest>→ מבחן מחדש</button>
+  <span class="tb-brand">פרוטוקול בראור</span>
+</nav>
+<header class="plan-hero">
+  <div class="hero-inner">
+    <span class="eyebrow"><span class="dot"></span>התוכנית האישית שלך</span>
+    <h1 id="planTitle">רמה 1</h1>
+    <p class="sub" id="planSub"></p>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- STEP 1 · NUMBER -->
+  <section class="step" id="number">
+    <div class="step-h"><span class="step-n">1</span>
+      <div><div class="step-t">המספר שלך</div><div class="step-s">את זה עושים בכל סט לפני האוכל</div></div>
+    </div>
+    <div id="result" aria-live="polite"></div>
   </section>
 
   <!-- STEP 2 · MEAL RULE -->
@@ -327,6 +378,7 @@
         <div class="meal"><div class="e">🍝</div><b>לפני ערב</b><span>מתח + מקבילים</span></div>
       </div>
       <p class="p">לפני כל ארוחה — <b>סט מתח וסט מקבילים של "המספר שלך"</b>. עוברים ליד מתקן במהלך היום? עוד סט, בונוס. זו שיטה של יחידות מיוחדות: הרבה סטים קטנים, אף פעם לא עד הכשל.</p>
+      <p class="p" id="mealNote" style="margin-top:10px" hidden></p>
       <div id="clipNumber"></div>
     </div>
     <div class="card">
@@ -343,10 +395,9 @@
   <!-- STEP 3 · WORKOUT -->
   <section class="step" id="workout">
     <div class="step-h"><span class="step-n">3</span>
-      <div><div class="step-t">אימון הגוף</div><div class="step-s">30–40 דק' · מתח + מקבילים · זה מה שבונה את הגוף</div></div>
+      <div><div class="step-t">אימון הגוף שלך</div><div class="step-s">30–40 דק' · מתח + מקבילים · זה מה שבונה את הגוף</div></div>
     </div>
-    <div class="tabs" id="tabs" role="tablist"></div>
-    <div class="tab-hint" id="tabHint"></div>
+    <div class="wk-tag" id="wkTag"></div>
     <div class="card" style="margin-top:12px">
       <p class="p"><b>בסופ"ש בבית.</b> יש לך זמן באמצע השבוע? תעשה אותו גם בבסיס — עד פעמיים בשבוע, עם יום הפסקה ביניהם.<br>
       <b>ביום של האימון אין סטים לפני האוכל</b> — האימון מחליף אותם. כואבות הידיים למחרת? רק סט אחד לפני האוכל.</p>
@@ -407,10 +458,36 @@
       <div><div class="step-t">שומרים ושולחים</div><div class="step-s">כי בבסיס לא תמיד יש קליטה</div></div>
     </div>
     <div class="card">
-      <p class="p"><b>שמור לגלריה</b> כרטיס עם המספרים שלך והחוקים — תמיד יהיה לך מול העיניים, גם בלי אינטרנט.</p>
-      <button class="btn ghost" type="button" id="saveCard">📲 שמור כרטיס לגלריה</button>
+      <p class="p"><b>שמור לגלריה 2 תמונות:</b> כרטיס עם המספרים והחוקים, ותוכנית האימון שלך. ככה הכל אצלך גם בלי אינטרנט.</p>
+      <button class="btn ghost" type="button" id="saveCard">📲 שמור לגלריה</button>
       <p class="p" style="margin-top:16px"><b>כל שבועיים</b> — מבחן, ושולחים לי כמה עשית. אני רוצה לראות את ההתקדמות שלך.</p>
       <a class="btn wa" id="waBtn" href="#" target="_blank" rel="noopener noreferrer">שלח לי את התוצאות בוואטסאפ</a>
+      <button class="btn ghost" type="button" data-retest>עשיתי מבחן חדש — עדכן תוכנית</button>
+    </div>
+  </section>
+
+  <!-- HOME SCREEN -->
+  <section class="step" id="homeGuide">
+    <div class="step-h"><span class="step-n">6</span>
+      <div><div class="step-t">שים את התוכנית במסך הבית</div><div class="step-s">אייקון כמו אפליקציה, פותח ישר את התוכנית שלך</div></div>
+    </div>
+    <div class="card">
+      <div class="os-tabs" role="tablist">
+        <button type="button" class="os" data-os="ios">אייפון</button>
+        <button type="button" class="os" data-os="android">אנדרואיד</button>
+      </div>
+      <div class="callout" id="inAppNote"><span class="ce">💬</span><span><b>פתחת את הקישור מוואטסאפ?</b> קודם פותחים בדפדפן הרגיל: לוחצים על <b>⋮</b> או <b>⋯</b> ובוחרים <b>"פתח ב־Safari"</b> / <b>"פתח ב־Chrome"</b>.</span></div>
+      <ol class="how" data-steps="ios">
+        <li>ב־<b>Safari</b> לוחצים על כפתור <b>השיתוף</b> <span class="key">⬆︎</span> (ריבוע עם חץ למעלה) בתחתית המסך.</li>
+        <li>גוללים למטה ובוחרים <b>"הוספה למסך הבית"</b>.</li>
+        <li>לוחצים <b>"הוסף"</b> — וזהו, יש לך אייקון של פרוטוקול בראור.</li>
+      </ol>
+      <ol class="how" data-steps="android" hidden>
+        <li>ב־<b>Chrome</b> לוחצים על <span class="key">⋮</span> למעלה בצד.</li>
+        <li>בוחרים <b>"הוספה למסך הבית"</b> (או <b>"התקנת אפליקציה"</b>).</li>
+        <li>לוחצים <b>"הוספה"</b> — וזהו, יש לך אייקון של פרוטוקול בראור.</li>
+      </ol>
+      <p class="p muted" style="margin-top:10px">עושים את זה מהדף הזה — ככה האייקון פותח ישר את התוכנית עם המספרים שלך.</p>
     </div>
   </section>
 
@@ -419,8 +496,9 @@
     <p>ותרצה לקחת את זה לשלב הבא, אתה כבר יודע איפה למצוא אותי. בהצלחה, אחי 💪</p>
   </div>
 
-  <div class="foot">טיפ: הוסף את העמוד למסך הבית — ככה הוא תמיד במרחק לחיצה.<br>יש כאב חד או פציעה? עוצרים ומתייעצים עם חובש / רופא.</div>
+  <div class="foot">יש כאב חד או פציעה? עוצרים ומתייעצים עם חובש / רופא.</div>
 </main>
+</div>
 
 <div class="toast" id="toast"></div>
 
@@ -578,39 +656,61 @@ function numCard(kind, max){
 
 let state = store.get() || null;
 
-function showResult(scroll){
-  if (!state) return;
-  const pp = plan('pull', state.pull), dp = plan('dip', state.dip);
+function renderResult(){
+  const pp = plan('pull', state.pull);
   const perDay = (pp.lv === 4 ? 2 : 3);
   const weekly = pp.lv === 1 ? null : pp.reps * perDay * 5;
+  $('result').classList.add('show');
   $('result').innerHTML = numCard('pull', state.pull) + numCard('dip', state.dip) +
     `<div class="week">${weekly
       ? `ככה זה מצטבר: <b>${pp.reps} × ${perDay} ${pp.lv === 4 ? 'סטים' : 'ארוחות'} × 5 ימים = ${weekly} מתח בשבוע</b> — בלי שהרגשת שהתאמנת.`
-      : `ברמה 1 בונים את החזרה הראשונה. <b>3 פעמים ביום × 5 ימים</b> — תוך שבועות ספורים מגיע המתח הראשון.`}
-      <br>אימון הגוף שלך מוכן למטה — <b>${LV[pp.lv].short}</b>.</div>`;
-  $('result').classList.add('show');
-  setWkLevel(pp.lv);
-  updateWa();
-  if (scroll) $('result').scrollIntoView({behavior:'smooth', block:'start'});
+      : `ברמה 1 בונים את החזרה הראשונה. <b>3 פעמים ביום × 5 ימים</b> — תוך שבועות ספורים מגיע המתח הראשון.`}</div>`;
 }
+
+/* ---------- screens ---------- */
+function planHash(){ return `#plan-${state.pull}-${state.dip}-${String(state.date || '').replace(/-/g, '')}`; }
+function stateFromHash(){
+  const m = location.hash.match(/^#plan-(\d{1,3})-(\d{1,3})(?:-(\d{4})(\d{2})(\d{2}))?$/);
+  return m ? {pull:Math.min(60, +m[1]), dip:Math.min(100, +m[2]), date: m[3] ? `${m[3]}-${m[4]}-${m[5]}` : ''} : null;
+}
+function fmtDate(iso){ const [y,m,d] = String(iso || '').split('-'); return d ? `${+d}.${+m}` : ''; }
+function showPlan(push){
+  if (!state) return showIntro();
+  const lv = levelOf('pull', state.pull), L = LV[lv];
+  document.documentElement.style.setProperty('--acc', L.color);
+  $('planTitle').innerHTML = `${L.short} · <span class="hl">${L.name}</span>`;
+  $('planSub').textContent = `לפי המבחן${state.date ? ` מ־${fmtDate(state.date)}` : ''}: ${state.pull} מתח · ${state.dip} מקבילים. זה כל מה שאתה צריך — לא יותר.`;
+  const note = $('mealNote');
+  note.hidden = lv !== 4;
+  note.innerHTML = lv === 4 ? '<b>ברמה 4:</b> מספיק לפני 2 ארוחות ביום — ואחד מהסטים עם תיק / אפוד.' : '';
+  renderResult();
+  renderWorkout(lv);
+  updateWa();
+  $('intro').hidden = true; $('plan').hidden = false;
+  if (push) { try { history.pushState({plan:1}, '', planHash()); } catch(e){} }
+  else { try { history.replaceState({plan:1}, '', planHash()); } catch(e){} }
+  window.scrollTo(0, 0);
+}
+function showIntro(){
+  $('plan').hidden = true; $('intro').hidden = false;
+  window.scrollTo(0, 0);
+}
+document.querySelectorAll('[data-retest]').forEach(b => b.addEventListener('click', () => {
+  showIntro();
+  try { if (location.hash.startsWith('#plan')) history.replaceState(null, '', location.pathname + location.search); } catch(e){}
+  $('test').scrollIntoView({block:'start'});
+}));
+window.addEventListener('popstate', () => { const h = stateFromHash(); if (h) { state = h; showPlan(false); } else showIntro(); });
 
 $('calc').addEventListener('click', () => {
   state = {pull: readVal('pull'), dip: readVal('dip'), date: new Date().toISOString().slice(0,10)};
   store.set(state);
-  showResult(true);
+  showPlan(true);
 });
 
 /* ---------- workout ---------- */
-let wkLevel = 1;
-function setWkLevel(lv){
-  wkLevel = lv;
-  const c = LV[lv].color;
-  $('tabs').style.setProperty('--acc', c);
-  $('tabs').innerHTML = [1,2,3,4].map(n =>
-    `<button class="tab ${n===lv?'active':''}" role="tab" aria-selected="${n===lv}" data-lv="${n}">רמה ${n}</button>`).join('');
-  $('tabHint').innerHTML = state
-    ? `נבחר לפי המבחן במתח. ${lv === 4 ? 'ברמה 4 — הסופרסט הראשון עם תיק / אפוד.' : ''}`
-    : `עשה את המבחן למעלה — והרמה תיבחר לבד. ${lv === 4 ? 'ברמה 4 — הסופרסט הראשון עם תיק / אפוד.' : ''}`;
+function renderWorkout(lv){
+  $('wkTag').textContent = `${LV[lv].short} · ${LV[lv].name}${lv === 4 ? ' · סופרסט ראשון עם תיק / אפוד' : ''}`;
   $('wkBody').innerHTML = WK[lv].map(b => `
     <div class="ss"><div class="ss-lbl"><span class="dot"></span>${b.label} · מנוחה 60–120 שנ'</div>
     ${b.ex.map(e => `
@@ -624,7 +724,6 @@ function setWkLevel(lv){
       </div>`).join('')}
     </div>`).join('');
 }
-$('tabs').addEventListener('click', e => { const b = e.target.closest('[data-lv]'); if (b) setWkLevel(+b.dataset.lv); });
 
 /* ---------- whatsapp ---------- */
 function updateWa(){
@@ -686,23 +785,96 @@ async function makeCard(){
   x.fillText('יעד: 15 מתח · 30 מקבילים', W/2, H - 110);
   return new Promise(res => cv.toBlob(res, 'image/png'));
 }
-$('saveCard').addEventListener('click', async () => {
-  if (!state) { toast('קודם תעשה את המבחן למעלה 👆'); $('test').scrollIntoView({behavior:'smooth'}); return; }
-  const blob = await makeCard();
-  if (!blob) { toast('לא הצלחתי ליצור תמונה'); return; }
-  const file = new File([blob], 'protokol-bar-or.png', {type:'image/png'});
-  if (navigator.canShare && navigator.canShare({files:[file]})) {
-    try { await navigator.share({files:[file], title:'פרוטוקול בראור'}); return; } catch(e){ if (e.name === 'AbortError') return; }
-  }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = file.name;
+/* workout image: same look as the card, height grows with content */
+async function makeWorkoutCard(){
+  try { await document.fonts.ready; } catch(e){}
+  const lv = levelOf('pull', state.pull), c = LV[lv].color, blocks = WK[lv];
+  const W = 1080, PAD = 90, R = W - PAD, F = 'Rubik, Arial, sans-serif', FD = 'Karantina, Rubik, Arial, sans-serif';
+  const ROW = 150, LBL = 84, GAP = 34;
+  const H = Math.max(1920, 390 + blocks.reduce((h, b) => h + LBL + b.ex.length * ROW + GAP, 0) + 300);
+  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+  const x = cv.getContext('2d');
+  x.direction = 'rtl'; x.textAlign = 'right'; x.textBaseline = 'alphabetic';
+  const g = x.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#1F2418'); g.addColorStop(1, '#13160E');
+  x.fillStyle = g; x.fillRect(0, 0, W, H);
+
+  x.fillStyle = '#E6CC7E'; x.font = `700 60px ${FD}`; x.fillText('פרוטוקול בראור', R, 170);
+  x.fillStyle = '#ECE6CF'; x.font = `700 130px ${FD}`; x.fillText('אימון הגוף', R, 285);
+  x.fillStyle = c; x.font = `700 38px ${F}`; x.fillText(`${LV[lv].short} · ${LV[lv].name} · 30–40 דק'`, R, 345);
+
+  let y = 400;
+  blocks.forEach(b => {
+    const bh = LBL + b.ex.length * ROW;
+    x.fillStyle = '#283020'; x.beginPath(); x.roundRect(PAD, y, W - 2*PAD, bh, 28); x.fill();
+    x.fillStyle = 'rgba(214,184,90,.14)'; x.beginPath(); x.roundRect(PAD, y, W - 2*PAD, LBL - 14, [28, 28, 0, 0]); x.fill();
+    x.fillStyle = '#E6CC7E'; x.font = `700 32px ${F}`; x.fillText(b.label, R - 36, y + 46);
+    let ry = y + LBL;
+    b.ex.forEach((e, i) => {
+      if (i) { x.fillStyle = 'rgba(226,220,196,.09)'; x.fillRect(PAD + 30, ry - 6, W - 2*PAD - 60, 2); }
+      x.fillStyle = '#ECE6CF'; x.font = `700 44px ${F}`; x.fillText(e.n, R - 36, ry + 56);
+      const sub = e.weighted ? 'עם תיק / אפוד' : e.alt ? `לא מצליח? ${e.alt.n}` : (e.s.split(' · ').slice(1).join(' · ') || e.s);
+      x.fillStyle = e.weighted ? '#7AA0BE' : '#8E8C72'; x.font = `500 30px ${F}`; x.fillText(sub, R - 36, ry + 104);
+      x.textAlign = 'left'; x.direction = 'ltr';
+      if (e.fail) { x.fillStyle = '#D9826A'; x.font = `700 40px ${F}`; x.direction = 'rtl'; x.textAlign = 'left'; x.fillText('עד כשל', PAD + 36, ry + 72); }
+      else {
+        x.fillStyle = '#D6B85A'; x.font = `700 42px ${F}`; x.fillText(e.rir, PAD + 36, ry + 60);
+        x.fillStyle = '#8E8C72'; x.font = `500 30px ${F}`; x.direction = 'rtl'; x.textAlign = 'left'; x.fillText(`${e.r} חזרות`, PAD + 36, ry + 104);
+      }
+      x.direction = 'rtl'; x.textAlign = 'right';
+      ry += ROW;
+    });
+    y += bh + GAP;
+  });
+
+  y += 30;
+  x.fillStyle = '#D6B85A'; x.font = `700 56px ${FD}`; x.fillText('לזכור', R, y); y += 66;
+  ['חימום לפני · מנוחה 60–120 שנ\' בין סבבים',
+   'סופ"ש בבית, או עד פעמיים בשבוע',
+   'ביום האימון — בלי סטים לפני האוכל'].forEach(r => {
+    x.fillStyle = '#D6B85A'; x.beginPath(); x.arc(R - 10, y - 12, 8, 0, Math.PI*2); x.fill();
+    x.fillStyle = '#ECE6CF'; x.font = `500 36px ${F}`; x.fillText(r, R - 38, y); y += 56;
+  });
+  return new Promise(res => cv.toBlob(res, 'image/png'));
+}
+
+function downloadBlob(blob, name){
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 4000);
-  toast('נשמר ✅ אם נפתח בלשונית — לחיצה ארוכה ← שמור תמונה');
+}
+$('saveCard').addEventListener('click', async () => {
+  if (!state) { showIntro(); return; }
+  const [b1, b2] = await Promise.all([makeCard(), makeWorkoutCard()]);
+  if (!b1 || !b2) { toast('לא הצלחתי ליצור את התמונות'); return; }
+  const files = [new File([b1], 'bar-or-mispar.png', {type:'image/png'}), new File([b2], 'bar-or-imun.png', {type:'image/png'})];
+  if (navigator.canShare && navigator.canShare({files})) {
+    try { await navigator.share({files, title:'פרוטוקול בראור'}); return; } catch(e){ if (e.name === 'AbortError') return; }
+  }
+  downloadBlob(b1, files[0].name);
+  setTimeout(() => downloadBlob(b2, files[1].name), 600);
+  toast('נשמרו 2 תמונות ✅ אם נפתח בלשונית — לחיצה ארוכה ← שמור תמונה');
 });
 
+/* ---------- home screen guide ---------- */
+(function homeGuide(){
+  const ua = navigator.userAgent || '';
+  const ios = /iPhone|iPad|iPod/i.test(ua) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  const standalone = window.matchMedia && matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+  const box = $('homeGuide');
+  if (standalone) { box.hidden = true; return; }
+  const setOs = os => {
+    box.querySelectorAll('[data-os]').forEach(b => b.classList.toggle('active', b.dataset.os === os));
+    box.querySelectorAll('[data-steps]').forEach(o => o.hidden = o.dataset.steps !== os);
+  };
+  box.addEventListener('click', e => { const b = e.target.closest('[data-os]'); if (b) setOs(b.dataset.os); });
+  setOs(ios ? 'ios' : 'android');
+})();
+
 /* ---------- init ---------- */
-if (state) { $('pull').value = state.pull; $('dip').value = state.dip; showResult(false); }
-else { setWkLevel(1); updateWa(); }
+const fromHash = stateFromHash();
+if (fromHash && (!state || String(state.date || '') <= fromHash.date)) { state = fromHash; store.set(state); }
+if (state) { $('pull').value = state.pull; $('dip').value = state.dip; showPlan(false); }
+else showIntro();
 </script>
 </body>
 </html>
