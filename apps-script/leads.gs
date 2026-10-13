@@ -7,16 +7,20 @@
  * מה זה עושה:
  *   סורק את טאב "לידים" בגיליון ה-CRM כל כמה דקות. לכל ליד חדש (לפי טלפון)
  *   שולח אליך מייל-פעולה אחד עם כפתור וואטסאפ ירוק — הודעת פתיחה מוכנה
- *   ומותאמת לשם הליד. לחיצה אחת ← שליחה. זוכר את מי כבר טיפל (מייל אחד לכל ליד).
+ *   ומותאמת לשם הליד. לחיצה אחת ← שליחה.
+ *
+ *   לידים חוזרים: אם מספר טלפון שכבר הכרנו משאיר פרטים *שוב* (שורה נוספת בגיליון),
+ *   תקבל התראת "🔄 ליד חוזר" מובלטת — כי זה לקוח חם. הזיהוי לפי *מספר השורות*
+ *   של אותו טלפון (עמיד למיון/עריכה/תאריכים חסרים, ולא מציף על לידים קיימים).
  *
  * מכסה את שני מקורות הלידים (אתר דרך Make + מודעה) כי שניהם כותבים לאותו טאב.
  *
  * הפעלה:
  *   leadsWaPreview()        – בדיקה בלבד: מראה מה היה נשלח, בלי לשלוח כלום.
- *   leadsWaTestSelf()       – שולח אליך מייל דוגמה לראות איך זה נראה.
+ *   leadsWaTestSelf()       – שולח אליך 2 מיילים לדוגמה (חדש + חוזר) לראות איך זה נראה.
  *   leadsWaScan()           – הריצה האמיתית (רצה בטריגר).
- *   installLeadsWaTrigger() – מסמן לידים קיימים כ"טופלו" ומתקין טריגר כל 5 דק'.
- *   leadsWaPrimeExisting()  – מסמן את כל הלידים הקיימים כ"טופלו" (בלי לשלוח).
+ *   installLeadsWaTrigger() – מסמן לידים קיימים כבסיס ומתקין טריגר כל 5 דק'.
+ *   leadsWaPrimeExisting()  – מסמן את כל הלידים הקיימים כבסיס (בלי לשלוח).
  */
 
 /* ===== ההודעה שתיפתח בוואטסאפ (אפשר לערוך את הנוסח; {{NAME}} = שם הליד) ===== */
@@ -111,7 +115,7 @@ function leadSourceSkip_(source) {
   return false;
 }
 
-/* זיכרון הלידים שכבר טופלו: { phoneKey: { t: זמן } } — נשמר ב-Script Properties */
+/* זיכרון הלידים: { phoneKey: { t: זמן, n: כמה שורות ראינו לטלפון } } — נשמר ב-Script Properties */
 function leadsWaState_() {
   try { return JSON.parse(PropertiesService.getScriptProperties().getProperty('LEAD_WA_STATE') || '{}'); }
   catch (e) { return {}; }
@@ -130,6 +134,7 @@ function leadFirstTouchEmail_(name, phone, extra) {
   extra = extra || {};
   const to = leadNotifyEmail_();
   if (!to) return;
+  const ret = !!extra.returning;
   const waNum = waIntl_(phone);
   const first = String(name || '').trim().split(/\s+/)[0] || '';   // שם פרטי בלבד
   const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', first ? (' ' + first) : '');
@@ -144,9 +149,10 @@ function leadFirstTouchEmail_(name, phone, extra) {
     : '<div style="color:#c00;margin:12px 0">⚠️ אין טלפון תקין לליד הזה.</div>';
   MailApp.sendEmail({
     to: to,
-    subject: '🔥 ליד חדש — ' + (name || phone),
+    subject: (ret ? '🔄 ליד חוזר — ' : '🔥 ליד חדש — ') + (name || phone),
     htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
-      '<h2 style="margin:0 0 6px;color:#2e7d32">🔥 ליד חדש נכנס</h2>' +
+      '<h2 style="margin:0 0 6px;color:' + (ret ? '#b26a00' : '#2e7d32') + '">' + (ret ? '🔄 ליד חוזר נכנס' : '🔥 ליד חדש נכנס') + '</h2>' +
+      (ret ? '<p style="margin:0 0 10px;padding:8px 12px;background:#fff6e5;border-right:3px solid #ff9800;font-weight:bold;color:#8a4b00">⚡ האדם הזה כבר השאיר פרטים בעבר וחזר עכשיו — סיגנל חם! שווה לתפוס מהר.</p>' : '') +
       '<p style="margin:0 0 10px">' + details + '</p>' +
       '<p style="margin:0 0 4px;color:#555">ההודעה שתישלח:</p>' +
       '<blockquote style="margin:0 0 6px;padding:10px 14px;background:#f4f7f4;border-right:3px solid #25D366;white-space:pre-line">' + esc(msg) + '</blockquote>' +
@@ -169,12 +175,12 @@ function leadsWaRun_(dryRun) {
     const cols = leadColIndexes_(sheet);
     if (cols.phone < 0) throw new Error('לא נמצאה עמודת טלפון בטאב הלידים.');
 
-    const state = leadsWaState_();
+    const props = PropertiesService.getScriptProperties();
+    const state = leadsWaState_();     // { phoneKey: { t, n } }  — n = כמה שורות ראינו לטלפון הזה
     const now = Date.now();
-    const report = [];
-    let firstTouch = 0, seen = 0, skipped = 0, addedToSheet = 0;
 
-    // מעבר 1: מהשיטס (מה ש-Make/האוטומציה כתבו)
+    // ספירת שורות לכל טלפון + שמירת פרטי השורה האחרונה (העדכנית) לכל טלפון
+    const counts = {}, info = {};
     const lastRow = sheet.getLastRow();
     if (lastRow >= 2) {
       const vals = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
@@ -182,37 +188,63 @@ function leadsWaRun_(dryRun) {
         const phone = String(row[cols.phone] == null ? '' : row[cols.phone]).trim();
         const pk = phoneKey_(phone);
         if (!pk) return;
-        const source = cols.source >= 0 ? String(row[cols.source] == null ? '' : row[cols.source]).trim() : '';
-        if (leadSourceSkip_(source)) { skipped++; return; }   // הגיע דרך וואטסאפ — כבר בשיחה
-        const name = cols.name >= 0 ? String(row[cols.name] == null ? '' : row[cols.name]).trim() : '';
-        const goal = cols.goal >= 0 ? String(row[cols.goal] == null ? '' : row[cols.goal]).trim() : '';
-        const notes = cols.notes >= 0 ? String(row[cols.notes] == null ? '' : row[cols.notes]).trim() : '';
-        if (state[pk]) { seen++; return; }        // כבר טופל — מדלגים
-        firstTouch++;
-        report.push('🆕 ' + (name || phone) + (source ? (' — ' + source) : ''));
-        if (!dryRun) { leadFirstTouchEmail_(name, phone, { goal: goal, notes: notes }); state[pk] = { t: now }; }
+        counts[pk] = (counts[pk] || 0) + 1;
+        info[pk] = {
+          name:   cols.name   >= 0 ? String(row[cols.name]   == null ? '' : row[cols.name]).trim()   : '',
+          phone:  phone,
+          source: cols.source >= 0 ? String(row[cols.source] == null ? '' : row[cols.source]).trim() : '',
+          goal:   cols.goal   >= 0 ? String(row[cols.goal]   == null ? '' : row[cols.goal]).trim()   : '',
+          notes:  cols.notes  >= 0 ? String(row[cols.notes]  == null ? '' : row[cols.notes]).trim()  : ''
+        };
       });
     }
 
-    // מעבר 2: גיבוי מהמייל (לידי אתר שלא הגיעו לשיטס, למשל אם Make נפל)
-    leadsFromEmail_().forEach(function (L) {
-      const pk = phoneKey_(L.phone);
-      if (!pk) return;
-      if (state[pk]) { seen++; return; }
-      firstTouch++;
-      report.push('🆕📧 ' + (L.name || L.phone) + ' — ' + L.source + ' (מהמייל)');
+    // אתחול ראשוני: אם מנגנון הספירה עוד לא אותחל — מסמנים הכל כבסיס ולא שולחים (מונע הצפה)
+    if (props.getProperty('LEAD_COUNT_INIT') !== '1') {
+      Object.keys(counts).forEach(function (pk) { state[pk] = { t: now, n: counts[pk] }; });
+      if (!dryRun) { leadsWaSaveState_(state); props.setProperty('LEAD_COUNT_INIT', '1'); }
+      out = 'אותחל מנגנון לידים חוזרים (ללא שליחה): ' + Object.keys(counts).length + ' טלפונים סומנו כבסיס.';
+      Logger.log(out);
+      const ui0 = leadsSafeUi_();
+      if (ui0) try { ui0.alert('לידים — אתחול', out, ui0.ButtonSet.OK); } catch (e) {}
+      return out;
+    }
+
+    const report = [];
+    let firstTouch = 0, returning = 0, skipped = 0;
+
+    // מעבר 1: ליד חדש (טלפון חדש) + ליד חוזר (טלפון מוכר שהופיע בשורה נוספת)
+    Object.keys(counts).forEach(function (pk) {
+      const cur = counts[pk];
+      const prev = state[pk];
+      let isReturning;
+      if (!prev) { isReturning = false; }              // טלפון חדש לגמרי
+      else if (cur > prev.n) { isReturning = true; }   // חזר — הופיע בשורה נוספת
+      else {                                           // אין הגשה חדשה
+        if (!dryRun && cur < (prev.n || 0)) { state[pk].n = cur; }  // נמחקו שורות — מעדכנים בסיס כלפי מטה
+        return;
+      }
+      const L = info[pk] || { name: '', phone: '', source: '', goal: '', notes: '' };
+      if (leadSourceSkip_(L.source)) { skipped++; if (!dryRun) state[pk] = { t: now, n: cur }; return; }
+      if (isReturning) returning++; else firstTouch++;
+      report.push((isReturning ? '🔄 ליד חוזר: ' : '🆕 ') + (L.name || L.phone) + (L.source ? (' — ' + L.source) : ''));
       if (!dryRun) {
-        if (leadsAddToSheet_(sheet, cols, L)) addedToSheet++;
-        leadFirstTouchEmail_(L.name, L.phone, { goal: L.goal, notes: '' });
-        state[pk] = { t: now };
+        leadFirstTouchEmail_(L.name, L.phone, { goal: L.goal, notes: L.notes, returning: isReturning });
+        state[pk] = { t: now, n: cur };
       }
     });
+
+    // מעבר 2: גיבוי מהמייל — מוסיף לידי אתר שחסרים בשיטס (אם Make נפל). ההתראה תגיע בסריקה הבאה.
+    if (!dryRun) {
+      leadsFromEmail_().forEach(function (L) {
+        if (phoneKey_(L.phone)) leadsAddToSheet_(sheet, cols, L);
+      });
+    }
 
     if (!dryRun) leadsWaSaveState_(state);
 
     out = (dryRun ? '[בדיקה — לא נשלח כלום] ' : '') +
-      'לידים חדשים: ' + firstTouch + '  ·  כבר טופלו: ' + seen + '  ·  דילוג (וואטסאפ): ' + skipped +
-      (addedToSheet ? ('  ·  נוספו לשיטס: ' + addedToSheet) : '') +
+      'חדשים: ' + firstTouch + '  ·  חוזרים: ' + returning + '  ·  דילוג (וואטסאפ): ' + skipped +
       (report.length ? ('\n\n' + report.join('\n')) : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
@@ -222,7 +254,7 @@ function leadsWaRun_(dryRun) {
 }
 
 /* ===== התקנה / איפוס ===== */
-// מסמן את כל הלידים הקיימים כ"טופלו" כדי שלא יישלחו התראות על לידים ישנים
+// מסמן את כל הלידים הקיימים כבסיס (ספירת שורות לכל טלפון) כדי שלא יישלחו התראות על לידים ישנים
 function leadsWaPrimeExisting() {
   const ss = SpreadsheetApp.openById(CRM_SHEET_ID);
   const sheet = crmLeadsSheet_(ss);
@@ -230,23 +262,25 @@ function leadsWaPrimeExisting() {
   const cols = leadColIndexes_(sheet);
   const state = {};
   const now = Date.now();
-  let c = 0;
-  // 1) כל הלידים בשיטס
+  const counts = {};
   const lastRow = sheet.getLastRow();
   if (lastRow >= 2 && cols.phone >= 0) {
     const vals = sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).getValues();
     vals.forEach(function (row) {
       const pk = phoneKey_(String(row[cols.phone] == null ? '' : row[cols.phone]).trim());
-      if (pk) { state[pk] = { t: now }; c++; }
+      if (pk) counts[pk] = (counts[pk] || 0) + 1;
     });
   }
-  // 2) גם לידי אתר שהגיעו במייל ב-14 הימים האחרונים — בסיס נקי
+  Object.keys(counts).forEach(function (pk) { state[pk] = { t: now, n: counts[pk] }; });
+  // גם לידי אתר מהמייל (14 ימים) — בסיס נקי
   leadsFromEmail_().forEach(function (L) {
     const pk = phoneKey_(L.phone);
-    if (pk && !state[pk]) { state[pk] = { t: now }; c++; }
+    if (pk && !state[pk]) { state[pk] = { t: now, n: 1 }; }
   });
   leadsWaSaveState_(state);
-  const msg = 'סומנו ' + c + ' לידים קיימים כ"כבר טופלו". מכאן והלאה רק לידים חדשים יקבלו התראה.';
+  PropertiesService.getScriptProperties().setProperty('LEAD_COUNT_INIT', '1');
+  const msg = 'סומנו ' + Object.keys(state).length + ' טלפונים קיימים כבסיס.\n' +
+    'מכאן: ליד חדש → התראה 🔥  ·  ליד שחוזר (משאיר פרטים שוב) → התראת "ליד חוזר" 🔄.';
   Logger.log(msg);
   const ui = leadsSafeUi_();
   if (ui) try { ui.alert('לידים — איפוס בסיס', msg, ui.ButtonSet.OK); } catch (e) {}
@@ -262,16 +296,17 @@ function installLeadsWaTrigger() {
   const ui = leadsSafeUi_();
   if (ui) try {
     ui.alert('תגובה מהירה ללידים — הופעל',
-      'המערכת תבדוק לידים חדשים כל 5 דקות. ליד חדש → מייל אליך עם כפתור וואטסאפ מוכן.',
+      'המערכת תבדוק לידים חדשים כל 5 דקות. ליד חדש → מייל עם כפתור וואטסאפ. ליד חוזר → התראת "ליד חוזר". ',
       ui.ButtonSet.OK);
   } catch (e) {}
 }
 
-/* שולח אליך מייל דוגמה (למספר שלך) כדי לראות איך זה נראה */
+/* שולח אליך 2 מיילים לדוגמה (חדש + חוזר) כדי לראות איך זה נראה */
 function leadsWaTestSelf() {
-  leadFirstTouchEmail_('מתן (בדיקה)', '0587979678', { goal: 'לבנות גוף ולהתחזק (טקסט לדוגמה)', notes: 'הגיע מהמודעה, מתעניין ב-3 חודשים (דוגמה)' });
+  leadFirstTouchEmail_('דני (ליד חדש — בדיקה)', '0587979678', { goal: 'לרזות ולהתחזק (דוגמה)', notes: 'הגיע מהמודעה (דוגמה)' });
+  leadFirstTouchEmail_('מתן (ליד חוזר — בדיקה)', '0587979678', { goal: 'חזרה לאימונים (דוגמה)', notes: 'השאיר פרטים שוב אחרי כמה חודשים (דוגמה)', returning: true });
   const ui = leadsSafeUi_();
   if (ui) try {
-    ui.alert('נשלח מייל בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') מייל דוגמה. פתח אותו בטלפון ולחץ על הכפתור הירוק לראות איך זה עובד.', ui.ButtonSet.OK);
+    ui.alert('נשלחו 2 מיילי בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') שני מיילים לדוגמה — "ליד חדש" ו-"ליד חוזר". פתח אותם לראות את ההבדל.', ui.ButtonSet.OK);
   } catch (e) {}
 }
