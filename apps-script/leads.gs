@@ -135,6 +135,8 @@ function leadFirstTouchEmail_(name, phone, extra) {
   const to = leadNotifyEmail_();
   if (!to) return;
   const ret = !!extra.returning;
+  const src = String(extra.source || '').trim();
+  const isMiluim = /מילואים/.test(src);           // ליד מקמפיין המילואים (מודעה)
   const waNum = waIntl_(phone);
   const first = String(name || '').trim().split(/\s+/)[0] || '';   // שם פרטי בלבד
   const msg = LEAD_WA_MESSAGE.replace('{{NAME}}', first ? (' ' + first) : '');
@@ -149,9 +151,12 @@ function leadFirstTouchEmail_(name, phone, extra) {
     : '<div style="color:#c00;margin:12px 0">⚠️ אין טלפון תקין לליד הזה.</div>';
   MailApp.sendEmail({
     to: to,
-    subject: (ret ? '🔄 ליד חוזר — ' : '🔥 ליד חדש — ') + (name || phone),
+    subject: (isMiluim ? ('⚜️ ליד מילואים' + (ret ? ' (חוזר)' : '')) : (ret ? '🔄 ליד חוזר' : '🔥 ליד חדש')) + ' — ' + (name || phone),
     htmlBody: '<div dir="rtl" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.7;color:#222">' +
       '<h2 style="margin:0 0 6px;color:' + (ret ? '#b26a00' : '#2e7d32') + '">' + (ret ? '🔄 ליד חוזר נכנס' : '🔥 ליד חדש נכנס') + '</h2>' +
+      (isMiluim
+        ? '<p style="margin:0 0 10px;padding:9px 13px;background:#2b2f1c;color:#F5EFDE;border-radius:6px;font-weight:bold">⚜️ הגיע מקמפיין המילואים (מודעה) — לא ליד רגיל</p>'
+        : (src ? '<p style="margin:0 0 10px;color:#555">📣 מקור: ' + esc(src) + '</p>' : '')) +
       (ret ? '<p style="margin:0 0 10px;padding:8px 12px;background:#fff6e5;border-right:3px solid #ff9800;font-weight:bold;color:#8a4b00">⚡ האדם הזה כבר השאיר פרטים בעבר וחזר עכשיו — סיגנל חם! שווה לתפוס מהר.</p>' : '') +
       '<p style="margin:0 0 10px">' + details + '</p>' +
       '<p style="margin:0 0 4px;color:#555">ההודעה שתישלח:</p>' +
@@ -229,7 +234,7 @@ function leadsWaRun_(dryRun) {
       if (isReturning) returning++; else firstTouch++;
       report.push((isReturning ? '🔄 ליד חוזר: ' : '🆕 ') + (L.name || L.phone) + (L.source ? (' — ' + L.source) : ''));
       if (!dryRun) {
-        leadFirstTouchEmail_(L.name, L.phone, { goal: L.goal, notes: L.notes, returning: isReturning });
+        leadFirstTouchEmail_(L.name, L.phone, { goal: L.goal, notes: L.notes, source: L.source, returning: isReturning });
         state[pk] = { t: now, n: cur };
       }
     });
@@ -301,12 +306,13 @@ function installLeadsWaTrigger() {
   } catch (e) {}
 }
 
-/* שולח אליך 2 מיילים לדוגמה (חדש + חוזר) כדי לראות איך זה נראה */
+/* שולח אליך 3 מיילים לדוגמה (חדש / חוזר / מילואים) כדי לראות איך זה נראה */
 function leadsWaTestSelf() {
   leadFirstTouchEmail_('דני (ליד חדש — בדיקה)', '0587979678', { goal: 'לרזות ולהתחזק (דוגמה)', notes: 'הגיע מהמודעה (דוגמה)' });
   leadFirstTouchEmail_('מתן (ליד חוזר — בדיקה)', '0587979678', { goal: 'חזרה לאימונים (דוגמה)', notes: 'השאיר פרטים שוב אחרי כמה חודשים (דוגמה)', returning: true });
+  leadFirstTouchEmail_('יוסי (ליד מילואים — בדיקה)', '0587979678', { goal: 'להוריד בטן (דוגמה)', notes: 'מילואים 10/2023–היום: כן', source: 'קמפיין מילואים' });
   const ui = leadsSafeUi_();
   if (ui) try {
-    ui.alert('נשלחו 2 מיילי בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') שני מיילים לדוגמה — "ליד חדש" ו-"ליד חוזר". פתח אותם לראות את ההבדל.', ui.ButtonSet.OK);
+    ui.alert('נשלחו 3 מיילי בדיקה', 'שלחתי אליך (' + leadNotifyEmail_() + ') שלושה מיילים לדוגמה — "ליד חדש", "ליד חוזר" ו-"ליד מילואים". פתח אותם לראות את ההבדל.', ui.ButtonSet.OK);
   } catch (e) {}
 }
