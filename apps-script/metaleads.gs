@@ -27,19 +27,21 @@ const META_LEAD_SOURCE = 'קמפיין מילואים';   // ייכתב בעמו
 function metaSheetId_() { return (PropertiesService.getScriptProperties().getProperty('META_LEADS_SHEET_ID') || '').trim(); }
 function metaTabName_() { return (PropertiesService.getScriptProperties().getProperty('META_LEADS_TAB') || '').trim(); }
 
-/* מאתר עמודות בגיליון של מטא לפי מילות מפתח בכותרת (עמיד לעברית/אנגלית) */
+/* מאתר עמודות בגיליון של מטא לפי מילות מפתח בכותרת (עמיד לעברית/אנגלית).
+   find סורק לפי סדר עדיפות של התנאים (predicate-first) כדי שהתאמה מדויקת
+   תנצח התאמה כללית — למשל "full_name" ולא "ad_name"/"campaign_name". */
 function metaColIndexes_(header) {
   const h = header.map(function (x) { return String(x == null ? '' : x).trim().toLowerCase(); });
   const has = function (sub) { return function (s) { return s.indexOf(sub) > -1; }; };
   const eq  = function (val) { return function (s) { return s === val; }; };
   function find(preds) {
-    for (let i = 0; i < h.length; i++) for (let p = 0; p < preds.length; p++) if (preds[p](h[i])) return i;
+    for (let p = 0; p < preds.length; p++) for (let i = 0; i < h.length; i++) if (preds[p](h[i])) return i;
     return -1;
   }
   return {
     id:     find([eq('id'), has('leadgen_id'), has('lead_id'), has('מזהה')]),
     time:   find([has('created'), has('זמן'), has('תאריך'), eq('time')]),
-    name:   find([has('full name'), has('full_name'), has('שם'), has('name')]),
+    name:   find([eq('full_name'), eq('full name'), eq('שם מלא'), eq('שם_מלא'), has('full_name'), has('full name'), eq('name'), eq('שם')]),
     phone:  find([has('phone'), has('טלפון'), has('נייד')]),
     miluim: find([has('מילואים')]),
     goal:   find([has('מטרה')])
