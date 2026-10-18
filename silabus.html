@@ -215,6 +215,8 @@
   const TRACKS = {
     chodesh:{ name:'חודש ניסיון', amount:'390 ₪', note:'תשלום חד-פעמי · חודש מלא בתוכנית',
       who:'רוצה קודם לראות שאתה מצליח להתמיד ורואה תוצאות? התחל בחודש ניסיון — ואז תחליט אם להמשיך לבד או לקחת מסלול מלא בתוכנית.' },
+    chodashim:{ name:'מסלול חודשיים', amount:'780 ₪', note:'תשלום חד-פעמי · חודשיים מלאים בתוכנית',
+      who:'רוצה קודם לראות שאתה מצליח להתמיד ורואה תוצאות? התחל בחודשיים — ואז תחליט אם להמשיך לבד או לקחת מסלול מלא בתוכנית.' },
     m3:{ name:'מסלול 3 חודשים', amount:'340 ₪', per:'לחודש', note:'לתקופת 3 חודשים',
       who:'מתאים למי שלא יכול או לא רוצה להתחייב למסלול ארוך, או מוגבל בזמן. אם תרצה — תמיד אפשר להמשיך ולהתקדם למסלול ארוך יותר.' },
     m8:{ name:'מסלול 8 חודשים', amount:'290 ₪', per:'לחודש', note:'לתקופת 8 חודשים · המחיר המשתלם ביותר',
@@ -222,7 +224,7 @@
     minui:{ name:'מסלול ללא התחייבות', amount:'390 ₪', per:'לחודש', note:'חודשי מתחדש · בלי התחייבות לתקופה',
       who:'רוצה גמישות מלאה? מסלול חודשי מתחדש, בלי התחייבות לתקופה. אפשר לצאת בכל שלב ופשוט נבטל את המשך התשלום — אתה מתקדם בקצב שלך ומחליט חודש-חודש.' }
   };
-  const ALIAS = { chodesh:'chodesh','1':'chodesh','3':'m3','4':'m3',m3:'m3','8':'m8','10':'m8',m8:'m8',minui:'minui' };
+  const ALIAS = { chodesh:'chodesh','1':'chodesh','2':'chodashim',chodashim:'chodashim','3':'m3','4':'m3',m3:'m3','8':'m8','10':'m8',m8:'m8',minui:'minui' };
 
   function trackKey(){
     const p = new URLSearchParams(location.search).get('maslul');
@@ -233,7 +235,7 @@
   const t = TRACKS[key] || TRACKS.m3;
 
   // חודש ניסיון ומסלול ללא התחייבות לא כוללים תפריט אישי — מסתירים את האזכורים שלו
-  if (key === 'chodesh' || key === 'minui') {
+  if (key === 'chodesh' || key === 'chodashim' || key === 'minui') {
     ['goalMenu','bonusMenu'].forEach(function(id){
       const el = document.getElementById(id);
       if (el) el.style.display = 'none';
