@@ -1,6 +1,85 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <title>מתן קופל · קליסטניקס</title>
 <meta name="claude:viewport-fit-sides" content="cover">
+
+<!-- ======================= פיקסל מטה =======================
+     עד 7 בנובמבר 2026 לא היה כאן פיקסל בכלל, ולכן מטה לא ידעה
+     דבר על מסע הכוח: לא מי ביקר, לא מי השאיר מייל, ולא מי קנה.
+     מודעות למוצר הזה פשוט לא יכלו ללמוד.
+
+     ‼️ זה אותו פיקסל של אתגר 21 יום — אותו עסק, חשבון מודעות אחד.
+        ההפרדה בין המוצרים היא ב-content_ids: כאן masa-hakoach.
+
+     המשפך כאן:
+        PageView          — כל כניסה
+        ViewContent       — ראה את דף המכירה
+        Lead              — השאיר מייל (נכנס לרשימת הלידים)
+        InitiateCheckout  — נשלח לעמוד הסליקה של קארדקום
+     ו-Purchase יורה רק בדף התודה, ורק אחרי אימות מול קארדקום
+     (functions/api/masa/thanks.js). בכוונה לא כאן: דף מכירה לא
+     יכול לדעת אם שילמו.
+
+     ‼️ המייל של הגולש לא נשלח למטה. אפשר לשפר התאמה ע"י
+        advanced matching, אבל זה שיתוף נתון אישי שמתן לא ביקש.
+     ========================================================== -->
+<script>
+window.MASA_PIXEL_ID = "2163728420872746";
+(function () {
+  "use strict";
+  var ID = window.MASA_PIXEL_ID;
+
+  /* מזהה המוצר. חייב להישאר קבוע — עליו נבנים הקהלים במטה. */
+  var ITEM = 'masa-hakoach';
+  var NAME = 'מסע הכוח';
+  var PRICE = 247;          /* המחיר שמופיע על הדף */
+
+  /* מי שהגיע ממייל נטישה עם קוד הנחה ישלם פחות, והאחוז נקבע בשרת
+     בלבד — הדף לא יודע כמה. במקרה הזה לא שולחים סכום, במקום
+     לשלוח מספר שאינו נכון. ה-Purchase בדף התודה ידווח את הסכום
+     האמיתי שקארדקום מחזיר, אז ה-ROAS נשאר מדויק. */
+  var hasCoupon = false;
+  try { hasCoupon = !!new URLSearchParams(location.search).get('coupon'); } catch (e) {}
+
+  function base(extra) {
+    var o = {
+      content_ids: [ITEM],
+      content_name: NAME,
+      content_type: 'product'
+    };
+    if (!hasCoupon) {
+      o.value = PRICE;
+      o.currency = 'ILS';
+    }
+    if (extra) for (var k in extra) o[k] = extra[k];
+    return o;
+  }
+
+  /* עוטף כל קריאה: פיקסל חסום (אדבלוק, דפדפן מחמיר) לא ישבור
+     את הדף ובטח שלא את המעבר לתשלום. */
+  function track(ev, props) {
+    try { if (window.fbq) window.fbq('track', ev, base(props)); } catch (e) {}
+  }
+  window.masaTrack = track;
+
+  if (!ID) return;
+
+  !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+  n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
+  n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
+  t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}
+  (window,document,'script','https://connect.facebook.net/en_US/fbevents.js');
+
+  try {
+    fbq('init', ID);
+    fbq('track', 'PageView');
+    track('ViewContent');
+  } catch (e) {}
+})();
+</script>
+<noscript><img height="1" width="1" style="display:none" alt=""
+src="https://www.facebook.com/tr?id=2163728420872746&ev=PageView&noscript=1"></noscript>
+<!-- ===================== סוף פיקסל מטה ===================== -->
+
 <style>
 /* Layout: RTL long-form sales page — warm cream base, bold Secular One headlines,
    the 6-level color spectrum as the journey motif, confident green CTA. Single committed warm look. */
@@ -1156,7 +1235,18 @@ body.lgl-open{overflow:hidden}
         var c = new URLSearchParams(location.search).get('coupon');
         if (c) q += '&coupon=' + encodeURIComponent(c);
       } catch (e) {}
-      window.location.href = CHECKOUT_URL + q;
+      var go = function(){ window.location.href = CHECKOUT_URL + q; };
+
+      /* InitiateCheckout — יוצא לדרך לקארדקום.
+         הפיקסל נשלח כתמונה, ומעבר דף מיידי מבטל אותה באמצע. 300ms
+         נותנים לו להישלח ולא מורגשים לגולש. אם הפיקסל חסום או לא
+         נטען — הולכים מיד. בשום מצב הפיקסל לא מעכב קנייה. */
+      if (window.fbq && window.masaTrack) {
+        window.masaTrack('InitiateCheckout', { num_items: 1 });
+        setTimeout(go, 300);
+      } else {
+        go();
+      }
     }
     if (EMAIL_ENDPOINT) {
       busy = true;
@@ -1164,7 +1254,11 @@ body.lgl-open{overflow:hidden}
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: v })
-      }).then(toCheckout, toCheckout);
+      }).then(function (r) {
+        /* Lead — רק אם השרת באמת שמר אותו ברשימת הלידים.
+           fetch לא זורק על 4xx/5xx, ולכן בודקים r.ok במפורש. */
+        if (r && r.ok && window.masaTrack) window.masaTrack('Lead');
+      }, function () {}).then(toCheckout, toCheckout);
     } else {
       toCheckout();
     }
