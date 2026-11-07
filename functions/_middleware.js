@@ -2,7 +2,7 @@
  * ניתוב לפי דומיין.
  *
  * באותו פרויקט Cloudflare Pages יושבים שני אתרים:
- *   matankopel.pages.dev            → קורס 21 יום (בשורש)
+ *   matankopel.pages.dev            → אתגר 21 יום (בשורש)
  *   matankopel.co.il                → מסע הכוח (בתיקייה /masa/)
  *   www.matankopel.co.il            → מופנה לדומיין בלי www
  *   masa.matankopel.co.il           → מסע הכוח (אותו תוכן, כתובת ישנה)
@@ -25,32 +25,47 @@ const MASA_HOSTS = [APEX, 'masa.matankopel.co.il'];
 /* www מופנה לדומיין הנקי, כדי שלא יהיו שתי כתובות לאותו דף. */
 const WWW_HOST = 'www.' + APEX;
 
-/* ‼️ דף התודה של אתגר 21 יום.
-   CARDCOM_SUCCESS_URL מצביע על https://matankopel.co.il/thank/ — דף
-   שישב על הוורדפרס הישן. ברגע שהדומיין עבר לכאן, הכתובת הזאת חייבת
-   להמשיך לעבוד, אחרת כל מי שקונה את 21 יום נוחת על דף מת ושום רכישה
-   לא נמדדת במטא. לכן היא מוגשת מתוך /thanks, שיושב בשורש של 21 יום
-   ומריץ את פיקסל הרכישה. אל תמחק את השורה הזאת. */
-const COURSE_THANKS_PATHS = ['/thank', '/thanks'];
+/**
+ * ‼️ כתובות של אתגר 21 יום שחייבות להמשיך לעבוד על הדומיין הראשי,
+ *    כי יש עליהן תנועה שמשלמת:
+ *
+ *    /nivnatan/  — דף המכירה של 21 יום. יש מודעות שרצות אליו.
+ *                  הדף ישב על הוורדפרס של האחסון הישן והועתק לכאן
+ *                  על כל התמונות שלו (nivnatan/a/). טופס ההזמנה
+ *                  שבו שולח ל-/api/buy.
+ *    /thanks     — דף התודה אחרי תשלום, מריץ את פיקסל הרכישה.
+ *                  CARDCOM_SUCCESS_URL מצביע על /thank/ ההיסטורי,
+ *                  ולכן גם הוא ממופה לכאן.
+ *
+ *    הן מוגשות מהשורש ולא מתוך /masa/. אל תמחק אותן.
+ */
+const COURSE_PREFIXES = ['/nivnatan', '/thanks'];
+const COURSE_THANKS_ALIASES = ['/thank'];
 
-/* דפים ישנים מהוורדפרס שהיה על האחסון הקודם. הם מופיעים בגוגל
-   ואולי בקישורים ישנים, ולכן מופנים לדף המכירה במקום ליפול ל-404. */
+/* דפים ישנים מהוורדפרס שהיה על האחסון הקודם, שאין להם יורש.
+   הם מופיעים בגוגל ולכן מופנים לדף הבית במקום ליפול ל-404. */
 const OLD_WP_PATHS = [
-  '/nivnatan',
   '/tp',
   '/sample-page',
-  '/%d7%93%d7%a3-%d7%9e%d7%9b%d7%99%d7%a8%d7%94',                                     // דף-מכירה
-  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9e%d7%aa%d7%9f',                         // דף-תודה-מתן
-  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9c%d7%99%d7%97%d7%99%d7%93%d7%aa-%d7%94%d7%a7%d7%9c%d7%99%d7%a1%d7%98%d7%a0%d7%99%d7%a7%d7%a1', // דף-תודה-ליחידת-הקליסטניקס
+  '/hello-world',
   '/%d7%91%d7%9c%d7%95%d7%92',                                                         // בלוג
   '/%d7%91%d7%9c%d7%95%d7%92-2',                                                       // בלוג-2
   '/%d7%91%d7%93%d7%99%d7%a7%d7%94',                                                   // בדיקה
-  '/%d7%aa%d7%a0%d7%90%d7%99-%d7%a9%d7%99%d7%9e%d7%95%d7%a9',                          // תנאי-שימוש
-  '/%d7%9e%d7%93%d7%99%d7%a0%d7%99%d7%95%d7%aa-%d7%a4%d7%a8%d7%98%d7%99%d7%95%d7%aa',  // מדיניות-פרטיות
+  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9e%d7%aa%d7%9f',                         // דף-תודה-מתן
+  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9c%d7%99%d7%97%d7%99%d7%93%d7%aa-%d7%94%d7%a7%d7%9c%d7%99%d7%a1%d7%98%d7%a0%d7%99%d7%a7%d7%a1', // דף-תודה-ליחידת-הקליסטניקס
 ];
 
+function tidy(pathname) {
+  return pathname.replace(/\/+$/, '').toLowerCase();
+}
+
+function isCoursePath(pathname) {
+  const p = tidy(pathname);
+  return COURSE_PREFIXES.some((pre) => p === pre || p.startsWith(pre + '/'));
+}
+
 function isOldWpPath(pathname) {
-  const p = pathname.replace(/\/+$/, '').toLowerCase();
+  const p = tidy(pathname);
   return OLD_WP_PATHS.indexOf(p) !== -1 || p.indexOf('/wp-') === 0;
 }
 
@@ -77,14 +92,17 @@ export async function onRequest(context) {
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
 
-  // דף התודה של 21 יום — מוגש מהשורש, לא מתוך /masa/.
-  if (COURSE_THANKS_PATHS.includes(url.pathname.replace(/\/+$/, '').toLowerCase())) {
+  // דפים של 21 יום — מוגשים מהשורש, לא מתוך /masa/.
+  if (isCoursePath(url.pathname)) return next();
+
+  // /thank/ ההיסטורי הוא דף התודה של 21 יום.
+  if (COURSE_THANKS_ALIASES.includes(tidy(url.pathname))) {
     const to = new URL(url);
     to.pathname = '/thanks';
     return next(new Request(to.toString(), request));
   }
 
-  // שאריות מהאתר הישן — לדף המכירה, לא ל-404.
+  // שאריות מהאתר הישן שאין להן יורש — לדף הבית, לא ל-404.
   if (isOldWpPath(url.pathname)) {
     return Response.redirect(new URL('/', url).toString(), 301);
   }
