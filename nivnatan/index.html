@@ -1362,8 +1362,20 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
 (function(){
   /* Cardcom LOW PROFILE via Matan's own Cloudflare Pages function.
      /api/buy creates the Low Profile transaction server-side (price fixed in env = 147)
-     and 302-redirects to Cardcom's hosted page with the e-mail baked into the deal. */
-  var CARDCOM='https://matankopel.pages.dev/api/buy', WEBHOOK='https://hook.eu2.make.com/5i944ahr30zilki7ubvesiknse2edk1s';
+     and 302-redirects to Cardcom's hosted page with the e-mail baked into the deal.
+
+     ‼️ נבנה מהדומיין שהדף נטען ממנו, ולא מוקלד קבוע.
+        עד 7.11.2026 כאן ישבה הכתובת המלאה https://matankopel.pages.dev/api/buy,
+        מהתקופה שבה matankopel.co.il עוד ישב על האחסון הישן. היום שני
+        הדומיינים מגישים את אותו פרויקט, ולכן קונה שנחת מהמודעות על
+        matankopel.co.il היה קופץ באמצע הקנייה לדומיין אחר — מה שמפצל
+        את הייחוס במטה ושובר את העוגיות של הסשן.
+
+        ‼️ חייב להישאר מוחלט (http...) ולא יחסי: ארבע שורות למטה יש
+           בדיקה if(CARDCOM.indexOf('http')===0), ונתיב יחסי היה נופל
+           ממנה ומציג "קישור התשלום יחובר בקרוב" במקום לסלוק. */
+  var ORIGIN = (location.origin || (location.protocol + '//' + location.host));
+  var CARDCOM=ORIGIN + '/api/buy', WEBHOOK='https://hook.eu2.make.com/5i944ahr30zilki7ubvesiknse2edk1s';
   var f=document.getElementById('orderForm'),refIn=document.getElementById('orderRef');
   /* ?ref=... — read from the URL, then remember it so it survives reloads */
   var refVal='';try{refVal=(new URLSearchParams(location.search)).get('ref')||'';}catch(_){}
