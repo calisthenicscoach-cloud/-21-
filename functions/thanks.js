@@ -18,7 +18,10 @@ export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
 
-  const pixelId = (env.META_PIXEL_ID || '').trim();
+  // מזהה הפיקסל של הקמפיינים ל-21 יום. הוא לא סוד — הוא גלוי בקוד של כל
+  // דף שמריץ אותו — ולכן הוא יושב כאן כברירת מחדל, כדי שמדידת הרכישות לא
+  // תהיה תלויה במשתנה סביבה שמישהו ישכח להגדיר. אפשר לעקוף עם META_PIXEL_ID.
+  const pixelId = (env.META_PIXEL_ID || '2163728420872746').trim();
   const amount = Number(env.CARDCOM_AMOUNT) || 0;
   const courseUrl = env.COURSE_URL || (url.origin + '/course');
 

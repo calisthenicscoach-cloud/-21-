@@ -25,11 +25,18 @@ const MASA_HOSTS = [APEX, 'masa.matankopel.co.il'];
 /* www מופנה לדומיין הנקי, כדי שלא יהיו שתי כתובות לאותו דף. */
 const WWW_HOST = 'www.' + APEX;
 
+/* ‼️ דף התודה של אתגר 21 יום.
+   CARDCOM_SUCCESS_URL מצביע על https://matankopel.co.il/thank/ — דף
+   שישב על הוורדפרס הישן. ברגע שהדומיין עבר לכאן, הכתובת הזאת חייבת
+   להמשיך לעבוד, אחרת כל מי שקונה את 21 יום נוחת על דף מת ושום רכישה
+   לא נמדדת במטא. לכן היא מוגשת מתוך /thanks, שיושב בשורש של 21 יום
+   ומריץ את פיקסל הרכישה. אל תמחק את השורה הזאת. */
+const COURSE_THANKS_PATHS = ['/thank', '/thanks'];
+
 /* דפים ישנים מהוורדפרס שהיה על האחסון הקודם. הם מופיעים בגוגל
    ואולי בקישורים ישנים, ולכן מופנים לדף המכירה במקום ליפול ל-404. */
 const OLD_WP_PATHS = [
   '/nivnatan',
-  '/thank',
   '/tp',
   '/sample-page',
   '/%d7%93%d7%a3-%d7%9e%d7%9b%d7%99%d7%a8%d7%94',                                     // דף-מכירה
@@ -69,6 +76,13 @@ export async function onRequest(context) {
 
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
+
+  // דף התודה של 21 יום — מוגש מהשורש, לא מתוך /masa/.
+  if (COURSE_THANKS_PATHS.includes(url.pathname.replace(/\/+$/, '').toLowerCase())) {
+    const to = new URL(url);
+    to.pathname = '/thanks';
+    return next(new Request(to.toString(), request));
+  }
 
   // שאריות מהאתר הישן — לדף המכירה, לא ל-404.
   if (isOldWpPath(url.pathname)) {
