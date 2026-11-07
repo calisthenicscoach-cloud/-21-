@@ -75,6 +75,12 @@ const SHELL = (body) => `<!doctype html>
   .save{display:inline-block;background:#E6F5EC;color:#0F7A42;font-weight:700;
        font-size:13.5px;padding:5px 12px;border-radius:999px;margin:0 0 14px}
   small{display:block;margin-top:16px;font-size:13px;color:#938D80}
+  .agree{display:flex;gap:9px;align-items:flex-start;margin-top:14px;
+       text-align:right;font-size:13px;line-height:1.6;color:#57534B;cursor:pointer}
+  .agree input{flex:0 0 auto;width:20px;height:20px;margin:1px 0 0;
+       accent-color:#15A65A;cursor:pointer}
+  .agree b{color:#1A1A1E}
+  .agree a{color:#0F7A42}
   .err{color:#B4262B;font-size:14px;margin:0 0 10px}
   a.mail{color:#15A65A}
 </style></head>
@@ -108,6 +114,12 @@ function emailForm(request, { amount, base, coupon, prevValue, showError }) {
       <input type="email" name="email" required autofocus inputmode="email"
              autocomplete="email" placeholder="your@email.com" value="${esc(prevValue)}">
       ${coupon ? `<input type="hidden" name="coupon" value="${esc(coupon)}">` : ''}
+      <label class="agree">
+        <input type="checkbox" name="agree" value="1" required>
+        <span>קראתי ואני מסכים לתנאי השימוש, ומאשר ש<b>אחרי הרכישה לא ניתן לבטל
+        את העסקה ולא יינתן החזר כספי.</b>
+        <a href="/masa/" target="_blank" rel="noopener">לקריאת התקנון</a></span>
+      </label>
       <button type="submit">מעבר לתשלום מאובטח</button>
     </form>
     <small>תשלום חד-פעמי · גישה מיידית · המייל ישמש לשליחת הגישה ולעדכונים ממני,
@@ -238,6 +250,8 @@ export async function onRequestGet(context) {
   context.waitUntil(recordOrder(env, {
     email, ref, lowProfileId: data.LowProfileId, amount,
     coupon: couponOk ? couponCode : null,
+    // חותמת ההסכמה לתקנון. הצ'קבוקס בדף ובטופס הנסיגה שולח agree=1.
+    agreedAt: url.searchParams.get('agree') === '1' ? new Date().toISOString() : null,
   }));
 
   return Response.redirect(data.Url, 302);
@@ -268,6 +282,7 @@ async function recordOrder(env, order) {
         coupon: order.coupon,
         amount: order.amount,
         status: 'pending',
+        terms_agreed_at: order.agreedAt,
       }),
     });
     if (!res.ok) {

@@ -321,6 +321,13 @@ html{scroll-behavior:smooth}
 .obuy-i::placeholder{color:rgba(255,255,255,.42)}
 .obuy-i:focus{outline:none;border-color:var(--cta);background:rgba(255,255,255,.1);box-shadow:0 0 0 3px rgba(21,166,90,.22)}
 .obuy .cta{margin-top:11px}
+.oagree{display:flex;gap:10px;align-items:flex-start;margin-top:15px;text-align:right;font-size:13px;line-height:1.65;color:var(--on-dark-mut)}
+.oagree input{flex:0 0 auto;width:21px;height:21px;margin:1px 0 0;accent-color:var(--cta);cursor:pointer}
+.oagree label{cursor:pointer}
+.oagree b{color:#fff;font-weight:700}
+.oagree .clink{font-size:inherit;white-space:nowrap}
+.oagree.bad{color:#FF9E8F}
+.oagree.bad input{outline:2px solid #FF9E8F;outline-offset:2px}
 .obuy-err{margin:12px 0 0;font-size:13.5px;line-height:1.5;color:#FF9E8F}
 
 /* ---- footer links + legal modal ---- */
@@ -716,6 +723,10 @@ body.lgl-open{overflow:hidden}
         <p class="ogsteps">תכניס את המייל שלך,<br>תלחץ על הכפתור, תמלא פרטים,<br>ותוך רגע —<br><b>המסלול כבר פתוח לך בטלפון.</b></p>
         <form class="obuy" id="buy-f" novalidate>
           <input class="obuy-i" id="buy-e" type="email" inputmode="email" autocomplete="email" required placeholder="לאיזה מייל לשלוח את הגישה?">
+          <div class="oagree" id="buy-agree-l">
+            <input type="checkbox" id="buy-agree">
+            <span><label for="buy-agree">קראתי ואני מסכים לתנאי השימוש, ומאשר ש<b>אחרי הרכישה לא ניתן לבטל את העסקה ולא יינתן החזר כספי.</b></label> <button type="button" class="clink" data-lgl="doc-terms">לקריאת התקנון</button></span>
+          </div>
           <button class="cta block" type="submit">אני רוצה לעשות שינוי!</button>
           <p class="obuy-err" id="buy-err" hidden></p>
         </form>
@@ -1122,6 +1133,17 @@ body.lgl-open{overflow:hidden}
     if (busy) return;
     var v = (inp.value || '').trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { fail('כתובת המייל לא נראית תקינה.'); inp.focus(); return; }
+    /* אישור התקנון. התקנון מצהיר שסעיף אי-ההחזר מוצג ללקוח לפני התשלום
+       והוא מאשר אותו — אז בלי הסימון הזה אין מעבר לסליקה. */
+    var agree = document.getElementById('buy-agree');
+    var agreeBox = document.getElementById('buy-agree-l');
+    if (agree && !agree.checked) {
+      if (agreeBox) agreeBox.className = 'oagree bad';
+      fail('צריך לאשר את תנאי השימוש כדי להמשיך.');
+      agree.focus();
+      return;
+    }
+    if (agreeBox) agreeBox.className = 'oagree';
     err.hidden = true;
     function toCheckout(){
       busy = false;
@@ -1129,7 +1151,7 @@ body.lgl-open{overflow:hidden}
       /* המייל עובר בכתובת כדי ש-Cardcom ידע למי לפתוח גישה.
          אם הגולש הגיע עם קוד הנחה ממייל נטישה — הקוד נשמר איתו.
          האחוז עצמו נקבע בשרת בלבד, אז אי אפשר להמציא הנחה בכתובת. */
-      var q = '?email=' + encodeURIComponent(v);
+      var q = '?email=' + encodeURIComponent(v) + '&agree=1';
       try {
         var c = new URLSearchParams(location.search).get('coupon');
         if (c) q += '&coupon=' + encodeURIComponent(c);
