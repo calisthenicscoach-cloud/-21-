@@ -227,15 +227,21 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
   fbq("init", META_PIXEL_ID, userData);
   fbq("track", "PageView");
 
-  fbq("track", "Purchase", {
-    value:        value,
-    currency:     currency,
-    contents:     contents,
-    content_ids:  [itemId],
-    content_name: itemName,
-    content_type: "product",
-    num_items:    qty
-  }, { eventID: eventId });
+  /* ‼️ רק אם קארדקום באמת שלח פרטי עסקה.
+     הדגל hasPurchaseParams חושב כאן מאז ומתמיד אבל לא נבדק, ולכן
+     כל רענון של הדף נספר במטא כרכישה נוספת. מי שמגיע לכתובת בלי
+     פרמטרים לא קנה כלום, ואין מה לדווח עליו. */
+  if (hasPurchaseParams) {
+    fbq("track", "Purchase", {
+      value:        value,
+      currency:     currency,
+      contents:     contents,
+      content_ids:  [itemId],
+      content_name: itemName,
+      content_type: "product",
+      num_items:    qty
+    }, { eventID: eventId });
+  }
 })();
 </script>
 <noscript>
