@@ -111,5 +111,17 @@ await check('עמידת ידיים',    APEX + HANDSTAND + '/', HOME);
 await check('המאמר על מתח',   APEX + BLOG + '/',      HOME);
 await check('תודה — פרטים',   APEX + THANKS_LEAD + '/', HOME);
 
+console.log('\n--- הליווי האישי והנספחים שלו, שנסגרו ---');
+await check('/silabus',       APEX + '/silabus',       HOME);
+await check('/silabus-3',     APEX + '/silabus-3',     HOME);
+await check('/silabus-minui', APEX + '/silabus-minui/', HOME);
+await check('/kit',           APEX + '/kit',           HOME);
+await check('/tzuna',         APEX + '/tzuna',         HOME);
+await check('/3',             APEX + '/3',             HOME);
+await check('/8/',            APEX + '/8/',            HOME);
+await check('/chodesh',       APEX + '/chodesh',       HOME);
+await check('/minui',         APEX + '/minui',         HOME);
+await check('על pages.dev לא נגענו', 'https://matankopel.pages.dev/kit', 'UNTOUCHED');
+
 console.log('\n' + pass + ' עברו, ' + fail + ' נכשלו\n');
 process.exit(fail ? 1 : 0);
