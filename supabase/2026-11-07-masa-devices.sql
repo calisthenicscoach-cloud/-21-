@@ -54,4 +54,4 @@ select
   (select count(*) from information_schema.tables
      where table_name = 'masa_devices')                             as devices_table, -- צריך 1
   (select count(*) from information_schema.role_table_grants
-     where grantee = 'service_role' and table_name = 'masa_devices') as device_grants; -- צריך 4
+     where grantee = 'service_role' and table_name = 'masa_devices') as device_grants; -- 7 בפועל: 4 שלנו + ברירות המחדל של Supabase
