@@ -47,6 +47,15 @@ function reply(body, status) {
 const ok = () => reply({ success: true, data: { message: OK_MESSAGE } });
 const bad = (why) => reply({ success: false, data: { message: ERR_MESSAGE, reason: why } });
 
+/**
+ * הצלחה שקטה, בלי טקסט.
+ *
+ * אלמנטור מדביק הודעה ירוקה על הדף רק אם יש message בתשובה, ולכן
+ * זאת הדרך לענות לבקשה שאינה שליחת טופס בלי ש"תודה! קיבלתי את
+ * הפרטים" תצוץ לגולש שלא מילא כלום.
+ */
+const quiet = () => reply({ success: true, data: {} });
+
 /** 0541234567 → +972541234567. כל צורה אחרת — null. */
 function toE164(raw) {
   const digits = String(raw || '').replace(/[^\d+]/g, '').replace(/^\+972/, '0');
@@ -109,8 +118,9 @@ export async function onRequestPost(context) {
       const form = await request.formData();
       const action = String(form.get('action') || '');
       // אלמנטור שלח בעבר לאותה כתובת גם בקשות שאינן טופס. אלה
-      // יוצאות בשקט עם הצלחה, כדי שלא תיפול הודעת שגיאה על הדף.
-      if (action && action !== 'elementor_pro_forms_send_form') return ok();
+      // יוצאות בהצלחה שקטה: לא הודעת שגיאה, וגם לא "תודה" על דף
+      // שבו הגולש לא מילא כלום.
+      if (action && action !== 'elementor_pro_forms_send_form') return quiet();
       fields = [];
       for (const [k, v] of form.entries()) {
         if (k.startsWith('form_fields[')) fields.push(v);
