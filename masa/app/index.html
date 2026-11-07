@@ -1158,9 +1158,9 @@ if (instStandalone()) {
    ככה היא ממשיכה לעבוד בזמן שהצד שרת עוד לא באוויר.           */
 
 var ALOCK = {
-  verify: '',   /* https://<הדומיין>/api/masa/verify */
-  resend: '',   /* https://<הדומיין>/api/masa/resend */
-  buy:    ''    /* כתובת דף המכירה */
+  verify: '/api/masa/verify',   /* מאמת את הטוקן מול Supabase */
+  resend: '/api/masa/resend',   /* שולח את קישור הכניסה שוב */
+  buy:    '/masa/'              /* דף המכירה */
 };
 
 var ALOCK_GRACE = 30 * 24 * 60 * 60 * 1000; /* כמה זמן מותר להיכנס בלי רשת */
