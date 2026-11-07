@@ -1381,8 +1381,87 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
   var refVal='';try{refVal=(new URLSearchParams(location.search)).get('ref')||'';}catch(_){}
   try{ if(refVal){localStorage.setItem('matan_ref',refVal);} else {refVal=localStorage.getItem('matan_ref')||'';} }catch(_){}
   if(refIn)refIn.value=refVal;
+  /* ============ ⁑ שומר טעויות הקלדה בדומיין ============
+     קונה שמקליד gmai.com במקום gmail.com משלם 147 ולא מקבל כלום:
+     מייל הכניסה לקורס נשלח לדומיין שלא קיים. זה קרה באמת במסע הכוח,
+     ולכן אותו שומר יושב גם כאן.
+     הלוגיקה זהה לזו שב-masa/index.html, ו-masa/typo.test.mjs בודקת
+     את שני הדפים מול אותם מקרים כדי שלא יתפצלו. */
+  var KNOWN_DOMAINS = [
+    'gmail.com','googlemail.com','hotmail.com','hotmail.co.il','outlook.com',
+    'outlook.co.il','live.com','msn.com','yahoo.com','yahoo.co.il','icloud.com',
+    'me.com','walla.com','walla.co.il','nana10.co.il','012.net.il','bezeqint.net'
+  ];
+  /* האם אפשר להפוך את a ל-b בשינוי אחד: תו חסר, מיותר או מוחלף. */
+  function oneEdit(a, b) {
+    if (a === b) return false;
+    var la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > 1) return false;
+    var i = 0, j = 0, diff = 0;
+    while (i < la && j < lb) {
+      if (a.charAt(i) === b.charAt(j)) { i++; j++; continue; }
+      if (++diff > 1) return false;
+      if (la > lb) i++; else if (lb > la) j++; else { i++; j++; }
+    }
+    return true;
+  }
+  /* החלפה בין שני תווים סמוכים: gmial במקום gmail. זה שתי פעולות
+     לפי oneEdit ולכן הוא מפספס אותה — אבל זו טעות ההקלדה
+     הנפוצה ביותר במקלדת, וחבל לפספס אותה. */
+  function oneSwap(a, b) {
+    if (a.length !== b.length) return false;
+    var d = [];
+    for (var i = 0; i < a.length; i++) {
+      if (a.charAt(i) !== b.charAt(i)) { d.push(i); if (d.length > 2) return false; }
+    }
+    return d.length === 2 && d[1] === d[0] + 1 &&
+           a.charAt(d[0]) === b.charAt(d[1]) && a.charAt(d[1]) === b.charAt(d[0]);
+  }
+  function suggestFix(mail) {
+    var at = mail.lastIndexOf('@');
+    if (at < 1) return '';
+    var dom = mail.slice(at + 1).toLowerCase();
+    for (var i = 0; i < KNOWN_DOMAINS.length; i++) if (dom === KNOWN_DOMAINS[i]) return '';
+    for (var k = 0; k < KNOWN_DOMAINS.length; k++) {
+      if (oneEdit(dom, KNOWN_DOMAINS[k]) || oneSwap(dom, KNOWN_DOMAINS[k])) {
+        return mail.slice(0, at + 1) + KNOWN_DOMAINS[k];
+      }
+    }
+    return '';
+  }
+  var typoApproved = '';
+  function askTypo(typed, fixed, input) {
+    var old = document.getElementById('typo-ask');
+    if (old) old.parentNode.removeChild(old);
+    var box = document.createElement('div');
+    box.id = 'typo-ask';
+    box.style.cssText = 'margin:8px 0 0;padding:10px 12px;border-radius:10px;background:#FFF6DA;border:1px solid #E8D48A;font-family:Assistant,sans-serif;font-size:15px;color:#4A3F1A;text-align:right;direction:rtl';
+    var q = document.createElement('span');
+    q.textContent = 'רגע — התכוונת ל-' + fixed + '? ';
+    box.appendChild(q);
+    var yes = document.createElement('button');
+    yes.type = 'button';
+    yes.textContent = 'כן, תקן';
+    yes.style.cssText = 'margin:8px 0 0 8px;padding:6px 14px;border-radius:9px;border:0;background:#3B1E6E;color:#fff;font:inherit;font-weight:900;cursor:pointer';
+    yes.onclick = function () { input.value = fixed; box.parentNode.removeChild(box); submitOrder(); };
+    var no = document.createElement('button');
+    no.type = 'button';
+    no.textContent = 'לא, זו הכתובת שלי';
+    no.style.cssText = 'margin:8px 0 0 8px;padding:6px 14px;border-radius:9px;border:1px solid #C9BFA6;background:#fff;color:#5B5340;font:inherit;cursor:pointer';
+    no.onclick = function () { typoApproved = typed; box.parentNode.removeChild(box); submitOrder(); };
+    box.appendChild(yes);
+    box.appendChild(no);
+    (input.parentNode || f).insertBefore(box, input.nextSibling);
+  }
+  function submitOrder() {
+    if (f.requestSubmit) f.requestSubmit();
+    else f.dispatchEvent(new Event('submit', { cancelable: true }));
+  }
   if(f)f.addEventListener('submit',function(e){e.preventDefault();
     var em=((document.getElementById('orderEmail')||{}).value||'').trim();if(!em)return false;
+    /* ⁑ טעות הקלדה בדומיין — עוצרים פעם אחת ושואלים, לפני שמשלמים. */
+    if(typoApproved!==em){var fixed=suggestFix(em);
+      if(fixed){askTypo(em,fixed,document.getElementById('orderEmail'));return false;}}
     if(WEBHOOK.indexOf('http')===0){var b=new URLSearchParams();b.set('email',em);b.set('ref',refVal);b.set('form_fields[ref]',refVal);b.set('source','matan-lp');b.set('page',location.href);var s=false;try{s=navigator.sendBeacon(WEBHOOK,b);}catch(_){}if(!s){try{fetch(WEBHOOK,{method:'POST',body:b,keepalive:true,mode:'no-cors'});}catch(_){}}}
     if(CARDCOM.indexOf('http')===0){var u=CARDCOM+(CARDCOM.indexOf('?')>-1?'&':'?')+'email='+encodeURIComponent(em);if(refVal)u+='&ref='+encodeURIComponent(refVal);location.href=u;}else{alert('קישור התשלום יחובר בקרוב');}
     return false;});

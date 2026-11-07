@@ -13,38 +13,44 @@
  * הגישה לתיבה אחרת. לכן התיקון היחיד הוא לתפוס את הטעות *לפני*
  * שמשלמים, וזה מה שנבדק כאן.
  *
- * הבדיקה שולפת את הפונקציות מתוך masa/index.html עצמו, כדי שלא
- * ייווצר עותק שני של הלוגיקה שיכול להתיישן.
+ * הבדיקה שולפת את הפונקציות מתוך הדפים עצמם, כדי שלא ייווצר עותק
+ * שלישי של הלוגיקה שיכול להתיישן. שני הדפים נבדקים מול אותם מקרים
+ * בדיוק — אם מישהו יתקן אחד וישכח את השני, זה ייפול כאן.
  */
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const src = fs.readFileSync(path.join(here, 'index.html'), 'utf8');
+const PAGES = [
+  ['מסע הכוח', path.join(here, 'index.html')],
+  ['21 יום (/nivnatan/)', path.join(here, '..', 'nivnatan', 'index.html')],
+];
 
-/* שולף גוף של פונקציה מתוך הדף, לפי ספירת סוגריים. */
-function grab(name) {
-  const start = src.indexOf('function ' + name + '(');
-  if (start === -1) throw new Error('לא נמצאה הפונקציה ' + name + ' ב-masa/index.html');
-  let depth = 0;
-  for (let k = src.indexOf('{', start); k < src.length; k++) {
-    if (src[k] === '{') depth++;
-    else if (src[k] === '}' && --depth === 0) return src.slice(start, k + 1);
-  }
-  throw new Error('הפונקציה ' + name + ' לא נסגרת');
+/* בונה את suggestFix מתוך הקוד של דף נתון. */
+function load(file) {
+  const src = fs.readFileSync(file, 'utf8');
+  const grab = (name) => {
+    const start = src.indexOf('function ' + name + '(');
+    if (start === -1) throw new Error('לא נמצאה הפונקציה ' + name + ' ב-' + file);
+    let depth = 0;
+    for (let k = src.indexOf('{', start); k < src.length; k++) {
+      if (src[k] === '{') depth++;
+      else if (src[k] === '}' && --depth === 0) return src.slice(start, k + 1);
+    }
+    throw new Error('הפונקציה ' + name + ' לא נסגרת');
+  };
+  const marker = 'var KNOWN_DOMAINS = ';
+  const kStart = src.indexOf(marker + '[') + marker.length;
+  if (kStart < marker.length) throw new Error('אין רשימת דומיינים ב-' + file);
+  const KNOWN = JSON.parse(
+    src.slice(kStart, src.indexOf('];', kStart) + 1).replace(/'/g, '"').replace(/\s+/g, ''),
+  );
+  return new Function(
+    'KNOWN_DOMAINS',
+    grab('oneEdit') + grab('oneSwap') + grab('suggestFix') + 'return suggestFix;',
+  )(KNOWN);
 }
-
-const marker = 'var KNOWN_DOMAINS = ';
-const kStart = src.indexOf(marker + '[') + marker.length;
-const KNOWN = JSON.parse(
-  src.slice(kStart, src.indexOf('];', kStart) + 1).replace(/'/g, '"').replace(/\s+/g, ''),
-);
-
-const suggestFix = new Function(
-  'KNOWN_DOMAINS',
-  grab('oneEdit') + grab('oneSwap') + grab('suggestFix') + 'return suggestFix;',
-)(KNOWN);
 
 /* [מה שהוקלד, מה שצריך להציע. מחרוזת ריקה = לא להציע כלום] */
 const CASES = [
@@ -74,14 +80,18 @@ const CASES = [
 ];
 
 let pass = 0, fail = 0;
-for (const [typed, want] of CASES) {
-  const got = suggestFix(typed);
-  if (got === want) {
-    pass++;
-    console.log('  PASS  ' + typed.padEnd(38) + ' -> ' + (got || '(לא מציע כלום)'));
-  } else {
-    fail++;
-    console.log('  FAIL  ' + typed.padEnd(38) + ' -> ' + (got || 'כלום') + ', want ' + (want || 'כלום'));
+for (const [label, file] of PAGES) {
+  console.log('\n--- דף המכירה של ' + label + ' ---');
+  const suggestFix = load(file);
+  for (const [typed, want] of CASES) {
+    const got = suggestFix(typed);
+    if (got === want) {
+      pass++;
+      console.log('  PASS  ' + typed.padEnd(38) + ' -> ' + (got || '(לא מציע כלום)'));
+    } else {
+      fail++;
+      console.log('  FAIL  ' + typed.padEnd(38) + ' -> ' + (got || 'כלום') + ', want ' + (want || 'כלום'));
+    }
   }
 }
 console.log('\n' + pass + ' עברו, ' + fail + ' נכשלו\n');
