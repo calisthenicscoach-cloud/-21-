@@ -15,6 +15,12 @@
  *   MAKE_FORWARD_URL (optional) — a webhook to receive a copy of each Cardcom
  *     notification (e.g. the marketer's Make.com scenario for their tracking).
  *   BREVO_LEADS_LIST_ID (optional) — leads list to remove the buyer from on purchase.
+ *   MASA_PRODUCT_NAME (optional) — שם המוצר של "מסע הכוח", לשימוש השער
+ *     שמפריד בין שני המוצרים (ראה isMasaDeal). ברירת מחדל: "מסע הכוח".
+ *
+ * הפרדה מ"מסע הכוח": ה-Notify של Cardcom יושב על המסוף ולכן נורה גם
+ * על מכירות של מסע הכוח. isMasaDeal מזהה אותן ומחזיר 200 בלי
+ * לעשות כלום. הטיפול בהן הוא ב-/api/masa/webhook.
  */
 
 const json = (obj, status = 200) =>
@@ -62,6 +68,16 @@ export async function onRequestPost(context) {
   const provided = request.headers.get('x-grant-secret') || params.secret || url.searchParams.get('token') || '';
   if (!env.GRANT_SECRET || provided !== env.GRANT_SECRET) return json({ error: 'unauthorized' }, 401);
 
+  // ── הפרדה בין המוצרים ───────────────────────────────────
+  // ה-Notify של Cardcom מוגדר על המסוף כולו, ולכן הוא נורה גם על מכירות של
+  // "מסע הכוח" שעוברות על אותו מסוף. בלי הבדיקה הזאת קונה של מסע הכוח היה
+  // מקבל כאן גם גישה חינם לאתגר 21 יום, מייל פתיחה של 21 יום, ונכנס לרשימת
+  // התפוצה של 21 יום. מסע הכוח מטפל בעצמו ב-/api/masa/webhook.
+  //
+  // כל הסימנים למטה מזהים מסע הכוח במפורש, ולכן השער יכול רק לפסול עסקה
+  // של מסע הכוח — הוא לא יכול לחסום מכירה של 21 יום.
+  if (await isMasaDeal(params, env)) return ok();
+
   // Forward a copy of the Cardcom payload to the marketer's Make webhook so their
   // tracking keeps working through our single Notify URL. Fire-and-forget.
   if (env.MAKE_FORWARD_URL) {
@@ -104,6 +120,55 @@ function pickEmail(p) {
     'email', 'Email', 'EMail', 'mail', 'UserEmail', 'userEmail', 'owneremail', 'payeremail'];
   for (const k of keys) { const v = p[k]; if (v && String(v).includes('@')) return String(v).trim().toLowerCase(); }
   for (const k in p) { const v = String(p[k] || ''); if (v.includes('@') && v.includes('.')) return v.trim().toLowerCase(); }
+  return '';
+}
+
+/**
+ * האם ההודעה הזו שייכת ל"מסע הכוח" ולא לאתגר 21 יום?
+ * שלושה סימנים עצמאיים, די באחד מהם. כולם ספציפיים למסע הכוח.
+ */
+async function isMasaDeal(p, env) {
+  // 1. הסימן המכוון: /api/masa/buy שם "MASA|" בתחילת ReturnValue.
+  for (const k of ['ReturnValue', 'returnvalue', 'returnValue', 'ReturnVal']) {
+    const v = p[k];
+    if (v && String(v).trim().toUpperCase().startsWith('MASA|')) return true;
+  }
+
+  // 2. שם המוצר שחוזר מ-Cardcom.
+  const masaName = String(env.MASA_PRODUCT_NAME || 'מסע הכוח').trim();
+  if (masaName) {
+    for (const k of ['ProductName', 'productname', 'ProdName', 'Description']) {
+      const v = p[k];
+      if (v && String(v).trim() === masaName) return true;
+    }
+  }
+
+  // 3. רשומת ההזמנה: /api/masa/buy רושם כל עסקה שלו ב-masa_orders
+  //    לפי low_profile_id. אם המזהה שהגיע יושב שם — זו עסקה שלו.
+  //    בכוונה fail-open: אם הבדיקה נופלת, 21 יום ממשיך כרגיל.
+  const lpid = pickLowProfileId(p);
+  if (lpid && env.SUPABASE_URL && env.SUPABASE_SERVICE_ROLE) {
+    try {
+      const res = await fetch(
+        env.SUPABASE_URL + '/rest/v1/masa_orders?select=low_profile_id&limit=1&low_profile_id=eq.' +
+          encodeURIComponent(lpid),
+        { headers: sbHeaders(env) }
+      );
+      if (res.ok) {
+        const rows = await res.json().catch(() => []);
+        if (Array.isArray(rows) && rows.length) return true;
+      }
+    } catch (e) {}
+  }
+
+  return false;
+}
+
+function pickLowProfileId(p) {
+  for (const k of ['LowProfileId', 'lowprofileid', 'LowProfileCode', 'lowprofilecode']) {
+    const v = p[k];
+    if (v && String(v).trim()) return String(v).trim();
+  }
   return '';
 }
 
