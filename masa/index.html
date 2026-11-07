@@ -40,6 +40,15 @@ window.MASA_PIXEL_ID = "2163728420872746";
   var hasCoupon = false;
   try { hasCoupon = !!new URLSearchParams(location.search).get('coupon'); } catch (e) {}
 
+  /* ⁑ מאיפה הגיע הגולש: ?ref=ig, ?ref=tiktok, ?ref=yt, ?ref=fb.
+     נתפס פעם אחת בטעינה ונשמר בדפדפן, כי בדרך לכפתור הכתובת יכולה
+     להשתנות (עוגן, חזרה מהתקנון) והתג היה הולך לאיבוד. הוא לא מוצג
+     לגולש, לא משפיע על המחיר, ונרשם בשרת על שורת ההזמנה בלבד. */
+  try {
+    var r0 = (new URLSearchParams(location.search)).get('ref') || '';
+    if (r0) sessionStorage.setItem('masa_ref', r0.slice(0, 60));
+  } catch (e) {}
+
   function base(extra) {
     var o = {
       content_ids: [ITEM],
@@ -1318,6 +1327,13 @@ body.lgl-open{overflow:hidden}
       try {
         var c = new URLSearchParams(location.search).get('coupon');
         if (c) q += '&coupon=' + encodeURIComponent(c);
+      } catch (e) {}
+      /* ⁑ התג נוסע לשרת, ששומר אותו על ההזמנה. בלי השורה הזאת
+         ?ref= פשוט נעלם בכפתור — השרת יודע לקלוט אותו מזמן. */
+      try {
+        var rf = (new URLSearchParams(location.search)).get('ref') ||
+                 sessionStorage.getItem('masa_ref') || '';
+        if (rf) q += '&ref=' + encodeURIComponent(rf.slice(0, 60));
       } catch (e) {}
       var go = function(){ window.location.href = CHECKOUT_URL + q; };
 
