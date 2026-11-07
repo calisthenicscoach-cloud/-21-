@@ -22,28 +22,101 @@ export async function onRequestGet(context) {
   const amount = Number(env.CARDCOM_AMOUNT) || 0;
   const courseUrl = env.COURSE_URL || (url.origin + '/course');
 
-  // Meta Pixel snippet (only when a pixel id is configured). A sessionStorage
-  // guard keeps a page refresh from counting the purchase twice.
+  // Meta Pixel snippet (only when a pixel id is configured).
+  //
+  // This is the Cardcom-aware version that used to live on the WordPress
+  // thank-you page at matankopel.co.il/thank/. That host is being dropped,
+  // so the logic moved here: the real sum, the deal number and the buyer's
+  // details all arrive as query parameters on Cardcom's redirect, and they
+  // give Meta a deduplicated Purchase with advanced matching instead of a
+  // flat guess.
+  //
+  // One fix over the old page: there, `hasPurchaseParams` was computed and
+  // never used, so a plain visit or a refresh fired another Purchase and
+  // inflated the conversion count. Here it actually gates the event.
   const pixel = pixelId ? `
     <script>
+    (function () {
+      var PIXEL = ${JSON.stringify(pixelId)};
+      var DEFAULT_VALUE = ${amount};
+      var DEFAULT_COUNTRY_CODE = "972";
+
+      function numberOrZero(x){ var n = parseFloat(x); return isNaN(n) ? 0 : n; }
+      function normPhone(ph){
+        var d = (ph || "").replace(/\\D+/g, "");
+        if (!d) return "";
+        if (d.charAt(0) === "0") d = DEFAULT_COUNTRY_CODE + d.slice(1);
+        return d;
+      }
+
+      var p = {};
+      try {
+        new URL(window.location.href).searchParams.forEach(function (v, k) { p[k] = v; });
+      } catch (e) {}
+
+      // רק חזרה אמיתית מקארדקום נחשבת רכישה. רענון של הדף — לא.
+      var hasPurchaseParams = !!(
+        p.suminfull || p.suminagorot || p.ProdPrice ||
+        p.internaldealnumber || p.invNumber || p.invoicenumber || p.UID
+      );
+
+      var value =
+        p.suminfull   ? numberOrZero(p.suminfull) :
+        p.suminagorot ? numberOrZero(p.suminagorot) / 100 :
+        p.ProdPrice   ? numberOrZero(p.ProdPrice) : DEFAULT_VALUE;
+      if (!value) value = DEFAULT_VALUE;
+
+      var currency = (p.cointype === "2") ? "USD" : "ILS";
+
+      var transactionId =
+        p.internaldealnumber || p.invNumber || p.invoicenumber || p.UID || "";
+      var eventId = transactionId ? ("evt_" + transactionId) : "";
+
+      var itemName = decodeURIComponent((p.ProdName || "").replace(/\\+/g, " ")) || "purchase";
+      var itemId   = p.ProductID || p.ProdItemID || "unknown";
+      var qty      = parseInt(p.ProdQuantity || "1", 10) || 1;
+
+      var nameParts = (p.CardOwnerName || "").trim().split(/\\s+/);
+      var userData = {
+        em:      (p.UserEmail || "").toLowerCase().trim(),
+        ph:      normPhone(p.InvMobile || p.CardOwnerPhone || ""),
+        fn:      (nameParts[0] || "").toLowerCase(),
+        ln:      (nameParts.slice(1).join(" ") || "").toLowerCase(),
+        ct:      (p.intCity || "").toLowerCase().replace(/\\s+/g, ""),
+        country: "il"
+      };
+      if (transactionId) userData.external_id = transactionId;
+      Object.keys(userData).forEach(function (k) { if (!userData[k]) delete userData[k]; });
+
+      // מנקים את הפרטים מהכתובת כדי שלא יישארו בהיסטוריה של הדפדפן.
+      if (window.history && window.history.replaceState) {
+        try {
+          window.history.replaceState({}, document.title,
+            window.location.origin + window.location.pathname);
+        } catch (e) {}
+      }
+
       !function(f,b,e,v,n,t,s){if(f.fbq)return;n=f.fbq=function(){n.callMethod?
       n.callMethod.apply(n,arguments):n.queue.push(arguments)};if(!f._fbq)f._fbq=n;
       n.push=n;n.loaded=!0;n.version='2.0';n.queue=[];t=b.createElement(e);t.async=!0;
       t.src=v;s=b.getElementsByTagName(e)[0];s.parentNode.insertBefore(t,s)}(window,
       document,'script','https://connect.facebook.net/en_US/fbevents.js');
-      fbq('init', ${JSON.stringify(pixelId)});
+
+      fbq('init', PIXEL, userData);
       fbq('track', 'PageView');
-      try {
-        if (!sessionStorage.getItem('purchase_tracked')) {
-          fbq('track', 'Purchase', { value: ${amount}, currency: 'ILS' });
-          sessionStorage.setItem('purchase_tracked', '1');
-        }
-      } catch (e) {
-        fbq('track', 'Purchase', { value: ${amount}, currency: 'ILS' });
+
+      if (hasPurchaseParams) {
+        var payload = {
+          value: value, currency: currency,
+          contents: [{ id: itemId, quantity: qty, item_price: value }],
+          content_ids: [itemId], content_name: itemName,
+          content_type: 'product', num_items: qty
+        };
+        if (eventId) fbq('track', 'Purchase', payload, { eventID: eventId });
+        else fbq('track', 'Purchase', payload);
       }
-    </script>
-    <noscript><img height="1" width="1" style="display:none"
-      src="https://www.facebook.com/tr?id=${encodeURIComponent(pixelId)}&ev=Purchase&noscript=1"/></noscript>` : '';
+    })();
+    </script>` : '';
 
   const html = `<!doctype html><html lang="he" dir="rtl"><head>
     <meta charset="utf-8">
