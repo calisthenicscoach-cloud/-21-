@@ -26,47 +26,76 @@ const MASA_HOSTS = [APEX, 'masa.matankopel.co.il'];
 const WWW_HOST = 'www.' + APEX;
 
 /**
- * ‼️ כתובות של אתגר 21 יום שחייבות להמשיך לעבוד על הדומיין הראשי,
- *    כי יש עליהן תנועה שמשלמת:
+ * ‼️ הדפים שהיו על הוורדפרס של האחסון הישן והועתקו לכאן במלואם,
+ *    עם כל התמונות שלהם (בתיקיית a/ של כל דף).
  *
- *    /nivnatan/  — דף המכירה של 21 יום. יש מודעות שרצות אליו.
- *                  הדף ישב על הוורדפרס של האחסון הישן והועתק לכאן
- *                  על כל התמונות שלו (nivnatan/a/). טופס ההזמנה
- *                  שבו שולח ל-/api/buy.
- *    /thanks     — דף התודה אחרי תשלום, מריץ את פיקסל הרכישה.
- *                  CARDCOM_SUCCESS_URL מצביע על /thank/ ההיסטורי,
- *                  ולכן גם הוא ממופה לכאן.
+ *    הם חייבים להמשיך לענות על אותן כתובות בדיוק, כי יש עליהן
+ *    תנועה: מודעות שמשלמות, קישורים ישנים וגוגל.
  *
- *    הן מוגשות מהשורש ולא מתוך /masa/. אל תמחק אותן.
+ *    הכי חשוב: /nivnatan/ הוא דף המכירה של אתגר 21 יום, וטופס
+ *    ההזמנה שבו שולח ל-/api/buy. פעם אחת הוא היה מופנה לדף של
+ *    מסע הכוח — זה היה שולח קונים של 21 יום למוצר הלא נכון.
+ *
+ *    התיקיות בפרויקט באנגלית כדי שלא נסמוך על שמות קבצים בעברית,
+ *    והמפתח כאן הוא הכתובת הפומבית כפי שהדפדפן שולח אותה.
  */
-const COURSE_PREFIXES = ['/nivnatan', '/thanks'];
-const COURSE_THANKS_ALIASES = ['/thank'];
+const KEPT_PAGES = {
+  '/nivnatan': '/nivnatan',                       // דף המכירה של 21 יום
+  '/thank': '/thank',                             // דף התודה אחרי תשלום
+  '/tp': '/tp',                                   // דף הנחיתה של הליווי האישי
+  // תנאי-שימוש
+  '/%d7%aa%d7%a0%d7%90%d7%99-%d7%a9%d7%99%d7%9e%d7%95%d7%a9': '/terms-of-use',
+  // מדיניות-פרטיות
+  '/%d7%9e%d7%93%d7%99%d7%a0%d7%99%d7%95%d7%aa-%d7%a4%d7%a8%d7%98%d7%99%d7%95%d7%aa': '/privacy-policy',
+  // דף-מכירה (קורס עמידת ידיים)
+  '/%d7%93%d7%a3-%d7%9e%d7%9b%d7%99%d7%a8%d7%94': '/handstand',
+  // בלוג (המאמר על מתח)
+  '/%d7%91%d7%9c%d7%95%d7%92': '/blog-pullups',
+  // דף-תודה-מתן
+  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9e%d7%aa%d7%9f': '/thanks-lead',
+  // דף-תודה-ליחידת-הקליסטניקס
+  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9c%d7%99%d7%97%d7%99%d7%93%d7%aa-%d7%94%d7%a7%d7%9c%d7%99%d7%a1%d7%98%d7%a0%d7%99%d7%a7%d7%a1': '/thanks-community',
+};
 
-/* דפים ישנים מהוורדפרס שהיה על האחסון הקודם, שאין להם יורש.
-   הם מופיעים בגוגל ולכן מופנים לדף הבית במקום ליפול ל-404. */
-const OLD_WP_PATHS = [
-  '/tp',
+/* שאריות מהוורדפרס שאין להן תוכן אמיתי. מופנות לדף הבית, לא ל-404. */
+const DEAD_WP_PATHS = [
   '/sample-page',
   '/hello-world',
-  '/%d7%91%d7%9c%d7%95%d7%92',                                                         // בלוג
-  '/%d7%91%d7%9c%d7%95%d7%92-2',                                                       // בלוג-2
-  '/%d7%91%d7%93%d7%99%d7%a7%d7%94',                                                   // בדיקה
-  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9e%d7%aa%d7%9f',                         // דף-תודה-מתן
-  '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9c%d7%99%d7%97%d7%99%d7%93%d7%aa-%d7%94%d7%a7%d7%9c%d7%99%d7%a1%d7%98%d7%a0%d7%99%d7%a7%d7%a1', // דף-תודה-ליחידת-הקליסטניקס
+  '/%d7%91%d7%9c%d7%95%d7%92-2',       // בלוג-2 (אינדקס ריק)
+  '/%d7%91%d7%93%d7%99%d7%a7%d7%94',   // בדיקה
 ];
 
 function tidy(pathname) {
   return pathname.replace(/\/+$/, '').toLowerCase();
 }
 
-function isCoursePath(pathname) {
-  const p = tidy(pathname);
-  return COURSE_PREFIXES.some((pre) => p === pre || p.startsWith(pre + '/'));
+/* נתיבים של Function בשורש, שחייבים להגיע בלי סלאש בסוף. */
+const ROOT_FUNCTIONS = ['/thanks'];
+
+/**
+ * מה לעשות עם נתיב שמגיע לדומיין של מסע הכוח:
+ *   {serve: '...'}    להגיש את הקובץ הזה בלי לשנות את הכתובת
+ *   {slash: true}     להוסיף סלאש בסוף ואז להגיש
+ *   null              לא אחד מהדפים השמורים
+ *
+ * הסלאש חשוב: הדפים האלה מושכים את התמונות שלהם בנתיב יחסי (a/...),
+ * ובלי סלאש בסוף הדפדפן מחפש אותן תיקייה אחת למעלה והן נשברות.
+ */
+function keptTarget(pathname) {
+  // בלי tidy: ההבדל בין /x ל-/x/ הוא בדיוק מה שנבדק כאן.
+  const p = pathname.toLowerCase();
+  for (const pub in KEPT_PAGES) {
+    if (p === pub) return { slash: true };
+    if (p.startsWith(pub + '/')) {
+      return { serve: KEPT_PAGES[pub] + pathname.slice(pub.length) };
+    }
+  }
+  return null;
 }
 
-function isOldWpPath(pathname) {
+function isDeadWpPath(pathname) {
   const p = tidy(pathname);
-  return OLD_WP_PATHS.indexOf(p) !== -1 || p.indexOf('/wp-') === 0;
+  return DEAD_WP_PATHS.indexOf(p) !== -1 || p.indexOf('/wp-') === 0;
 }
 
 export async function onRequest(context) {
@@ -92,18 +121,25 @@ export async function onRequest(context) {
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
 
-  // דפים של 21 יום — מוגשים מהשורש, לא מתוך /masa/.
-  if (isCoursePath(url.pathname)) return next();
+  // Function שיושבת בשורש של 21 יום — עוברת כמו שהיא.
+  if (ROOT_FUNCTIONS.includes(tidy(url.pathname))) return next();
 
-  // /thank/ ההיסטורי הוא דף התודה של 21 יום.
-  if (COURSE_THANKS_ALIASES.includes(tidy(url.pathname))) {
+  // דפים שנשמרו מהאתר הישן — מוגשים מהשורש, לא מתוך /masa/.
+  const kept = keptTarget(url.pathname);
+  if (kept) {
+    if (kept.slash) {
+      const to = new URL(url);
+      to.pathname = url.pathname.replace(/\/*$/, '/');
+      return Response.redirect(to.toString(), 301);
+    }
+    if (kept.serve === url.pathname) return next();
     const to = new URL(url);
-    to.pathname = '/thanks';
+    to.pathname = kept.serve;
     return next(new Request(to.toString(), request));
   }
 
-  // שאריות מהאתר הישן שאין להן יורש — לדף הבית, לא ל-404.
-  if (isOldWpPath(url.pathname)) {
+  // שאריות בלי תוכן — לדף הבית, לא ל-404.
+  if (isDeadWpPath(url.pathname)) {
     return Response.redirect(new URL('/', url).toString(), 301);
   }
 
