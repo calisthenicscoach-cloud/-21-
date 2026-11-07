@@ -116,8 +116,7 @@ function emailForm(request, { amount, base, coupon, prevValue, showError }) {
       ${coupon ? `<input type="hidden" name="coupon" value="${esc(coupon)}">` : ''}
       <label class="agree">
         <input type="checkbox" name="agree" value="1" required>
-        <span>קראתי ואני מסכים לתנאי השימוש, ומאשר ש<b>אחרי הרכישה לא ניתן לבטל
-        את העסקה ולא יינתן החזר כספי.</b>
+        <span>קראתי ואני מסכים לתנאי השימוש.
         <a href="/masa/" target="_blank" rel="noopener">לקריאת התקנון</a></span>
       </label>
       <button type="submit">מעבר לתשלום מאובטח</button>
