@@ -518,12 +518,12 @@ a.bookrow.live .bchip{background:var(--accent);color:#fff}
     <div class="alstate" id="al-deny" hidden>
       <div class="alicon"><svg class="ic" viewBox="0 0 24 24"><rect x="4" y="10" width="16" height="11" rx="2.5"/><path d="M8 10V7a4 4 0 0 1 8 0v3"/></svg></div>
       <h1>הגישה לא נמצאה</h1>
-      <p class="almsg">הקישור שפתחת לא מזוהה.<br>אם כבר קנית — תכניס את המייל שאיתו קנית ואשלח לך את הקישור שוב.</p>
+      <p class="almsg">הקישור הזה כבר נפתח, או שפג תוקפו.<br>אם כבר קנית — תכניס את המייל שאיתו קנית ואשלח לך קישור חדש.</p>
       <form class="alform" id="al-form" novalidate>
         <input class="alinput" id="al-email" type="email" inputmode="email" autocomplete="email" required placeholder="המייל שאיתו קנית">
         <button class="albtn" type="submit" id="al-send">שלח לי את הקישור</button>
       </form>
-      <p class="alnote" id="al-sent" hidden>אם קיימת גישה למייל הזה — הקישור כבר בדרך. תבדוק גם בתיקיית הספאם.</p>
+      <p class="alnote" id="al-sent" hidden>אם קיימת גישה למייל הזה — קישור חדש כבר בדרך. תבדוק גם בתיקיית הספאם.</p>
       <a class="allink" id="al-buy" href="#" hidden>עוד לא קנית? מכאן מתחילים</a>
     </div>
 
@@ -1151,8 +1151,12 @@ if (instStandalone()) {
 }
 
 /* ---- access gate ----
-   הקישור שהקונה מקבל במייל נראה כך:  .../?k=<token>
-   כאן קוראים אותו, מאמתים מול השרת, ורק אז פותחים את האפליקציה.
+   ‼️ הקישור שהקונה מקבל במייל נראה כך:  .../?c=<code>
+   הקוד הזה **חד-פעמי** ותקף 48 שעות. המימוש הראשון שורף אותו ומחזיר
+   טוקן מכשיר, שנשמר כאן ומשמש מכאן והלאה. כך העברת המייל לחבר שווה
+   כניסה אחת לכל היותר, בדיוק כמו בקורס 21 יום.
+
+   מכשיר נוסף? מבקשים קוד חדש בטופס שלמטה, והוא נשלח לתיבה של הקונה.
 
    כל עוד ALOCK.verify ריק — אין שער בכלל והאפליקציה נפתחת כרגיל.
    ככה היא ממשיכה לעבוד בזמן שהצד שרת עוד לא באוויר.           */
@@ -1186,31 +1190,37 @@ function alockPass(){
 function alockStart(){
   if (!ALOCK.verify) { alockPass(); return; }
 
-  /* ?k=... — קוראים פעם אחת, שומרים, ומנקים מהכתובת
-     כדי שהטוקן לא יישאר בשורת הכתובת ולא ישותף בטעות */
+  /* ?c=... — הקוד מהמייל. קוראים אותו ומנקים מיד מהכתובת, כדי
+     שלא יישאר בהיסטוריה ולא ישותף בטעות בצילום מסך. */
+  var code = '';
   try {
-    var k = (new URLSearchParams(location.search)).get('k');
-    if (k) {
-      LS.set('mk_key', k);
-      var clean = location.pathname + location.hash;
-      history.replaceState(null, '', clean);
-    }
+    code = (new URLSearchParams(location.search)).get('c') || '';
+    if (code) history.replaceState(null, '', location.pathname + location.hash);
   } catch (e) {}
 
-  var token = LS.get('mk_key', '');
-  if (!token) { alockDeny(); return; }
+  /* טוקן המכשיר נשמר אחרי המימוש, והוא זה שמשמש בכל כניסה הבאה. */
+  var dev = LS.get('mk_dev', '');
+  if (!code && !dev) { alockDeny(); return; }
 
   alockShow('al-check');
 
   fetch(ALOCK.verify, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ token: token })
+    body: JSON.stringify(code ? { code: code } : { device: dev })
   })
   .then(function(r){ return r.ok ? r.json() : Promise.reject(new Error('http ' + r.status)); })
   .then(function(d){
-    if (d && d.ok) alockPass();
-    else { LS.del('mk_key'); alockDeny(); }
+    if (d && d.ok) {
+      if (d.device) LS.set('mk_dev', d.device);
+      alockPass();
+      return;
+    }
+    /* קוד שנשרף או פג — אבל אם המכשיר הזה כבר מחובר, לא זורקים
+       אותו החוצה בגלל שלחץ שוב על קישור ישן מהמייל. */
+    if (code && dev) { code = ''; alockStart(); return; }
+    if (!code) LS.del('mk_dev');
+    alockDeny();
   })
   .catch(function(){
     /* אין רשת. מי שכבר אומת לאחרונה — נכנס בכל זאת,

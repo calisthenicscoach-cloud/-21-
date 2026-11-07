@@ -16,6 +16,8 @@
  *               MASA_RATE (KV namespace — אופציונלי. בלעדיו אין חסימת קצב.)
  */
 
+import { issueCode, codeLink } from './_access-code.js';
+
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
 
 function corsHeaders(request, env) {
@@ -71,11 +73,11 @@ export async function onRequestPost(context) {
 
 async function lookupAndSend(env, email) {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return;
-  let token = '';
+  let accessId = 0;
   try {
     const url =
       `${env.SUPABASE_URL}/rest/v1/masa_access` +
-      `?email=eq.${encodeURIComponent(email)}&active=is.true&select=token&order=created_at.desc&limit=1`;
+      `?email=eq.${encodeURIComponent(email)}&active=is.true&select=id&order=created_at.desc&limit=1`;
     const res = await fetch(url, {
       headers: {
         apikey: env.SUPABASE_SERVICE_ROLE,
@@ -85,21 +87,26 @@ async function lookupAndSend(env, email) {
     });
     const rows = await res.json();
     if (!Array.isArray(rows) || rows.length === 0) return; // אין גישה — שותקים
-    token = rows[0].token;
+    accessId = rows[0].id;
   } catch (err) {
     console.log('resend lookup failed', String(err).slice(0, 200));
     return;
   }
 
-  if (!token || !env.BREVO_API_KEY || !(env.MASA_SENDER_EMAIL || env.SENDER_EMAIL) || !env.MASA_APP_URL) return;
+  if (!accessId || !env.BREVO_API_KEY || !(env.MASA_SENDER_EMAIL || env.SENDER_EMAIL) || !env.MASA_APP_URL) return;
 
-  const link = `${env.MASA_APP_URL.replace(/\/$/, '')}/?k=${token}`;
+  /* ⁑ קוד חדש בכל שליחה, והקודם מת. ככה "שלח לי שוב" הוא גם הדרך
+     להיכנס ממכשיר נוסף — והיא עוברת דרך התיבה של הקונה, לא דרך מי
+     שבמקרה מחזיק בקישור ישן. */
+  const code = await issueCode(env, accessId);
+  if (!code) return;
+  const link = codeLink(env, code);
   const html = `<!doctype html><html lang="he" dir="rtl"><body style="margin:0;background:#F2EFE7;
 font-family:Arial,Helvetica,sans-serif;color:#1A1A1E">
 <div style="max-width:520px;margin:0 auto;padding:32px 22px">
   <h1 style="font-size:22px;margin:0 0 14px">הנה הקישור שלך שוב</h1>
   <p style="font-size:15.5px;line-height:1.8;color:#57534B;margin:0 0 10px">
-    ביקשת את קישור הכניסה למסע הכוח. הוא כאן:
+    ביקשת את קישור הכניסה למסע הכוח. הוא כאן, ונפתח פעם אחת:
   </p>
   <p style="margin:24px 0">
     <a href="${link}" style="display:inline-block;background:#15A65A;color:#fff;

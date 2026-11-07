@@ -21,6 +21,8 @@
  *    MASA_SENDER_NAME    — מתן קופל
  */
 
+import { newCode, codeLink } from './_access-code.js';
+
 const RESULT_URL = 'https://secure.cardcom.solutions/api/v11/LowProfile/GetLpResult';
 const PREFIX = 'MASA|';
 
@@ -91,10 +93,15 @@ export async function onRequestPost(context) {
 
   // ---- 4. פתיחת גישה (פעם אחת בלבד) ----
   const token = crypto.randomUUID().replace(/-/g, '') + crypto.randomUUID().replace(/-/g, '').slice(0, 8);
+  /* ⁑ הקוד שנכנס למייל הוא חד-פעמי ותקף 48 שעות, לא מפתח קבוע.
+     נכתב כאן, באותה הוספה כמו שורת הגישה, כדי שלא ייווצר מצב של
+     שורה בלי קוד — ואז המייל היה יוצא עם קישור שלא עובד. */
+  const code = newCode();
   const granted = await grantAccess(env, {
     email,
     lowProfileId,
     token,
+    code,
     transactionId: String(result.TranzactionId || ''),
   });
 
@@ -107,14 +114,14 @@ export async function onRequestPost(context) {
 
   // ---- 5. מעבר מרשימת הלידים לרשימת הקונים + מייל גישה ----
   context.waitUntil(
-    Promise.all([moveToBuyers(env, email), sendAccessEmail(env, email, token)])
+    Promise.all([moveToBuyers(env, email), sendAccessEmail(env, email, code)])
   );
 
   return new Response('ok', { status: 200 });
 }
 
 /** מחזיר 'ok' | 'duplicate' | 'error' */
-async function grantAccess(env, { email, lowProfileId, token, transactionId }) {
+async function grantAccess(env, { email, lowProfileId, token, code, transactionId }) {
   if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return 'error';
   try {
     const res = await fetch(`${env.SUPABASE_URL}/rest/v1/masa_access`, {
@@ -130,6 +137,8 @@ async function grantAccess(env, { email, lowProfileId, token, transactionId }) {
         low_profile_id: lowProfileId, // UNIQUE בטבלה — זה מה שמונע כפילות
         transaction_id: transactionId || null,
         token,
+        code,
+        code_sent_at: new Date().toISOString(),
       }),
     });
     if (res.status === 201 || res.status === 204) return 'ok';
@@ -167,9 +176,9 @@ async function moveToBuyers(env, email) {
   }
 }
 
-async function sendAccessEmail(env, email, token) {
-  if (!env.BREVO_API_KEY || !(env.MASA_SENDER_EMAIL || env.SENDER_EMAIL) || !env.MASA_APP_URL) return;
-  const link = `${env.MASA_APP_URL.replace(/\/$/, '')}/?k=${token}`;
+async function sendAccessEmail(env, email, code) {
+  if (!code || !env.BREVO_API_KEY || !(env.MASA_SENDER_EMAIL || env.SENDER_EMAIL) || !env.MASA_APP_URL) return;
+  const link = codeLink(env, code);
   const html = `<!doctype html><html lang="he" dir="rtl"><body style="margin:0;background:#F2EFE7;
 font-family:Arial,Helvetica,sans-serif;color:#1A1A1E">
 <div style="max-width:520px;margin:0 auto;padding:32px 22px">
@@ -184,7 +193,8 @@ font-family:Arial,Helvetica,sans-serif;color:#1A1A1E">
     </a>
   </p>
   <p style="font-size:14px;line-height:1.8;color:#57534B;margin:0 0 10px">
-    <b>שמור את המייל הזה.</b> הקישור אישי ומיועד לך בלבד.<br>
+    <b>הקישור הזה אישי ונפתח פעם אחת.</b> ברגע שתפתח אותו המכשיר הזה
+    נשאר מחובר, ואין צורך במייל שוב.<br>
     בכניסה הראשונה תתבקש לשמור את האפליקציה במסך הבית — אחרי זה נכנסים בלחיצה אחת,
     בלי לחפש את המייל כל פעם.
   </p>
