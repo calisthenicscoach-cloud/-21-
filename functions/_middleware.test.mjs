@@ -65,6 +65,14 @@ await check('/thank/ תמונות',  APEX + '/thank/a/x.png',        'UNTOUCHED'
 await check('עם פרמטרים',      APEX + '/thank/?suminfull=147', 'UNTOUCHED');
 await check('בלי סלאש',        APEX + '/thank',                '301 -> https://matankopel.co.il/thank/');
 
+console.log('\n--- ‼️ /course/ — אפליקציית הקורס ששילמו עליה ---');
+await check('/course/',          APEX + '/course/',            'UNTOUCHED');
+await check('בלי סלאש',          APEX + '/course',             '301 -> https://matankopel.co.il/course/');
+await check('קבצים להורדה',      APEX + '/course/files/x.pdf', 'UNTOUCHED');
+await check('עם טוקן',           APEX + '/course/?k=abc123',   'UNTOUCHED');
+await check('על תת-הדומיין',     'https://masa.matankopel.co.il/course/', 'UNTOUCHED');
+await check('על pages.dev',      'https://matankopel.pages.dev/course/',  'UNTOUCHED');
+
 console.log('\n--- הדפים המשפטיים ---');
 await check('תנאי שימוש',        APEX + TERMS + '/',               '/terms-of-use/');
 await check('תנאי שימוש תמונות', APEX + TERMS + '/a/x.css',        '/terms-of-use/a/x.css');
