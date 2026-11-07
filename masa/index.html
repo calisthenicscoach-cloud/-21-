@@ -1207,11 +1207,92 @@ body.lgl-open{overflow:hidden}
   var busy = false;
   function fail(msg){ err.textContent = msg; err.hidden = false; }
 
+  /* ============ ⁑ שומר טעויות הקלדה בדומיין ============
+     מי שמקליד gmai.com במקום gmail.com משלם ולא מקבל כלום: מייל
+     הגישה נשלח לדומיין שלא קיים. זה קרה בבדיקה האמיתית הראשונה,
+     בניסיון הראשון.
+
+     תופסים את זה *לפני* התשלום בכוונה. אחרי התשלום אי אפשר לתת
+     לקונה לשנות את הכתובת בעצמו — זה היה אומר שכל מי שמחזיק במזהה
+     עסקה יכול להעביר את קישור הגישה לתיבה אחרת. */
+  var KNOWN_DOMAINS = [
+    'gmail.com','googlemail.com','hotmail.com','hotmail.co.il','outlook.com',
+    'outlook.co.il','live.com','msn.com','yahoo.com','yahoo.co.il','icloud.com',
+    'me.com','walla.com','walla.co.il','nana10.co.il','012.net.il','bezeqint.net'
+  ];
+  /* האם אפשר להפוך את a ל-b בשינוי אחד: תו חסר, מיותר או מוחלף. */
+  function oneEdit(a, b) {
+    if (a === b) return false;
+    var la = a.length, lb = b.length;
+    if (Math.abs(la - lb) > 1) return false;
+    var i = 0, j = 0, diff = 0;
+    while (i < la && j < lb) {
+      if (a.charAt(i) === b.charAt(j)) { i++; j++; continue; }
+      if (++diff > 1) return false;
+      if (la > lb) i++; else if (lb > la) j++; else { i++; j++; }
+    }
+    return true;
+  }
+  /* החלפה בין שני תווים סמוכים: gmial במקום gmail. זה שתי פעולות
+     לפי oneEdit ולכן הוא מפספס אותה — אבל זו טעות ההקלדה
+     הנפוצה ביותר במקלדת, וחבל לפספס אותה. */
+  function oneSwap(a, b) {
+    if (a.length !== b.length) return false;
+    var d = [];
+    for (var i = 0; i < a.length; i++) {
+      if (a.charAt(i) !== b.charAt(i)) { d.push(i); if (d.length > 2) return false; }
+    }
+    return d.length === 2 && d[1] === d[0] + 1 &&
+           a.charAt(d[0]) === b.charAt(d[1]) && a.charAt(d[1]) === b.charAt(d[0]);
+  }
+  function suggestFix(mail) {
+    var at = mail.lastIndexOf('@');
+    if (at < 1) return '';
+    var dom = mail.slice(at + 1).toLowerCase();
+    for (var i = 0; i < KNOWN_DOMAINS.length; i++) if (dom === KNOWN_DOMAINS[i]) return '';
+    for (var k = 0; k < KNOWN_DOMAINS.length; k++) {
+      if (oneEdit(dom, KNOWN_DOMAINS[k]) || oneSwap(dom, KNOWN_DOMAINS[k])) {
+        return mail.slice(0, at + 1) + KNOWN_DOMAINS[k];
+      }
+    }
+    return '';
+  }
+  /* כתובת שהגולש אישר במפורש שהיא שלו, גם אם היא נראית כמו טעות. */
+  var typoApproved = '';
+  function askTypo(typed, fixed) {
+    err.hidden = false;
+    err.textContent = '';
+    var q = document.createElement('span');
+    q.textContent = 'רגע — התכוונת ל-' + fixed + '? ';
+    err.appendChild(q);
+    var yes = document.createElement('button');
+    yes.type = 'button';
+    yes.textContent = 'כן, תקן';
+    yes.style.cssText = 'margin:6px 0 0 8px;padding:5px 12px;border-radius:8px;border:0;background:#15A65A;color:#fff;font:inherit;font-weight:700;cursor:pointer';
+    yes.onclick = function () { inp.value = fixed; err.hidden = true; err.textContent = ''; resubmit(); };
+    var no = document.createElement('button');
+    no.type = 'button';
+    no.textContent = 'לא, זו הכתובת שלי';
+    no.style.cssText = 'margin:6px 0 0 8px;padding:5px 12px;border-radius:8px;border:1px solid #C9C2B4;background:#fff;color:#57534B;font:inherit;cursor:pointer';
+    no.onclick = function () { typoApproved = typed; err.hidden = true; err.textContent = ''; resubmit(); };
+    err.appendChild(yes);
+    err.appendChild(no);
+  }
+  function resubmit() {
+    if (f.requestSubmit) f.requestSubmit();
+    else f.dispatchEvent(new Event('submit', { cancelable: true }));
+  }
+
   f.addEventListener('submit', function(e){
     e.preventDefault();
     if (busy) return;
     var v = (inp.value || '').trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(v)) { fail('כתובת המייל לא נראית תקינה.'); inp.focus(); return; }
+    /* ⁑ טעות הקלדה בדומיין — עוצרים פעם אחת ושואלים. */
+    if (typoApproved !== v) {
+      var fixed = suggestFix(v);
+      if (fixed) { askTypo(v, fixed); inp.focus(); return; }
+    }
     /* אישור התקנון. התקנון מצהיר שסעיף אי-ההחזר מוצג ללקוח לפני התשלום
        והוא מאשר אותו — אז בלי הסימון הזה אין מעבר לסליקה. */
     var agree = document.getElementById('buy-agree');
@@ -1230,6 +1311,9 @@ body.lgl-open{overflow:hidden}
       /* המייל עובר בכתובת כדי ש-Cardcom ידע למי לפתוח גישה.
          אם הגולש הגיע עם קוד הנחה ממייל נטישה — הקוד נשמר איתו.
          האחוז עצמו נקבע בשרת בלבד, אז אי אפשר להמציא הנחה בכתובת. */
+      /* הכתובת נשמרת בדפדפן בלבד, כדי שדף התודה יוכל להראות לאן
+         נשלח מייל הגישה. לא עוברת בכתובת ולא חוזרת מהשרת. */
+      try { sessionStorage.setItem('masa_mail', v); } catch (e) {}
       var q = '?email=' + encodeURIComponent(v) + '&agree=1';
       try {
         var c = new URLSearchParams(location.search).get('coupon');

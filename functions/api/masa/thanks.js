@@ -143,6 +143,7 @@ function page({ sales, pixelId, support }) {
       <h1>מזל טוב, אתה בפנים!</h1>
       <p>קנית את <b>מסע הכוח</b> — ומכאן זה כבר עניין של רמה אחרי רמה.</p>
       <p><b>קישור הכניסה האישי שלך כבר בדרך אליך למייל 💌</b></p>
+      <p id="sentto" hidden style="font-size:15px;color:var(--muted);margin:-4px 0 0"></p>
       <div class="ladder" aria-hidden="true">
         <span style="background:var(--c1)"></span><span style="background:var(--c2)"></span>
         <span style="background:var(--c3)"></span><span style="background:var(--c4)"></span>
@@ -181,7 +182,9 @@ function page({ sales, pixelId, support }) {
         <div class="t">נתראה באימון,<b>מתן קופל</b></div>
       </div>
       <div class="note" style="margin-top:18px">
-        <b>המייל לא הגיע?</b> תקליד כאן את המייל שאיתו קנית ואשלח אותו שוב.
+        <b>המייל לא הגיע?</b> תקליד כאן את המייל שאיתו קנית ואשלח אותו שוב.<br>
+        <b>הכתובת למעלה לא שלך?</b> אל תשלם שוב — כתוב לי מהכתובת הנכונה
+        ואני פותח לך את הגישה ידנית.
         <form class="rs" id="rsform" novalidate>
           <input id="rsmail" type="email" inputmode="email" autocomplete="email"
                  placeholder="המייל שאיתו קנית" aria-label="המייל שאיתו קנית">
@@ -278,6 +281,28 @@ function page({ sales, pixelId, support }) {
     } catch (e) { /* פיקסל חסום — לא שובר את הדף */ }
   }
 
+  /* ---- לאן נשלח מייל הגישה ----
+     הכתובת מגיעה מ-sessionStorage של אותו דפדפן — הדפדפן שבו היא
+     הוקלדה. היא לא עוברת דרך השרת ולא דרך הכתובת.
+     ⁑ /api/masa/status ממשיך לא להחזיר מייל: מי שמחזיק במזהה עסקה
+     לא לומד ממנו של מי היא, וזה לא משתנה כאן. */
+  function showSentTo() {
+    try {
+      var sent = sessionStorage.getItem('masa_mail');
+      if (!sent) return;
+      var box = document.getElementById('sentto');
+      if (!box) return;
+      box.textContent = 'שלחנו אותו אל ';
+      var strong = document.createElement('b');
+      strong.textContent = sent;
+      strong.style.color = 'var(--ink)';
+      box.appendChild(strong);
+      box.hidden = false;
+      var rs = document.getElementById('rsmail');
+      if (rs && !rs.value) rs.value = sent;
+    } catch (e) { /* אחסון חסום — פשוט לא מראים */ }
+  }
+
   /* ---- שליחת המייל שוב ---- */
   var form = document.getElementById('rsform');
   if (form) {
@@ -317,7 +342,7 @@ function page({ sales, pixelId, support }) {
         .then(function (r) { return r.ok ? r.json() : { state: 'unknown' }; })
         ['catch'](function () { return { state: 'unknown' }; })
         .then(function (d) {
-          if (d && d.state === 'paid') { show(elPaid); trackPurchase(d.amount); return; }
+          if (d && d.state === 'paid') { show(elPaid); showSentTo(); trackPurchase(d.amount); return; }
           ask();   /* pending או unknown — ממשיכים לשאול, לא מכריזים */
         });
     }, wait);
@@ -333,6 +358,7 @@ function page({ sales, pixelId, support }) {
      כי אין הוכחה), ודף הכישלון מציג את מסך "עוד לא קיבלנו אישור". */
   if (!lpid) {
     show(cameFromFail ? elUnconf : elPaid);
+    if (!cameFromFail) showSentTo();
   } else {
     ask();
   }
