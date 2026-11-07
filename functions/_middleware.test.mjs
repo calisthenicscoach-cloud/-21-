@@ -39,6 +39,23 @@ const HANDSTAND = '/%D7%93%D7%A3-%D7%9E%D7%9B%D7%99%D7%A8%D7%94';
 const BLOG = '/%D7%91%D7%9C%D7%95%D7%92';
 const THANKS_LEAD = '/%D7%93%D7%A3-%D7%AA%D7%95%D7%93%D7%94-%D7%9E%D7%AA%D7%9F';
 
+console.log('\n--- הקישורים הקצרים של הביו ---');
+await check('/ig',               APEX + '/ig',
+            '302 -> https://matankopel.co.il/masa/?ref=ig');
+await check('/tiktok',           APEX + '/tiktok',
+            '302 -> https://matankopel.co.il/masa/?ref=tiktok');
+await check('/yt',               APEX + '/yt',
+            '302 -> https://matankopel.co.il/masa/?ref=yt');
+await check('/fb',               APEX + '/fb',
+            '302 -> https://matankopel.co.il/masa/?ref=fb');
+await check('/ig/ עם סלאש',      APEX + '/ig/',
+            '302 -> https://matankopel.co.il/masa/?ref=ig');
+await check('/IG באותיות גדולות', APEX + '/IG',
+            '302 -> https://matankopel.co.il/masa/?ref=ig');
+// ‼️ הקישור הקצר חי רק על הדומיין של מסע הכוח. על pages.dev יושב
+//    אתגר 21 יום, ושם /ig הוא נתיב רגיל שאסור לגעת בו.
+await check('/ig על pages.dev',  'https://matankopel.pages.dev/ig', 'UNTOUCHED');
+
 console.log('\n--- 21 יום על pages.dev: חייב להישאר ללא נגיעה ---');
 await check('home',         'https://matankopel.pages.dev/',              'UNTOUCHED');
 await check('/course/',     'https://matankopel.pages.dev/course/',       'UNTOUCHED');

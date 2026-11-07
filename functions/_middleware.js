@@ -82,6 +82,27 @@ const DEAD_WP_PATHS = [
   '/3', '/6', '/8', '/chodesh', '/minui',
 ];
 
+/**
+ * ⁑ הקישורים הקצרים שיושבים בביו של הרשתות.
+ *
+ * בביו רואים את הכתובת עצמה, ו-matankopel.co.il/masa/?ref=ig נראה
+ * כמו שגיאה. הנתיבים כאן קצרים ונקיים, ומפנים לדף המכירה עם התג
+ * שאומר מאיפה הגולש הגיע — כך שאותו דף בדיוק יודע לספור בנפרד כל
+ * רשת, בלי שהגולש יראה משהו טכני.
+ *
+ * ‼️ הפניה זמנית (302) ולא קבועה: אם יום אחד הקישור בביו יצטרך
+ *    להוביל למקום אחר, 301 היה נשאר בזיכרון של הדפדפן של כל מי
+ *    שכבר לחץ — והם היו ממשיכים להגיע לדף הישן.
+ *
+ * להוסיף רשת חדשה = שורה אחת כאן.
+ */
+const BIO_LINKS = {
+  '/ig': 'ig',
+  '/tiktok': 'tiktok',
+  '/yt': 'yt',
+  '/fb': 'fb',
+};
+
 function tidy(pathname) {
   return pathname.replace(/\/+$/, '').toLowerCase();
 }
@@ -143,6 +164,17 @@ export async function onRequest(context) {
 
   // ===== כל מה שאינו מסע הכוח — יוצא מיד, בלי שינוי =====
   if (!MASA_HOSTS.includes(url.hostname)) return next();
+
+  /* ⁑ קישור קצר מהביו. נבדק לפני כל השאר, כדי ששום כלל אחר
+     לא יבלע אותו. tidy מוריד סלאש בסוף ומוריד אותיות גדולות, אז
+     /IG/ ו-/ig עובדים אותו דבר — בביו של רשת אחת זה יכול להיכתב
+     אחרת. */
+  const bioTag = BIO_LINKS[tidy(url.pathname)];
+  if (bioTag) {
+    const to = new URL('/masa/', url);
+    to.searchParams.set('ref', bioTag);
+    return Response.redirect(to.toString(), 302);
+  }
 
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
