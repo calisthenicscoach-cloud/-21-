@@ -23,6 +23,10 @@
  *    MASA_PRODUCT_NAME        — מסע הכוח
  *    MASA_COUPON_CODE         — קוד ההנחה של מיילי הנטישה (ברירת מחדל: MASA10)
  *    MASA_COUPON_PERCENT      — אחוז ההנחה (ברירת מחדל: 10)
+ *    MASA_TEST_COUPON         — ⁑ דלת בדיקה. קוד באורך 12 תווים לפחות
+ *                               שמחייב 1 ש״ח במקום המחיר המלא, כדי לבדוק את
+ *                               כל השרשרת בכסף אמיתי. כל עוד הוא לא מוגדר —
+ *                               הדלת סגורה. למחוק אותו ברגע שהבדיקה נגמרה.
  *
  *    שלוש הכתובות הבאות אופציונליות — בלי הן הן נגזרות מהדומיין של הבקשה:
  *    MASA_SUCCESS_URL         — ברירת מחדל: /api/masa/thanks
@@ -160,6 +164,9 @@ async function health(env) {
         leadsList: env.MASA_BREVO_LIST_LEADS || null,
         buyersList: env.MASA_BREVO_LIST_BUYERS || null,
         brevoKey: !!env.BREVO_API_KEY,
+        // ⁑ אמור להיות false בכל יום רגיל. אם הוא true — יש קוד
+        // שמאפשר לקנות בשקל, וצריך למחוק את MASA_TEST_COUPON.
+        testDoorOpen: String(env.MASA_TEST_COUPON || '').trim().length >= 12,
       },
       supabase,
       ts: new Date().toISOString(),
@@ -189,8 +196,22 @@ export async function onRequestGet(context) {
   const couponPct = Math.min(90, Math.max(0, Number(env.MASA_COUPON_PERCENT ?? 10)));
   const couponOk = !!couponInput && !!couponCode && couponPct > 0 &&
     couponInput.toLowerCase() === couponCode.toLowerCase();
-  const amount = couponOk ? Math.max(1, Math.round(base * (100 - couponPct) / 100)) : base;
-  const couponForForm = couponOk ? couponInput : '';
+  const discounted = couponOk ? Math.max(1, Math.round(base * (100 - couponPct) / 100)) : base;
+
+  /* ---- ⁑ דלת בדיקה: רכישה אמיתית של 1 ש״ח -------------------
+     הווב-הוק של קארדקום אינו ניתן לזיוף, ולכן הדרך היחידה להוכיח
+     שכל השרשרת עובדת — סליקה, ווב-הוק, סופבייס, מייל הגישה והפיקסל
+     — היא לשלם באמת. זה מאפשר לעשות את זה בשקל במקום ב-247.
+
+     המחיר לציבור לא זז לרגע: מי שלא מחזיק בקוד משלם את מלוא המחיר.
+     שתי הגנות: הקוד חייב להיות באורך 12 לפחות (כדי שערך קצר
+     שנכנס בטעות לא יפתח את הדלת), וההשוואה רגישה לאותיות גדולות
+     וקטנות, בניגוד לקופון הרגיל. בלי המשתנה — הדלת לא קיימת. */
+  const testCode = String(env.MASA_TEST_COUPON || '').trim();
+  const testOk = testCode.length >= 12 && couponInput === testCode;
+
+  const amount = testOk ? 1 : discounted;
+  const couponForForm = testOk ? testCode : (couponOk ? couponInput : '');
 
   // ---- מייל ------------------------------------------------------------
   // בלי מייל אי אפשר לפתוח גישה, אז מבקשים אותו כאן במקום לזרוק שגיאה.
@@ -248,7 +269,7 @@ export async function onRequestGet(context) {
   // רישום הזמנה — best effort. אם Supabase נופל, התשלום עדיין ממשיך.
   context.waitUntil(recordOrder(env, {
     email, ref, lowProfileId: data.LowProfileId, amount,
-    coupon: couponOk ? couponCode : null,
+    coupon: testOk ? 'TEST-1NIS' : (couponOk ? couponCode : null),
     // חותמת ההסכמה לתקנון. הצ'קבוקס בדף ובטופס הנסיגה שולח agree=1.
     agreedAt: url.searchParams.get('agree') === '1' ? new Date().toISOString() : null,
   }));
