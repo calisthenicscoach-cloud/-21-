@@ -115,9 +115,52 @@ function emailForm(request, { amount, base, coupon, prevValue, showError }) {
     { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' } });
 }
 
+/**
+ * /api/masa/buy?health=1 — בדיקת חיבורים. לא פותח עסקה ולא גובה כלום.
+ * מחזיר רק כן/לא ומספרי סטטוס. **אף פעם לא ערכים של מפתחות.**
+ */
+async function health(env) {
+  const base = String(env.SUPABASE_URL || '').replace(/\/+$/, '');
+  let supabase = 'no-config';
+  if (base && env.SUPABASE_SERVICE_ROLE) {
+    try {
+      const res = await fetch(`${base}/rest/v1/masa_orders?select=id&limit=1`, {
+        headers: {
+          apikey: env.SUPABASE_SERVICE_ROLE,
+          Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE}`,
+        },
+      });
+      supabase = `http-${res.status}`;
+      if (!res.ok) supabase += ' ' + (await res.text().catch(() => '')).slice(0, 160);
+    } catch (err) {
+      supabase = 'threw ' + String(err).slice(0, 120);
+    }
+  }
+  return new Response(
+    JSON.stringify({
+      ok: true,
+      endpoint: 'masa/buy',
+      configured: {
+        terminal: !!Number(env.CARDCOM_TERMINAL),
+        apiName: !!env.CARDCOM_API_NAME,
+        price: env.MASA_PRICE || null,
+        product: env.MASA_PRODUCT_NAME || null,
+        coupon: env.MASA_COUPON_CODE ? `${env.MASA_COUPON_CODE} -${env.MASA_COUPON_PERCENT || 10}%` : null,
+        leadsList: env.MASA_BREVO_LIST_LEADS || null,
+        buyersList: env.MASA_BREVO_LIST_BUYERS || null,
+        brevoKey: !!env.BREVO_API_KEY,
+      },
+      supabase,
+      ts: new Date().toISOString(),
+    }),
+    { status: 200, headers: { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' } },
+  );
+}
+
 export async function onRequestGet(context) {
   const { request, env } = context;
   const url = new URL(request.url);
+  if (url.searchParams.get('health') === '1') return health(env);
   const email = (url.searchParams.get('email') || '').trim().toLowerCase();
   const ref = (url.searchParams.get('ref') || '').slice(0, 60);
 
@@ -200,16 +243,23 @@ export async function onRequestGet(context) {
   return Response.redirect(data.Url, 302);
 }
 
+/**
+ * רישום ההזמנה. best effort — אם זה נכשל, התשלום עדיין ממשיך.
+ *
+ * מחזיר מחרוזת מצב כדי ש-?health=1 יוכל להראות אותה. חשוב: fetch לא
+ * זורק שגיאה על 400 או 401, אז בלי הבדיקה של res.ok הכישלון היה שקט.
+ */
 async function recordOrder(env, order) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return;
+  if (!env.SUPABASE_URL || !env.SUPABASE_SERVICE_ROLE) return 'no-config';
+  const base = String(env.SUPABASE_URL).replace(/\/+$/, '');
   try {
-    await fetch(`${env.SUPABASE_URL}/rest/v1/masa_orders`, {
+    const res = await fetch(`${base}/rest/v1/masa_orders?on_conflict=low_profile_id`, {
       method: 'POST',
       headers: {
         apikey: env.SUPABASE_SERVICE_ROLE,
         Authorization: `Bearer ${env.SUPABASE_SERVICE_ROLE}`,
         'Content-Type': 'application/json',
-        Prefer: 'resolution=ignore-duplicates',
+        Prefer: 'resolution=ignore-duplicates,return=minimal',
       },
       body: JSON.stringify({
         low_profile_id: order.lowProfileId,
@@ -220,7 +270,14 @@ async function recordOrder(env, order) {
         status: 'pending',
       }),
     });
+    if (!res.ok) {
+      const body = await res.text().catch(() => '');
+      console.log('order record rejected', res.status, body.slice(0, 300));
+      return `http-${res.status}`;
+    }
+    return 'ok';
   } catch (err) {
-    console.log('order record failed', String(err).slice(0, 200));
+    console.log('order record threw', String(err).slice(0, 200));
+    return 'threw';
   }
 }
