@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ערכת פתיחה · יחידת הקליסטניקס</title>
+<meta name="description" content="ערכת פתיחה — יחידת הקליסטניקס. כל הכלים והתכנים שלך במקום אחד.">
+<meta property="og:title" content="ערכת פתיחה — יחידת הקליסטניקס">
+<meta property="og:description" content="כל הכלים והתכנים שלך במקום אחד — קורס תזונה, מאגר תוכן, גמישות ועוד.">
+<meta property="og:image" content="https://matankopel.pages.dev/assets/mk-logo.png">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="יחידת הקליסטניקס — Matan Kopel">
+<meta name="theme-color" content="#2b2f1c">
+<link rel="manifest" href="kit.webmanifest">
+<link rel="apple-touch-icon" href="assets/kit-icon-180.png">
+<meta name="apple-mobile-web-app-title" content="יחידת הקליסטניקס">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Rubik:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --mg:#E6CD7C; --mg2:#C6963A; --mgrad:linear-gradient(135deg,#F1DC92,#C6963A);
+    --ink:#F5EFDE; --ink2:#DAD2BB; --mut:#A8A585;
+    --surf:rgba(13,15,7,.52); --line:rgba(230,205,124,.20); --line2:rgba(230,205,124,.46);
+    --r:16px;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{
+    font-family:'Rubik',Arial,sans-serif;color:var(--ink);
+    background:
+      radial-gradient(120% 60% at 50% 0%, rgba(230,205,124,.06), transparent 60%),
+      linear-gradient(158deg,#3a3e26,#2b2f1c 62%,#232614) fixed;
+    line-height:1.6;-webkit-text-size-adjust:100%;padding-bottom:30px;
+  }
+  .wrap{max-width:620px;margin:0 auto;padding:0 18px}
+  img{max-width:100%;display:block}
+
+  .hero{text-align:center;padding:30px 0 4px}
+  .hero .logo{width:110px;margin:0 auto 10px;filter:drop-shadow(0 6px 18px rgba(0,0,0,.5))}
+  .hero h1{
+    font-size:30px;line-height:1.15;font-weight:900;margin:2px 0 4px;
+    background:var(--mgrad);-webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .hero .unit{font-size:14px;letter-spacing:.14em;color:var(--mut);text-transform:uppercase;margin-bottom:12px}
+  .hero .name{
+    display:inline-block;font-size:19px;font-weight:800;color:#2a2410;
+    background:var(--mgrad);border-radius:999px;padding:6px 20px;
+    box-shadow:0 10px 24px -12px rgba(230,205,124,.6);
+  }
+  .welcome{
+    text-align:center;font-size:16px;color:var(--ink2);max-width:520px;margin:20px auto 0;
+  }
+  .welcome b{color:var(--mg)}
+
+  .btns{display:grid;gap:13px;margin:26px 0 0}
+  .btn{
+    display:flex;align-items:center;gap:13px;text-decoration:none;
+    background:var(--surf);border:1px solid var(--line2);border-radius:var(--r);
+    padding:15px 17px;color:var(--ink);font-weight:600;font-size:16.5px;
+    transition:transform .05s;backdrop-filter:blur(3px);
+  }
+  .btn:active{transform:translateY(1px)}
+  .btn .ic{flex:none;font-size:24px;line-height:1}
+  .btn .tx{flex:1}
+  .btn .arw{color:var(--mg);font-size:20px;opacity:.8}
+  /* primary (menu) */
+  .btn.primary{
+    background:var(--mgrad);color:#2a2410;border-color:rgba(255,255,255,.25);font-weight:800;font-size:18px;
+    box-shadow:0 14px 30px -12px rgba(230,205,124,.5);
+  }
+  .btn.primary .arw{color:#5a4a12}
+  .btn.primary .sub{display:block;font-size:12.5px;font-weight:600;opacity:.75;margin-top:1px}
+
+  .sec-label{text-align:center;font-size:13px;letter-spacing:.12em;color:var(--mut);
+    text-transform:uppercase;margin:22px 0 -6px}
+
+  footer{text-align:center;color:var(--mut);font-size:12px;padding:26px 0 4px;line-height:1.7}
+  footer .rule{height:1px;background:var(--line);max-width:120px;margin:0 auto 12px}
+
+  /* הוסף למסך הבית */
+  .a2hs{margin:22px 0 4px;background:var(--surf);border:1px dashed var(--line2);
+    border-radius:var(--r);padding:15px 16px;text-align:center}
+  .a2hs-btn{display:inline-flex;align-items:center;gap:8px;cursor:pointer;
+    background:var(--mgrad);color:#2a2410;border:none;border-radius:12px;
+    font-family:inherit;font-weight:800;font-size:16px;padding:12px 20px;
+    box-shadow:0 10px 24px -12px rgba(230,205,124,.6)}
+  .a2hs-btn:active{transform:translateY(1px)}
+  .a2hs-sub{color:var(--ink2);font-size:13px;margin-top:9px}
+  .a2hs-help{margin-top:12px;text-align:right;color:var(--ink2);font-size:14px;line-height:1.7;
+    background:rgba(0,0,0,.2);border-radius:12px;padding:12px 14px}
+  .a2hs-help b{color:var(--mg)}
+  /* טיפ חשוב */
+  .tipnote{margin:20px 0 0;background:rgba(0,0,0,.2);border:1px solid var(--line);
+    border-right:4px solid var(--mg);border-radius:12px;padding:13px 15px;
+    color:var(--ink2);font-size:14.5px;line-height:1.65}
+  .tipnote b{color:var(--mg)}
+
+  @media(max-width:420px){ .hero h1{font-size:25px} .btn{font-size:15.5px} .btn.primary{font-size:16.5px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="hero">
+    <img class="logo" src="assets/mk-logo.png" alt="יחידת הקליסטניקס">
+    <h1>ערכת פתיחה</h1>
+    <div class="unit">יחידת הקליסטניקס · Matan Kopel</div>
+    <div class="name" id="name">מתאמן/ת יקר/ה</div>
+  </header>
+
+  <p class="welcome">ברוך הבא ליחידת הקליסטניקס! כאן תמצא את כל הכלים והתכנים
+  שיעזרו לך להפוך <b>ללוחם אמיתי</b> דרך שיטת הקליסטניקס.</p>
+
+  <div class="a2hs" id="a2hs">
+    <button class="a2hs-btn" id="a2hsBtn" type="button">📲 הוסף אותי למסך הבית</button>
+    <div class="a2hs-sub">גישה מהירה לכל הכלים שלך — בלי לחפש בהודעות</div>
+    <div class="a2hs-help" id="a2hsHelp" hidden></div>
+  </div>
+
+  <div class="btns" id="btns">
+    <!-- כפתור התפריט מוזרק כאן אם קיים -->
+    <a class="btn" id="video" href="https://youtu.be/PIe0jIqBB0M" target="_blank" rel="noopener">
+      <span class="ic">🎬</span><span class="tx">סרטון פתיחה — חובה לצפייה קודם</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="group" href="https://chat.whatsapp.com/FsyBAKToBhF3dWEep1mLMD" target="_blank" rel="noopener">
+      <span class="ic">💬</span><span class="tx">קבוצת יחידת הקליסטניקס</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="course" href="#" target="_blank" rel="noopener">
+      <span class="ic">🥗</span><span class="tx">קורס התזונה של היחידה</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="content" href="#" target="_blank" rel="noopener">
+      <span class="ic">📚</span><span class="tx">מאגר התוכן של היחידה</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="flex" href="#" target="_blank" rel="noopener">
+      <span class="ic">🧘</span><span class="tx">רוטינת הגמישות</span><span class="arw">‹</span>
+    </a>
+    <a class="btn" id="band" href="#" target="_blank" rel="noopener">
+      <span class="ic">💪</span><span class="tx">רוטינת חיזוקים עם גומיה</span><span class="arw">‹</span>
+    </a>
+  </div>
+
+  <div class="tipnote">
+    <b>טיפ חשוב להתקדמות:</b> צלם סרטונים מהאימונים — לפחות סט ראשון בכל תרגיל.
+    ככה נוכל לראות שאתה עושה נכון, לתת לך דגשים אישיים ולתקן מה שצריך. לכל שאלה — אנחנו פה בשבילך.
+  </div>
+
+  <footer>
+    <div class="rule"></div>
+    מתן קופל · ע.מ 212739486 · יחידת הקליסטניקס<br>
+    כל הזכויות שמורות · הפצה של התוכן כרוכה בעמידה לדין
+  </footer>
+</div>
+
+<script>
+  // קישורים קבועים (זהים לכל מתאמן)
+  const LINKS = {
+    course:  'https://www.youtube.com/playlist?list=PL0tJ6rOOMxzEOW32pD8Yf5c5drCzsAqui',
+    content: 'https://drive.google.com/file/d/1cU-FG-mIiLwpst71trmLAgNXG-cx2QWV/view?usp=drive_link',
+    flex:    'https://youtu.be/_4-P_ypAk28',
+    band:    'https://youtu.be/UPXbfkh84V0?si=JV3EGdg6k2YywMRZ'
+  };
+  Object.keys(LINKS).forEach(function (k) { document.getElementById(k).href = LINKS[k]; });
+
+  const params = new URLSearchParams(location.search);
+  const name = (params.get('name') || '').trim();
+  if (name) document.getElementById('name').textContent = 'שם: ' + name;
+
+  // הזרקת כפתור התפריט האישי בראש הרשימה (פעם אחת)
+  let menuInjected = false;
+  function injectMenu(url) {
+    if (!url || menuInjected) return;
+    menuInjected = true;
+    const btns = document.getElementById('btns');
+    const a = document.createElement('a');
+    a.className = 'btn primary';
+    a.href = url; a.target = '_blank'; a.rel = 'noopener';
+    a.innerHTML = '<span class="ic">🍽️</span><span class="tx">התפריט האישי שלך' +
+                  '<span class="sub">התפריט + מעקב יומי ושקילות</span></span><span class="arw">‹</span>';
+    btns.insertBefore(a, btns.firstChild);
+    const lbl = document.createElement('div');
+    lbl.className = 'sec-label'; lbl.textContent = 'עוד תכנים של היחידה';
+    btns.insertBefore(lbl, a.nextSibling);
+  }
+
+  // 1) קישור תפריט ישיר ב-URL (?menu=) — לתצוגה מקדימה / גיבוי
+  const directMenu = (params.get('menu') || '').trim();
+  if (directMenu) injectMenu(directMenu);
+
+  // 2) קישור אישי שמתעדכן לבד: ?id=<טלפון> → בודק מול הסקריפט אם כבר יש תפריט (JSONP עוקף CORS)
+  const id = (params.get('id') || '').trim();
+  const KIT_ENDPOINT = 'https://script.google.com/macros/s/AKfycbz5_j9pHH8hQcU0l-fZXn7r0v5p_KmfzK2vaW1ylRdOUf0LoqimlijI_ejrQWjSXisc-A/exec';
+  if (id && !directMenu) {
+    window.__onKit = function (data) { if (data && data.menu) injectMenu(data.menu); };
+    const s = document.createElement('script');
+    s.src = KIT_ENDPOINT + '?kit=' + encodeURIComponent(id) + '&callback=__onKit';
+    s.onerror = function () { /* אם הבדיקה נכשלת — מציגים בלי תפריט, לא שוברים כלום */ };
+    document.head.appendChild(s);
+  }
+
+  // הוסף למסך הבית — הדרכה מותאמת למכשיר, ו-prompt מקורי כשקיים (עצמאי, לא נוגע בשאר)
+  (function () {
+    const banner = document.getElementById('a2hs');
+    if (!banner) return;
+    const btn = document.getElementById('a2hsBtn');
+    const help = document.getElementById('a2hsHelp');
+
+    // אם הדף כבר "מותקן" ונפתח מהאייקון — אין טעם להציג את הפס
+    const installed = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+                      window.navigator.standalone === true;
+    if (installed) { banner.style.display = 'none'; return; }
+
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/i.test(ua);
+    let deferred = null;
+
+    window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; });
+    window.addEventListener('appinstalled', function () { banner.style.display = 'none'; });
+
+    const iosHelp = 'באייפון (בדפדפן Safari): לחץ על כפתור <b>השיתוף</b> (ריבוע עם חץ למעלה) בסרגל התחתון, ' +
+                    'גלול ובחר <b>"הוסף למסך הבית"</b>, ואז <b>"הוסף"</b>.';
+    const andHelp = 'באנדרואיד (בדפדפן Chrome): לחץ על <b>⋮</b> (שלוש נקודות) בפינה העליונה, ' +
+                    'ואז בחר <b>"הוסף למסך הבית"</b> / <b>"התקן אפליקציה"</b>.';
+
+    btn.addEventListener('click', function () {
+      if (deferred) { deferred.prompt(); deferred = null; return; }
+      help.innerHTML = isIOS ? iosHelp : andHelp;
+      help.hidden = false;
+    });
+  })();
+</script>
+</body>
+</html>
