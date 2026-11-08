@@ -72,14 +72,6 @@ const DEAD_WP_PATHS = [
   '/%d7%91%d7%9c%d7%95%d7%92',                      // בלוג (המאמר על מתח)
   '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9e%d7%aa%d7%9f',   // דף-תודה-מתן
   '/%d7%93%d7%a3-%d7%aa%d7%95%d7%93%d7%94-%d7%9c%d7%99%d7%97%d7%99%d7%93%d7%aa-%d7%94%d7%a7%d7%9c%d7%99%d7%a1%d7%98%d7%a0%d7%99%d7%a7%d7%a1',
-  // ===== הליווי האישי והנספחים שלו, שמתן סגר ב-7 בנובמבר 2026 =====
-  // הסילבוסים, ערכת הפתיחה, שאלון התזונה ודפי החתימה על ההסכם.
-  // הקישורים אליהם נשלחו ידנית בוואטסאפ, אז אין מה לשבור — אבל
-  // מי שישלוף קישור ישן יגיע לדף הבית ולא ל-404.
-  '/silabus', '/silabus-3', '/silabus-8',
-  '/silabus-chodashim', '/silabus-chodesh', '/silabus-minui',
-  '/kit', '/tzuna',
-  '/3', '/6', '/8', '/chodesh', '/minui',
 ];
 
 /**
@@ -102,6 +94,39 @@ const BIO_LINKS = {
   '/yt': 'yt',
   '/fb': 'fb',
 };
+
+/**
+ * ‼️ דפי הליווי האישי: ערכת הפתיחה, שאלון התזונה, הסילבוסים ודפי
+ *    החתימה. ב-7 בנובמבר 2026 הם נמחקו מתוך הנחה שהקישורים אליהם
+ *    נשלחו ידנית ולכן "אין מה לשבור".
+ *
+ *    ההנחה הזאת הייתה שגויה, ומתאמן גילה את זה ב-8 בנובמבר: לכל
+ *    מתאמן יש ערכת פתיחה אישית משלו בכתובת
+ *      kit.html?id=<טלפון>&name=<שם>
+ *    חלקם עם תפריט תזונה שנמשך בזמן אמת מ-Apps Script, ורבים
+ *    הוסיפו את הדף למסך הבית. מאז המחיקה כל כתובת כזאת החזירה
+ *    200 עם דף המכירה של 21 יום. הקבצים הוחזרו.
+ *
+ *    למה הפניה ולא הגשה: הדפים האלה מושכים את התמונות שלהם
+ *    מ-assets/ יחסית לשורש, ועל הדומיין של מסע הכוח השורש הוא
+ *    /masa/ — אז הם היו עולים בלי תמונות. כל הקישורים שבידי
+ *    המתאמנים הם ממילא על matankopel.pages.dev, ושם הם שלמים.
+ *    ה-?id= וה-?name= נוסעים איתם בהפניה.
+ */
+const COACHING_HOST = 'matankopel.pages.dev';
+const COACHING_PAGES = [
+  '/kit', '/tzuna', '/silabus',
+  '/silabus-3', '/silabus-8', '/silabus-chodashim',
+  '/silabus-chodesh', '/silabus-minui',
+  '/3', '/6', '/8', '/chodesh', '/minui',
+];
+
+/* הכתובת שהמתאמן פתח יכולה להיות עם .html או בלעדיו. */
+function coachingTarget(pathname) {
+  const p = tidy(pathname).replace(/\.(html|webmanifest)$/, '');
+  if (COACHING_PAGES.indexOf(p) === -1) return null;
+  return tidy(pathname).endsWith('.webmanifest') ? p + '.webmanifest' : p + '.html';
+}
 
 function tidy(pathname) {
   return pathname.replace(/\/+$/, '').toLowerCase();
@@ -178,6 +203,15 @@ export async function onRequest(context) {
 
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
+
+  // דפי הליווי האישי — לכתובת שבה הם באמת יושבים, עם ה-?id= וה-?name=.
+  const coaching = coachingTarget(url.pathname);
+  if (coaching) {
+    const to = new URL(url);
+    to.hostname = COACHING_HOST;
+    to.pathname = coaching;
+    return Response.redirect(to.toString(), 302);
+  }
 
   // Function שיושבת בשורש של 21 יום — עוברת כמו שהיא.
   if (ROOT_FUNCTIONS.includes(tidy(url.pathname))) return next();

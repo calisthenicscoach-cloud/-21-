@@ -136,17 +136,25 @@ await check('עמידת ידיים',    APEX + HANDSTAND + '/', HOME);
 await check('המאמר על מתח',   APEX + BLOG + '/',      HOME);
 await check('תודה — פרטים',   APEX + THANKS_LEAD + '/', HOME);
 
-console.log('\n--- הליווי האישי והנספחים שלו, שנסגרו ---');
-await check('/silabus',       APEX + '/silabus',       HOME);
-await check('/silabus-3',     APEX + '/silabus-3',     HOME);
-await check('/silabus-minui', APEX + '/silabus-minui/', HOME);
-await check('/kit',           APEX + '/kit',           HOME);
-await check('/tzuna',         APEX + '/tzuna',         HOME);
-await check('/3',             APEX + '/3',             HOME);
-await check('/8/',            APEX + '/8/',            HOME);
-await check('/chodesh',       APEX + '/chodesh',       HOME);
-await check('/minui',         APEX + '/minui',         HOME);
+console.log('\n--- דפי הליווי האישי, שחזרו לאוויר ---');
+const KIT = '302 -> https://matankopel.pages.dev';
+await check('/silabus',        APEX + '/silabus',        KIT + '/silabus.html');
+await check('/silabus-3',      APEX + '/silabus-3',      KIT + '/silabus-3.html');
+await check('/silabus-minui',  APEX + '/silabus-minui/', KIT + '/silabus-minui.html');
+await check('/kit',            APEX + '/kit',            KIT + '/kit.html');
+await check('/kit.html',       APEX + '/kit.html',       KIT + '/kit.html');
+await check('/tzuna',          APEX + '/tzuna',          KIT + '/tzuna.html');
+await check('/3',              APEX + '/3',              KIT + '/3.html');
+await check('/8/',             APEX + '/8/',             KIT + '/8.html');
+await check('/chodesh',        APEX + '/chodesh',        KIT + '/chodesh.html');
+await check('/minui',          APEX + '/minui',          KIT + '/minui.html');
+await check('kit.webmanifest', APEX + '/kit.webmanifest', KIT + '/kit.webmanifest');
+await check('‼️ הערכה האישית נוסעת שלמה',
+            APEX + '/kit.html?id=504446413&name=%D7%93%D7%A0%D7%99%D7%90%D7%9C',
+            KIT + '/kit.html?id=504446413&name=%D7%93%D7%A0%D7%99%D7%90%D7%9C');
 await check('על pages.dev לא נגענו', 'https://matankopel.pages.dev/kit', 'UNTOUCHED');
+await check('kit.html על pages.dev לא נגענו',
+            'https://matankopel.pages.dev/kit.html?id=1', 'UNTOUCHED');
 
 console.log('\n' + pass + ' עברו, ' + fail + ' נכשלו\n');
 process.exit(fail ? 1 : 0);
