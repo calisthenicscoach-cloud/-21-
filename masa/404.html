@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>הדף לא נמצא — מסע הכוח</title>
+<meta name="robots" content="noindex">
+<meta name="theme-color" content="#2F6BFF">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root{ --bg:#F2EFE7; --card:#fff; --ink:#1A1A1E; --ink2:#57534B;
+         --line:#E7E1D4; --accent:#2F6BFF; --accent-d:#1E52E0; }
+  *{box-sizing:border-box}
+  body{margin:0;min-height:100svh;display:grid;place-items:center;padding:24px;
+       background:var(--bg);color:var(--ink);
+       font:16px/1.65 Heebo,-apple-system,BlinkMacSystemFont,Arial,sans-serif}
+  .card{width:100%;max-width:440px;background:var(--card);border:1px solid var(--line);
+        border-radius:20px;padding:30px 24px;text-align:center;
+        box-shadow:0 10px 30px rgba(26,26,30,.06)}
+  .mark{width:62px;height:62px;margin:0 auto 16px;border-radius:17px;
+        background:var(--accent);display:grid;place-items:center}
+  .mark svg{width:34px;height:34px;fill:none;stroke:#fff;stroke-width:2.1;
+            stroke-linecap:round;stroke-linejoin:round}
+  h1{margin:0 0 8px;font-size:23px;font-weight:800}
+  p{margin:0 0 22px;color:var(--ink2);font-size:15.5px}
+  a.btn{display:block;margin:0 0 10px;padding:14px 18px;border-radius:13px;
+        text-decoration:none;font-weight:700;font-size:16px}
+  a.go{background:var(--accent);color:#fff}
+  a.go:active{background:var(--accent-d)}
+  a.alt{background:#F8F5EE;color:var(--ink);border:1px solid var(--line)}
+  small{display:block;margin-top:16px;color:#938D80;font-size:13px}
+  small a{color:#938D80}
+</style>
+</head>
+<body>
+  <main class="card">
+    <div class="mark">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M4 5h16"/><path d="M12 7v10"/><path d="M8 11l4-4 4 4"/>
+      </svg>
+    </div>
+    <h1>הדף הזה לא קיים</h1>
+    <p>הקישור שפתחת לא מוביל לשום מקום במסע הכוח.<br>אפשר להמשיך מכאן:</p>
+
+    <!-- ‼️ הכתובות כאן הן /masa/ בכוונה: הן עובדות גם על matankopel.co.il
+         (שם האמצע מגיש את התיקייה) וגם על matankopel.pages.dev.
+         הסקריפט למטה מקצר אותן לכתובת הנקייה בדומיין של מסע הכוח,
+         ובלי ג'אווהסקריפט הקישורים עדיין עובדים. -->
+    <a class="btn go"  id="toApp"   href="/masa/app/">לאפליקציה שלי ←</a>
+    <a class="btn alt" id="toSales" href="/masa/">לדף של מסע הכוח</a>
+
+    <small>נתקעת? כתוב לי:
+      <a href="mailto:calisthenics.coach@matankopel.co.il">calisthenics.coach@matankopel.co.il</a>
+    </small>
+  </main>
+<script>
+/* על הדומיינים של מסע הכוח האפליקציה יושבת על /app/ ודף המכירה על /,
+   ואין סיבה להראות למתאמן את /masa/ בשורת הכתובת. */
+(function(){
+  var MASA_HOSTS = ['matankopel.co.il', 'www.matankopel.co.il', 'masa.matankopel.co.il'];
+  if (MASA_HOSTS.indexOf(location.hostname) === -1) return;
+  var app = document.getElementById('toApp'), sales = document.getElementById('toSales');
+  if (app)   app.setAttribute('href', '/app/');
+  if (sales) sales.setAttribute('href', '/');
+})();
+</script>
+</body>
+</html>
