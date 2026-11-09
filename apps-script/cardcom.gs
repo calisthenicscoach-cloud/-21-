@@ -39,6 +39,22 @@ function cardcomSuccess_(body) {
   return /בוצעה בהצלחה/.test(body) || /חיוב כרטיס[\s\S]{0,6}?0(\D|$)/.test(body);
 }
 
+/* ===== זיהוי מוצר → שורת הכנסה נפרדת =====
+   מייל הרכישה מכיל שדה "מוצר : X". כל מוצר הולך לשורה השבועית שלו.
+   מוצר שלא ברשימה → ברירת מחדל: הקורס (שומר על ההתנהגות וההיסטוריה הקיימות). */
+const CARDCOM_PRODUCTS = [
+  { match: /מסע\s*הכוח/, prefix: 'מסע הכוח — שבוע ' }
+  // להוספת מוצר עתידי: { match: /שם המוצר/, prefix: 'שם קצר — שבוע ' }
+];
+function cardcomProductPrefix_(body) {
+  const m = body.match(/מוצר\s*[:：]\s*(.+)/);
+  const name = m ? m[1].trim() : '';
+  for (let i = 0; i < CARDCOM_PRODUCTS.length; i++) {
+    if (CARDCOM_PRODUCTS[i].match.test(name)) return CARDCOM_PRODUCTS[i].prefix;
+  }
+  return COURSE_PREFIX;   // ברירת מחדל — הקורס "אתגר 21 יום"
+}
+
 /* תחילת השבוע (יום ראשון) של תאריך */
 function cardcomWeekStart_(d) {
   const x = new Date(d.getFullYear(), d.getMonth(), d.getDate());
@@ -48,7 +64,8 @@ function cardcomWeekStart_(d) {
 
 /* קבוצת השבוע של עסקה: החודש נקבע לפי תאריך העסקה בפועל (לא לפי תחילת השבוע).
    כשהשבוע חוצה חודשים — התווית מוצמדת לתחילת חודש העסקה, כך שכל עסקה נכנסת לחודש הנכון. */
-function cardcomWeekBucket_(d) {
+function cardcomWeekBucket_(d, prefix) {
+  const pre = prefix || COURSE_PREFIX;   // ברירת מחדל — הקורס (ל-cardcomAddManual וכו')
   const ws = cardcomWeekStart_(d);
   let labelDate = ws;
   if (ws.getMonth() !== d.getMonth() || ws.getFullYear() !== d.getFullYear()) {
@@ -56,7 +73,7 @@ function cardcomWeekBucket_(d) {
   }
   return {
     month: d.getMonth() + 1,
-    label: COURSE_PREFIX + Utilities.formatDate(labelDate, 'Asia/Jerusalem', 'dd/MM/yy')
+    label: pre + Utilities.formatDate(labelDate, 'Asia/Jerusalem', 'dd/MM/yy')
   };
 }
 
@@ -148,8 +165,8 @@ function cardcomPreview() {
         const amt = cardcomSaleAmount_(body);
         if (amt == null || !(amt > 0)) { bad.push(msg.getSubject()); return; }
         ok++;
-        const b = cardcomWeekBucket_(msg.getDate());
-        if (!weeks[b.label]) weeks[b.label] = { lbl: b.label.replace(COURSE_PREFIX, ''), month: b.month, sum: 0, count: 0 };
+        const b = cardcomWeekBucket_(msg.getDate(), cardcomProductPrefix_(body));
+        if (!weeks[b.label]) weeks[b.label] = { lbl: b.label, month: b.month, sum: 0, count: 0 };
         weeks[b.label].sum = Math.round((weeks[b.label].sum + amt) * 100) / 100;
         weeks[b.label].count++;
       });
@@ -157,7 +174,7 @@ function cardcomPreview() {
     const ks = Object.keys(weeks).sort();
     out = 'מיילי רכישה שנמצאו: ' + found + '  |  עסקאות תקינות: ' + ok + '\n\n' +
       'סיכום שבועי (שבוע מתחיל ביום ראשון):\n' +
-      (ks.length ? ks.map(function (k) { return 'שבוע ' + weeks[k].lbl + ' (חודש ' + weeks[k].month + '):  ' + weeks[k].count + ' מכירות  ·  ' + weeks[k].sum + ' ₪'; }).join('\n') : '(לא נמצאו עסקאות)') +
+      (ks.length ? ks.map(function (k) { return weeks[k].lbl + ' (חודש ' + weeks[k].month + '):  ' + weeks[k].count + ' מכירות  ·  ' + weeks[k].sum + ' ₪'; }).join('\n') : '(לא נמצאו עסקאות)') +
       (bad.length ? ('\n\n⚠️ לא זוהה סכום ב-' + bad.length + ' מיילים') : '');
   } catch (e) { out = 'שגיאה: ' + e.message; }
   Logger.log(out);
@@ -187,7 +204,8 @@ function cardcomSync() {
         if (amt == null || !(amt > 0)) { report.push('⚠️ לא זוהה סכום: ' + msg.getSubject()); return; }
         const key = cardcomTxnId_(body) || msg.getId();
         if (cardcomSeenHas_(key)) { dup++; return; }
-        const b = cardcomWeekBucket_(msg.getDate());
+        const prefix = cardcomProductPrefix_(body);          // קורס / מסע הכוח / ...
+        const b = cardcomWeekBucket_(msg.getDate(), prefix);
         cardcomAddToWeek_(sh, b.label, CARDCOM_METHOD, amt, b.month);
         cardcomSeenAdd_(key);
         added++;
