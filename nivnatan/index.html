@@ -1283,11 +1283,11 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
     ולעשות את התהליך המלא.<br>
     נשמע פייר?
   </p>
-  <p class="big19">המחיר של הקורס הזה<br>הוא <b>325 ש״ח</b>…</p>
+  <p class="big19">המחיר של הקורס הזה<br>הוא <b>650 ש״ח</b>…</p>
 
   <div class="notice">
     <div class="warn-ic">!</div>
-    <p><b>רק שים לב!</b> אם אתה רואה את זה עכשיו, ״ואוו איך גדלת!״ עדיין במחיר השקה, ויש לך הזדמנות לקבל אותו ב-40% פחות.</p>
+    <p><b>רק שים לב!</b> אם אתה רואה את זה עכשיו, ״ואוו איך גדלת!״ עדיין במחיר השקה, ויש לך הזדמנות לקבל אותו ב-54% פחות.</p>
     <div class="timer" id="timer">
       <div class="tbox"><span class="tnum" id="t-h">24</span><span class="tlbl">שעות</span></div>
       <div class="tbox"><span class="tnum" id="t-m">00</span><span class="tlbl">דקות</span></div>
@@ -1296,9 +1296,9 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
   </div>
 
   <p class="now-price">
-    <span class="old"><span class="strike-anim">325 ש&quot;ח</span></span>
-    <span class="good-anim">רק 147 ש&quot;ח</span>
-    <span class="pay3">או 2 תשלומים קלילים של 87 ש&quot;ח</span>
+    <span class="old"><span class="strike-anim">650 ש&quot;ח</span></span>
+    <span class="good-anim">רק 297 ש&quot;ח</span>
+    <span class="pay3">או 2 תשלומים קלילים של 148.50 ש&quot;ח</span>
   </p>
 </section>
 
@@ -1361,7 +1361,7 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
 /* order flow — WIRE with Matan's Cardcom + webhook when ready */
 (function(){
   /* Cardcom LOW PROFILE via Matan's own Cloudflare Pages function.
-     /api/buy creates the Low Profile transaction server-side (price fixed in env = 147)
+     /api/buy creates the Low Profile transaction server-side (price fixed in env = 297)
      and 302-redirects to Cardcom's hosted page with the e-mail baked into the deal.
 
      ‼️ נבנה מהדומיין שהדף נטען ממנו, ולא מוקלד קבוע.
@@ -1382,7 +1382,7 @@ var RMP_AJAX_LOCALS = {"ajaxUrl":"/api/lead?page=Responder_PluginSettings","_non
   try{ if(refVal){localStorage.setItem('matan_ref',refVal);} else {refVal=localStorage.getItem('matan_ref')||'';} }catch(_){}
   if(refIn)refIn.value=refVal;
   /* ============ ⁑ שומר טעויות הקלדה בדומיין ============
-     קונה שמקליד gmai.com במקום gmail.com משלם 147 ולא מקבל כלום:
+     קונה שמקליד gmai.com במקום gmail.com משלם 297 ולא מקבל כלום:
      מייל הכניסה לקורס נשלח לדומיין שלא קיים. זה קרה באמת במסע הכוח,
      ולכן אותו שומר יושב גם כאן.
      הלוגיקה זהה לזו שב-masa/index.html, ו-masa/typo.test.mjs בודקת
