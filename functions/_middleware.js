@@ -114,6 +114,23 @@ const BIO_LINKS = {
  *    ה-?id= וה-?name= נוסעים איתם בהפניה.
  */
 const COACHING_HOST = 'matankopel.pages.dev';
+
+/**
+ * ‼️ אתר תוכניות האימון של אתגר 21 יום.
+ *
+ * הוא יושב ב-index.html בשורש הפרויקט, ועד שמסע הכוח קיבל את
+ * הדומיין הוא היה פשוט matankopel.co.il. מאז, כל נתיב על הדומיין
+ * הזה נבלע לתוך /masa/ — כולל השורש — ולכן האתר הזה נעלם.
+ *
+ * שני שיעורים בקורס שולחים אליו ("פתח את אתר תוכניות האימון"),
+ * ומ-7.11.2026 ועד 14.11.2026 הם הנחיתו כל קונה של 21 יום על דף
+ * המכירה של מסע הכוח. סער שלמה, שקנה ב-14.11, הוא זה שדיווח.
+ *
+ * ההפניה היא ל-matankopel.pages.dev מאותה סיבה בדיוק שבגללה דפי
+ * הליווי מופנים לשם: הדף מושך assets/ בנתיב יחסי, ועל הדומיין
+ * הזה השורש הוא /masa/ — אז הוא היה עולה בלי התמונות.
+ */
+const PROGRAMS_PAGES = ['/tochniot', '/programs'];
 const COACHING_PAGES = [
   '/kit', '/tzuna', '/silabus',
   '/silabus-3', '/silabus-8', '/silabus-chodashim',
@@ -203,6 +220,14 @@ export async function onRequest(context) {
 
   // הכתובות של ה-API יושבות על /api/ בשני האתרים, ולא זזות.
   if (url.pathname.startsWith('/api/')) return next();
+
+  // אתר תוכניות האימון של 21 יום — לשורש של pages.dev, שם הוא שלם.
+  if (PROGRAMS_PAGES.includes(tidy(url.pathname))) {
+    const to = new URL(url);
+    to.hostname = COACHING_HOST;
+    to.pathname = '/';
+    return Response.redirect(to.toString(), 302);
+  }
 
   // דפי הליווי האישי — לכתובת שבה הם באמת יושבים, עם ה-?id= וה-?name=.
   const coaching = coachingTarget(url.pathname);

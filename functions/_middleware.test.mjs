@@ -136,6 +136,14 @@ await check('עמידת ידיים',    APEX + HANDSTAND + '/', HOME);
 await check('המאמר על מתח',   APEX + BLOG + '/',      HOME);
 await check('תודה — פרטים',   APEX + THANKS_LEAD + '/', HOME);
 
+console.log('\n--- אתר תוכניות האימון של 21 יום ---');
+/* שני שיעורים בקורס שולחים לכאן. אם זה נשבר, קונה של 21 יום
+   נוחת על דף המכירה של מסע הכוח — בדיוק מה שקרה לסער שלמה. */
+const PROGRAMS = '302 -> https://matankopel.pages.dev/';
+await check('/tochniot',  APEX + '/tochniot',  PROGRAMS);
+await check('/tochniot/', APEX + '/tochniot/', PROGRAMS);
+await check('/programs',  APEX + '/programs',  PROGRAMS);
+
 console.log('\n--- דפי הליווי האישי, שחזרו לאוויר ---');
 const KIT = '302 -> https://matankopel.pages.dev';
 await check('/silabus',        APEX + '/silabus',        KIT + '/silabus.html');
