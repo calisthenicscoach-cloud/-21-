@@ -457,7 +457,7 @@ body.lgl-open{overflow:hidden}
 .vwrap{position:relative;margin:22px auto 0;max-width:720px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.45)}
 .vfac{position:absolute;inset:0}
 .vvid{display:block;width:100%;height:100%;object-fit:cover;background:#000}
-.vfr{display:block;width:100%;height:100%;border:0}
+.vfr,.vfac iframe{display:block;width:100%;height:100%;border:0}
 .vplay{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0;border:0;background:rgba(0,0,0,.30);color:#fff;font-family:var(--body);cursor:pointer;transition:background .2s}
 .vplay:hover{background:rgba(0,0,0,.14)}
 .vplay[hidden]{display:none}
@@ -507,23 +507,65 @@ body.lgl-open{overflow:hidden}
   </div>
 </section>
 <script>
-/* נגן ה-VSL: עד שלוחצים — רק תמונה מהאתר עצמו. בלחיצה נטען הנגן של יוטיוב
-   (דומיין ללא עוגיות) ומתחיל לנגן. ככה הדף נשאר קל ולא נטען כלום מיוטיוב מראש. */
+/* נגן ה-VSL: עד שלוחצים — רק תמונה מהאתר עצמו, בלי שום בקשה ליוטיוב.
+   בלחיצה נטען הנגן של יוטיוב מדומיין ללא עוגיות.
+   חשוב: לסרטון יש כתוביות צרובות משלו, והתמלול האוטומטי של יוטיוב נערם
+   עליהן ומלא שגיאות. הפרמטר cc_load_policy=0 לא מכבה אותו (נבדק בדף החי),
+   ולכן הנגן נבנה דרך ה-API ו-unloadModule מכבה את הכתוביות בוודאות.
+   בנוסף מדווחת התקדמות צפייה לפיקסל, לפרסום חוזר לצופים. */
 (function(){
   var f = document.getElementById('vsl-f'), b = document.getElementById('vsl-b');
   if (!f || !b) return;
+  var hit = {}, ticking = 0;
+
+  function ev(name){
+    try { if (window.fbq) window.fbq('trackCustom', name, {content_name:'VSL מסע הכוח'}); } catch(e){}
+  }
+  function killCaptions(p){
+    try { p.unloadModule('captions'); } catch(e){}
+    try { p.unloadModule('cc'); } catch(e){}
+  }
+  function watch(p){
+    if (ticking) return;
+    ticking = setInterval(function(){
+      var d, t;
+      try { d = p.getDuration(); t = p.getCurrentTime(); } catch(e){ return; }
+      if (!d) return;
+      var pc = t / d * 100, m = [25,50,75,95];
+      for (var i = 0; i < m.length; i++){
+        if (pc >= m[i] && !hit[m[i]]){ hit[m[i]] = 1; ev('VSL_' + m[i]); }
+      }
+    }, 2000);
+  }
+  function build(){
+    var host = document.createElement('div');
+    host.id = 'vsl-yt';
+    f.replaceChildren(host);
+    new YT.Player('vsl-yt', {
+      videoId: f.getAttribute('data-yt'),
+      host: 'https://www.youtube-nocookie.com',
+      playerVars: { autoplay:1, rel:0, modestbranding:1, playsinline:1,
+                    iv_load_policy:3, cc_load_policy:0, color:'white', hl:'he' },
+      events: {
+        onReady: function(e){ killCaptions(e.target); try { e.target.playVideo(); } catch(x){} },
+        onStateChange: function(e){
+          if (e.data === 1){ killCaptions(e.target); watch(e.target); }
+        }
+      }
+    });
+  }
   b.addEventListener('click', function(){
-    var id = f.getAttribute('data-yt');
-    if (!id) return;
-    try { if (window.fbq) window.fbq('trackCustom','VSL_Play',{content_name:'VSL מסע הכוח'}); } catch(e){}
-    var i = document.createElement('iframe');
-    i.className = 'vfr';
-    i.title = 'מסע הכוח — הסרטון של מתן';
-    i.src = 'https://www.youtube-nocookie.com/embed/' + id +
-            '?autoplay=1&rel=0&modestbranding=1&playsinline=1&hl=he&cc_load_policy=0&iv_load_policy=3&color=white';
-    i.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
-    i.setAttribute('allowfullscreen','');
-    f.replaceChildren(i);
+    if (!f.getAttribute('data-yt')) return;
+    ev('VSL_Play');
+    if (window.YT && window.YT.Player) return build();
+    var prev = window.onYouTubeIframeAPIReady;
+    window.onYouTubeIframeAPIReady = function(){
+      if (typeof prev === 'function') { try { prev(); } catch(e){} }
+      build();
+    };
+    var s = document.createElement('script');
+    s.src = 'https://www.youtube.com/iframe_api';
+    document.head.appendChild(s);
   });
 })();
 </script>
