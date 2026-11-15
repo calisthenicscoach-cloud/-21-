@@ -448,6 +448,25 @@ body.lgl-open{overflow:hidden}
 .csep{color:rgba(255,255,255,.3)}
 .clink{font:inherit;background:none;border:0;padding:0;color:#C9BEF7;text-decoration:underline;text-underline-offset:2px;cursor:pointer}
 .clink:hover{color:#fff}
+
+/* ---------- VSL ---------- */
+.vsl{background:var(--dark);color:var(--on-dark);padding-block:clamp(32px,7vw,56px)}
+.vsl .eyebrow{color:var(--c6)}
+.vsl .kicker{color:var(--on-dark);margin-top:8px}
+.vlede{color:var(--on-dark-mut);font-size:clamp(16px,4.2vw,19px);line-height:1.5;max-width:36ch;margin:12px auto 0}
+.vwrap{position:relative;margin:22px auto 0;max-width:720px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.vfac{position:absolute;inset:0}
+.vvid{display:block;width:100%;height:100%;object-fit:cover;background:#000}
+.vfr{display:block;width:100%;height:100%;border:0}
+.vplay{position:absolute;inset:0;width:100%;height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:0;border:0;background:rgba(0,0,0,.30);color:#fff;font-family:var(--body);cursor:pointer;transition:background .2s}
+.vplay:hover{background:rgba(0,0,0,.14)}
+.vplay[hidden]{display:none}
+.vplay-i{width:74px;height:74px;border-radius:50%;background:var(--cta);display:grid;place-items:center;box-shadow:0 10px 30px rgba(0,0,0,.45);transition:transform .2s}
+.vplay:hover .vplay-i{transform:scale(1.06)}
+.vplay-i svg{width:28px;height:28px;fill:#fff;margin-left:4px}
+.vplay-t{font-weight:800;font-size:16px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
+.vnote{color:var(--on-dark-mut);font-size:14px;margin:12px 0 0}
+@media(max-width:560px){.vwrap{border-radius:12px}.vplay-i{width:62px;height:62px}.vplay-i svg{width:24px;height:24px}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;600;700;800;900&family=Secular+One&display=swap" rel="stylesheet">
@@ -464,6 +483,50 @@ body.lgl-open{overflow:hidden}
     <p class="reassure">מעל 200 אנשים כבר שינו את הגוף שלהם.</p>
   </div>
 </header>
+
+<!-- ===================== VSL ===================== -->
+<section class="vsl">
+  <div class="wrap">
+    <div class="eyebrow tcenter">4 דקות עם מתן</div>
+    <h2 class="kicker tcenter">לפני שאתה ממשיך לקרוא —<br>תן לי 4 דקות.</h2>
+    <p class="vlede tcenter">אני אספר לך למה הגוף שלך לא משתנה, ומה עשיתי כדי לשנות את זה.</p>
+
+    <div class="vwrap">
+      <div class="vfac" id="vsl-f" data-yt="6GkZ6hvFNy8">
+        <img class="vvid" src="assets/vsl-poster.webp" alt="מתן קופל מסביר על מסע הכוח"
+             width="1280" height="720" loading="lazy" decoding="async">
+        <button class="vplay" id="vsl-b" type="button" aria-label="נגן את הסרטון">
+          <span class="vplay-i"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5.14v13.72a1 1 0 0 0 1.53.85l10.76-6.86a1 1 0 0 0 0-1.7L9.53 4.29A1 1 0 0 0 8 5.14Z"/></svg></span>
+          <span class="vplay-t">לחץ לצפייה</span>
+        </button>
+      </div>
+    </div>
+
+    <p class="vnote tcenter">יש כתוביות לכל מילה — אפשר לצפות גם בלי סאונד.</p>
+    <div class="tcenter" style="margin-top:22px"><a class="cta" href="#offer">אני רוצה להתחיל</a></div>
+  </div>
+</section>
+<script>
+/* נגן ה-VSL: עד שלוחצים — רק תמונה מהאתר עצמו. בלחיצה נטען הנגן של יוטיוב
+   (דומיין ללא עוגיות) ומתחיל לנגן. ככה הדף נשאר קל ולא נטען כלום מיוטיוב מראש. */
+(function(){
+  var f = document.getElementById('vsl-f'), b = document.getElementById('vsl-b');
+  if (!f || !b) return;
+  b.addEventListener('click', function(){
+    var id = f.getAttribute('data-yt');
+    if (!id) return;
+    try { if (window.fbq) window.fbq('trackCustom','VSL_Play',{content_name:'VSL מסע הכוח'}); } catch(e){}
+    var i = document.createElement('iframe');
+    i.className = 'vfr';
+    i.title = 'מסע הכוח — הסרטון של מתן';
+    i.src = 'https://www.youtube-nocookie.com/embed/' + id +
+            '?autoplay=1&rel=0&modestbranding=1&playsinline=1&hl=he&cc_lang_pref=he&color=white';
+    i.allow = 'accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture; web-share';
+    i.setAttribute('allowfullscreen','');
+    f.replaceChildren(i);
+  });
+})();
+</script>
 
 <!-- ===================== EARLY PROOF ===================== -->
 <section class="eproof">
