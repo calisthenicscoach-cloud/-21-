@@ -450,11 +450,9 @@ body.lgl-open{overflow:hidden}
 .clink:hover{color:#fff}
 
 /* ---------- VSL ---------- */
-.vsl{background:var(--dark);color:var(--on-dark);padding-block:clamp(32px,7vw,56px)}
-.vsl .eyebrow{color:var(--c6)}
-.vsl .kicker{color:var(--on-dark);margin-top:8px}
-.vlede{color:var(--on-dark-mut);font-size:clamp(16px,4.2vw,19px);line-height:1.5;max-width:36ch;margin:12px auto 0}
-.vwrap{position:relative;margin:22px auto 0;max-width:720px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.12);box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.vkick{margin:26px auto 0;max-width:30ch;font-family:var(--disp);font-size:clamp(19px,5vw,25px);line-height:1.3;color:#fff;text-shadow:0 2px 18px rgba(0,0,0,.6)}
+.vkick b{color:var(--c6);font-weight:inherit}
+.vwrap{position:relative;margin:16px auto 0;max-width:680px;aspect-ratio:16/9;border-radius:16px;overflow:hidden;background:#000;border:1px solid rgba(255,255,255,.18);box-shadow:0 20px 56px rgba(0,0,0,.55)}
 .vfac{position:absolute;inset:0}
 .vvid{display:block;width:100%;height:100%;object-fit:cover;background:#000}
 .vfr,.vfac iframe{display:block;width:100%;height:100%;border:0}
@@ -465,7 +463,7 @@ body.lgl-open{overflow:hidden}
 .vplay:hover .vplay-i{transform:scale(1.06)}
 .vplay-i svg{width:28px;height:28px;fill:#fff;margin-left:4px}
 .vplay-t{font-weight:800;font-size:16px;text-shadow:0 2px 10px rgba(0,0,0,.65)}
-.vnote{color:var(--on-dark-mut);font-size:14px;margin:12px 0 0}
+.vnote{margin:12px 0 0;font-size:14px;color:#CFCBC3;text-shadow:0 1px 10px rgba(0,0,0,.6)}
 @media(max-width:560px){.vwrap{border-radius:12px}.vplay-i{width:62px;height:62px}.vplay-i svg{width:24px;height:24px}}
 </style>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -479,17 +477,7 @@ body.lgl-open{overflow:hidden}
     <div class="eyebrow">מתן קופל · קליסטניקס</div>
     <h1>תבנה גוף חזק ושרירי —<br>ותלמד לעשות איתו<br><span class="hl">דברים שנראים בלתי אפשריים.</span></h1>
     <p class="lead">תפסיק להתבייש להוריד חולצה. בנה גוף של גבר — מהבית, עם משקל הגוף שלך בלבד.<br>ובדרך גם תעשה את הסקילים שכולם רק חולמים עליהם.</p>
-    <a class="cta" href="#offer">אני רוצה לעשות שינוי!</a>
-    <p class="reassure">מעל 200 אנשים כבר שינו את הגוף שלהם.</p>
-  </div>
-</header>
-
-<!-- ===================== VSL ===================== -->
-<section class="vsl">
-  <div class="wrap">
-    <div class="eyebrow tcenter">4 דקות עם מתן</div>
-    <h2 class="kicker tcenter">מתאמן חודשים —<br>ונראה בדיוק אותו דבר?</h2>
-    <p class="vlede tcenter">זאת לא הגנטיקה שלך. תן לי ארבע דקות, ואני אראה לך מה באמת עוצר אותך — ואיך יוצאים מזה.</p>
+    <p class="vkick">מתאמן חודשים ונראה בדיוק אותו דבר?<br><b>תן לי 4 דקות.</b></p>
 
     <div class="vwrap">
       <div class="vfac" id="vsl-f" data-yt="6GkZ6hvFNy8">
@@ -501,11 +489,13 @@ body.lgl-open{overflow:hidden}
         </button>
       </div>
     </div>
+    <p class="vnote">יש כתוביות לכל מילה — אפשר לצפות גם בלי סאונד.</p>
 
-    <p class="vnote tcenter">יש כתוביות לכל מילה — אפשר לצפות גם בלי סאונד.</p>
-    <div class="tcenter" style="margin-top:22px"><a class="cta" href="#offer">אני רוצה להתחיל</a></div>
+    <a class="cta" href="#offer">אני רוצה לעשות שינוי!</a>
+    <p class="reassure">מעל 200 אנשים כבר שינו את הגוף שלהם.</p>
   </div>
-</section>
+</header>
+
 <script>
 /* נגן ה-VSL: עד שלוחצים — רק תמונה מהאתר עצמו, בלי שום בקשה ליוטיוב.
    בלחיצה נטען הנגן של יוטיוב מדומיין ללא עוגיות.
