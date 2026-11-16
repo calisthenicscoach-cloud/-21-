@@ -145,6 +145,21 @@ function coachingTarget(pathname) {
   return tidy(pathname).endsWith('.webmanifest') ? p + '.webmanifest' : p + '.html';
 }
 
+/**
+ * הפניה שאסור לאף דפדפן או שרת ביניים לשמור.
+ *
+ * בין 7.11 ל-14.11.2026 הכתובת /tochniot החזירה 200 עם דף המכירה
+ * של מסע הכוח, ותשובה 200 נשמרת במטמון של המכשיר. ב-16.11, יומיים
+ * אחרי שהשרת כבר תוקן, סער שלמה עדיין נחת על דף המכירה. לכן
+ * ההפניות של הכתובות שפעם הוגשו שגוי יוצאות no-store.
+ */
+function sendTo(to, status) {
+  return new Response(null, {
+    status,
+    headers: { Location: to.toString(), 'cache-control': 'no-store' },
+  });
+}
+
 function tidy(pathname) {
   return pathname.replace(/\/+$/, '').toLowerCase();
 }
@@ -226,7 +241,7 @@ export async function onRequest(context) {
     const to = new URL(url);
     to.hostname = COACHING_HOST;
     to.pathname = '/';
-    return Response.redirect(to.toString(), 302);
+    return sendTo(to, 302);
   }
 
   // דפי הליווי האישי — לכתובת שבה הם באמת יושבים, עם ה-?id= וה-?name=.
@@ -235,7 +250,7 @@ export async function onRequest(context) {
     const to = new URL(url);
     to.hostname = COACHING_HOST;
     to.pathname = coaching;
-    return Response.redirect(to.toString(), 302);
+    return sendTo(to, 302);
   }
 
   // Function שיושבת בשורש של 21 יום — עוברת כמו שהיא.
