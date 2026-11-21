@@ -1,4 +1,38 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><style> הקיים ---------- -->
+<style>
+.vwall{display:flex;align-items:stretch;gap:12px;margin-top:26px;padding-bottom:8px;
+  overflow-x:auto;overflow-y:hidden;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.vwall::-webkit-scrollbar{display:none}
+.vwall+.skhint{color:var(--muted);margin-top:12px}
+.vcard{flex:0 0 auto;width:164px;aspect-ratio:9/16;position:relative;padding:0;margin:0;
+  border:1px solid var(--line);border-radius:14px;overflow:hidden;background:#E9EDF4;
+  cursor:pointer;display:block;box-shadow:0 3px 14px -8px rgba(0,0,0,.35);
+  -webkit-tap-highlight-color:transparent}
+.vcard img{width:100%;height:100%;object-fit:cover;display:block;
+  transition:transform .5s cubic-bezier(.22,.8,.3,1)}
+.vcard:hover img{transform:scale(1.035)}
+.vcard::after{content:"";position:absolute;inset-inline:0;bottom:0;height:46%;
+  background:linear-gradient(to top,rgba(0,0,0,.78),rgba(0,0,0,0));pointer-events:none}
+.vplay{position:absolute;inset-inline-start:50%;top:50%;transform:translate(50%,-50%);
+  width:46px;height:46px;border-radius:50%;background:rgba(255,255,255,.93);
+  display:grid;place-items:center;box-shadow:0 4px 16px -4px rgba(0,0,0,.5);z-index:2}
+.vplay svg{width:22px;height:22px;fill:var(--ink);margin-inline-start:2px}
+.vname{position:absolute;inset-inline:0;bottom:9px;z-index:2;text-align:center;color:#fff;
+  font-family:var(--disp);font-size:13px;line-height:1.25;padding:0 8px;
+  text-shadow:0 1px 6px rgba(0,0,0,.6)}
+.vname b{display:block;font-size:14px;font-weight:400}
+.vname i{display:block;font-style:normal;font-size:10.5px;opacity:.82;margin-top:2px}
+.vlb{position:fixed;inset:0;z-index:999;background:rgba(10,10,12,.92);
+  display:grid;place-items:center;padding:18px}
+.vlb[hidden]{display:none}
+.vlb video{max-width:min(94vw,392px);max-height:84vh;width:100%;border-radius:14px;
+  display:block;background:#000;box-shadow:0 18px 60px -20px rgba(0,0,0,.8)}
+.vlbx{position:absolute;top:max(14px,env(safe-area-inset-top,0px));inset-inline-end:14px;
+  width:40px;height:40px;border-radius:50%;border:0;cursor:pointer;
+  background:rgba(255,255,255,.14);color:#fff;font-size:24px;line-height:1}
+@media (max-width:420px){.vcard{width:150px}}
+</style>
+</head><body>
 <title>מתן קופל · קליסטניקס</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 
@@ -803,6 +837,52 @@ body.lgl-open{overflow:hidden}
   </div>
 </section>
 
+
+<!-- ===================== TRAINEE VIDEO REVIEWS ===================== -->
+<section class="who">
+  <div class="wrap stack">
+    <h2 class="kicker tcenter">ושמע אותם<br>אומרים את זה בעצמם:</h2>
+
+    <div class="vwall">
+      <button class="vcard" type="button" data-src="assets/rev-ziv.mp4" aria-label="הביקורת של זיו אלעד">
+        <img src="assets/poster-ziv.webp" alt="זיו אלעד, מתאמן של מתן" loading="lazy" decoding="async" width="540" height="960">
+        <span class="vplay" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="vname"><b>זיו אלעד</b></span>
+      </button>
+
+      <button class="vcard" type="button" data-src="assets/rev-tal.mp4" aria-label="הביקורת של טל">
+        <img src="assets/poster-tal.webp" alt="טל, מתאמן של מתן" loading="lazy" decoding="async" width="540" height="960">
+        <span class="vplay" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="vname"><b>טל</b></span>
+      </button>
+
+      <button class="vcard" type="button" data-src="assets/rev-matan.mp4" aria-label="הביקורת של מתן מרזון">
+        <img src="assets/poster-matan.webp" alt="מתן מרזון, אוסטיאופת מוסמך" loading="lazy" decoding="async" width="540" height="960">
+        <span class="vplay" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="vname"><b>מתן מרזון</b><i>אוסטיאופת מוסמך</i></span>
+      </button>
+
+      <button class="vcard" type="button" data-src="assets/rev-ilan.mp4" aria-label="הביקורת של אילן">
+        <img src="assets/poster-ilan.webp" alt="אילן, מתאמן של מתן" loading="lazy" decoding="async" width="540" height="960">
+        <span class="vplay" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="vname"><b>אילן</b></span>
+      </button>
+
+      <button class="vcard" type="button" data-src="assets/rev-shaked.mp4" aria-label="הביקורת של שקד">
+        <img src="assets/poster-shaked.webp" alt="שקד, מתאמן של מתן" loading="lazy" decoding="async" width="540" height="960">
+        <span class="vplay" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>
+        <span class="vname"><b>שקד</b></span>
+      </button>
+    </div>
+
+    <p class="skhint">אפשר להחליק הצידה · לחץ כדי לנגן</p>
+  </div>
+</section>
+<div class="vlb" id="vlb" hidden>
+  <button class="vlbx" type="button" id="vlbx" aria-label="סגור">&times;</button>
+  <div id="vlbin"></div>
+</div>
+
 <!-- ===================== TRAINEE MESSAGES ===================== -->
 <section class="who">
   <div class="wrap stack">
@@ -1488,4 +1568,38 @@ body.lgl-open{overflow:hidden}
 })();
 </script>
 
+<script>
+(function(){
+  var lb = document.getElementById('vlb'), box = document.getElementById('vlbin'), last = null;
+
+  function close(){
+    var v = box.querySelector('video');
+    if (v){ v.pause(); v.removeAttribute('src'); v.load(); }
+    box.innerHTML = '';
+    lb.hidden = true;
+    document.body.style.overflow = '';
+    if (last) last.focus();
+  }
+
+  function open(src, card){
+    last = card;
+    var v = document.createElement('video');
+    v.src = src; v.controls = true; v.autoplay = true;
+    v.playsInline = true; v.setAttribute('playsinline',''); v.preload = 'auto';
+    box.appendChild(v);
+    lb.hidden = false;
+    document.body.style.overflow = 'hidden';
+    /* iPhone: הניגון חייב לצאת מתוך הלחיצה עצמה, לא מ-autoplay */
+    var pr = v.play(); if (pr && pr.catch) pr.catch(function(){});
+    v.focus();
+  }
+
+  document.querySelectorAll('.vcard').forEach(function(c){
+    c.addEventListener('click', function(){ open(c.dataset.src, c); });
+  });
+  document.getElementById('vlbx').addEventListener('click', close);
+  lb.addEventListener('click', function(e){ if (e.target === lb) close(); });
+  document.addEventListener('keydown', function(e){ if (e.key === 'Escape' && !lb.hidden) close(); });
+})();
+</script>
 </body></html>
