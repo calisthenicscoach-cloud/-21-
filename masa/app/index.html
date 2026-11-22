@@ -414,6 +414,33 @@ a.bookrow{text-decoration:none;color:inherit}
 a.bookrow.live{cursor:pointer}
 a.bookrow.live:active{transform:scale(.99)}
 a.bookrow.live .bchip{background:var(--accent);color:#fff}
+/* ===== סרטוני ההסבר של מתן ===== */
+.cliprow{display:flex;align-items:center;gap:11px;width:100%;margin:0 0 14px;padding:9px;border:1px solid var(--line);border-radius:16px;background:var(--card);box-shadow:0 3px 12px -9px rgba(0,0,0,.35);cursor:pointer;text-align:right;font:inherit;color:inherit;-webkit-tap-highlight-color:transparent}
+.cliprow:active{transform:scale(.995)}
+.clipth{position:relative;flex:0 0 54px;height:72px;border-radius:11px;overflow:hidden;background:#15161A}
+.clipth img{width:100%;height:100%;object-fit:cover;display:block}
+.clipth .pl{position:absolute;inset:0;display:grid;place-items:center;background:rgba(0,0,0,.26)}
+.clipth .pl .ic{width:18px;height:18px;color:#fff}
+.clipb{flex:1;min-width:0}
+.clipb b{display:block;font-family:var(--disp);font-weight:400;font-size:15px;color:var(--ink);line-height:1.35}
+.clipb>span{display:block;margin-top:3px;font-size:12px;color:var(--muted)}
+.cliprow .pg{flex:0 0 auto;color:var(--line2);display:flex}
+.cliprow .pg .ic{width:17px;height:17px}
+.cliprow.seen{padding:7px 9px;background:var(--card2);box-shadow:none}
+.cliprow.seen .clipth{flex-basis:38px;height:50px;border-radius:9px}
+.cliprow.seen .clipb b{font-size:13.5px;color:var(--ink2)}
+.cliprow.seen .clipb>span{font-size:11px}
+.clipnew{display:inline-block;font-style:normal;margin-inline-end:7px;padding:1px 7px;border-radius:100px;background:var(--accent-soft);color:var(--accent-d);font-family:-apple-system,BlinkMacSystemFont,sans-serif;font-size:10.5px;font-weight:800;vertical-align:2px}
+/* הנגן עצמו — מסך מלא, כי הסרטון אנכי */
+.clipscrim{position:fixed;inset:0;z-index:150;background:#000;display:none}
+.clipscrim.on{display:block}
+.clipwrap{position:absolute;inset:0;display:flex;flex-direction:column}
+#clipVid{flex:1;width:100%;min-height:0;background:#000;object-fit:contain}
+.clipbar{flex:0 0 auto;display:flex;align-items:center;gap:12px;padding:12px 16px calc(12px + env(safe-area-inset-bottom,0px));background:#0C0D10}
+.clipbar .ct{flex:1;min-width:0;font-family:var(--disp);font-size:14px;color:#fff;opacity:.92;line-height:1.3}
+.clipbtn{flex:0 0 auto;border:0;border-radius:100px;padding:10px 18px;background:var(--accent);color:#fff;font-family:var(--disp);font-size:14.5px;cursor:pointer}
+.clipbtn.ghost{background:rgba(255,255,255,.15)}
+.clipx{position:absolute;top:calc(10px + env(safe-area-inset-top,0px));inset-inline-end:10px;z-index:2;width:38px;height:38px;border:0;border-radius:100px;background:rgba(0,0,0,.5);color:#fff;font-size:18px;line-height:1;cursor:pointer}
 </style>
 
 <!-- ONBOARD -->
@@ -469,10 +496,18 @@ a.bookrow.live .bchip{background:var(--accent);color:#fff}
 <section id="test" class="screen">
   <div class="pbar2"><div class="pbar2-in"><button class="back" id="teBack"><svg class="ic" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></svg>לשלב</button><div class="ctx" id="teCtx"></div></div></div>
   <div class="wrap"><div class="th"><div class="t" id="teTitle">מבחן מעבר</div><div class="s">בצע את המבחן, וסמן כל דרישה שעברת. כשהכל מסומן — הרמה הבאה נפתחת.</div></div>
+    <div id="teClip"></div>
     <div class="checks" id="teChecks"></div>
     <button class="pass" id="tePass" disabled onclick="passStage()"><svg class="ic" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg><span id="tePassLbl">עברתי!</span></button>
     <div class="pnote">סמן את כל הדרישות כדי לפתוח</div></div>
 </section>
+
+<!-- נגן סרטוני ההסבר -->
+<div class="clipscrim" id="clipScrim"><div class="clipwrap">
+  <button class="clipx" onclick="clipClose()" aria-label="סגור">✕</button>
+  <video id="clipVid" playsinline controls preload="none" controlslist="nodownload noplaybackrate" disablepictureinpicture onended="clipEnded()"></video>
+  <div class="clipbar"><div class="ct" id="clipTitle"></div><button class="clipbtn" id="clipBtn" onclick="clipClose()">סגור</button></div>
+</div></div>
 
 <div class="scrim" id="tips" onclick="if(event.target===this)closeTips()"><div class="sheet">
   <h3><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg>דגשים חשובים</h3>
@@ -778,6 +813,47 @@ function thumbHtml(url){var id=ytid(url);
 const FLAT=[];LEVELS.forEach((lv,li)=>lv.stages.forEach((st,si)=>FLAT.push({li,si,key:li+'-'+si,stageLbl:si===0?"שלב א'":"שלב ב'"})));
 const TOTAL=FLAT.length;
 const LS={get(k,d){try{var v=localStorage.getItem(k);return v==null?d:JSON.parse(v);}catch(e){return d;}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch(e){}},del(k){try{localStorage.removeItem(k);}catch(e){}}};
+
+/* ===== סרטוני ההסבר של מתן =====
+   הקבצים יושבים אצלנו ב-vid/ ולא ביוטיוב: כל אחד כ-2 מגה, הרבה מתחת
+   למגבלת 25MB לקובץ של Cloudflare Pages. כך אין נגן זר, אין עוגיות,
+   ואין את הכתוביות האוטומטיות של יוטיוב שנערמות על הכתוביות הצרובות.
+   preload="none" — עד שלוחצים, אפס בתים יורדים. */
+const CLIPS={
+  intro:  {f:'vid/intro.mp4',   p:'vid/intro.webp',   t:'איך עובדת התוכנית',      s:'מתן · 29 שניות'},
+  result: {f:'vid/result.mp4',  p:'vid/result.webp',  t:'קיבלת רמה — מה עכשיו', s:'מתן · 16 שניות'},
+  workout:{f:'vid/workout.mp4', p:'vid/workout.webp', t:'לפני האימון הראשון',  s:'מתן · 26 שניות'},
+  test:   {f:'vid/test.mp4',    p:'vid/test.webp',    t:'איך עובד מבחן המעבר',  s:'מתן · 16 שניות'},
+  library:{f:'vid/library.mp4', p:'vid/library.webp', t:'מה יש בספרייה',           s:'מתן · 15 שניות'}
+};
+function clipSeen(k){return !!LS.get('mk_clip_'+k,0);}
+function clipRow(k){var c=CLIPS[k];if(!c)return '';var seen=clipSeen(k);
+  return `<button class="cliprow${seen?' seen':''}" onclick="clipOpen('${k}')">
+    <span class="clipth"><img src="${c.p}" alt="" width="180" height="240" loading="lazy" decoding="async"><span class="pl">${S.play}</span></span>
+    <span class="clipb"><b>${c.t}</b><span>${seen?'':'<i class="clipnew">חדש</i>'}${c.s}</span></span>
+    <span class="pg">${S.chev}</span></button>`;}
+function clipSlot(k){return `<div id="clipslot-${k}">${clipRow(k)}</div>`;}
+var clipNext=null;
+function clipOpen(k,next){var c=CLIPS[k];if(!c)return;
+  clipNext=next||null;LS.set('mk_clip_'+k,1);
+  var v=document.getElementById('clipVid');
+  document.getElementById('clipTitle').textContent=c.t;
+  var b=document.getElementById('clipBtn');
+  b.textContent=clipNext?'דלג':'סגור';b.className='clipbtn'+(clipNext?' ghost':'');
+  document.getElementById('clipScrim').classList.add('on');
+  try{document.body.style.overflow='hidden';}catch(e){}
+  try{v.src=c.f;v.currentTime=0;var p=v.play();if(p&&p.catch)p.catch(function(){});}catch(e){}}
+function clipEnded(){var b=document.getElementById('clipBtn');if(clipNext){b.textContent='קדימה';b.className='clipbtn';}}
+function clipClose(){var v=document.getElementById('clipVid');
+  try{v.pause();v.removeAttribute('src');v.load();}catch(e){}
+  document.getElementById('clipScrim').classList.remove('on');
+  try{document.body.style.overflow='';}catch(e){}
+  /* השורה עדיין על המסך — להוריד ממנה את "חדש" אחרי שצפה. */
+  ['intro','result','workout','test','library'].forEach(function(k){
+    var el=document.getElementById('clipslot-'+k);if(el)el.innerHTML=clipRow(k);});
+  var f=clipNext;clipNext=null;if(f)f();}
+/* הפתיחה רצה פעם אחת, מיד אחרי השם ולפני מבחן הכניסה, עם כפתור דילוג. */
+function startQuiz(){if(clipSeen('intro'))go('quiz');else clipOpen('intro',function(){go('quiz');});}
 function getPassed(){return new Set(LS.get('mk_passed',[]));}
 function setPassed(s){LS.set('mk_passed',[...s]);}
 function idxOf(key){return FLAT.findIndex(f=>f.key===key);}
@@ -818,6 +894,7 @@ function showResult(sidx){var f=FLAT[sidx],li=f.li,lvl=LEVELS[li].n,lv=LEVELS[li
     <div class="rname">${lv.name}</div>
     <div class="rsub">רמה ${lvl} · ${slbl}</div>
     <p class="desc">${nm?esc(nm)+' — ':''}מיקמנו אותך בדיוק לפי היכולת שלך. מכאן מטפסים, רמה אחרי רמה, עד הפסגה.</p>
+    ${clipSlot('result')}
     <div class="rgoal"><span class="rgl">המטרה בדרך</span><span class="rgv">${lv.skill}</span></div>
     <div class="rstep">${step}</div>
     <button class="rcta" style="background:${col}" onclick="enterStage(${sidx})">התחל · רמה ${lvl} ${slbl}<svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button>
@@ -904,6 +981,7 @@ function bookRow(b){
              : `<div class="bookrow">${inner}</div>`;}
 function renderTech(){
   document.getElementById('v-tech').innerHTML=`<div class="libnote">כל התוכן הנלווה לתוכנית במקום אחד — ספרים דיגיטליים וסרטוני הדרכה מעמיקים.</div>
+    ${clipSlot('library')}
     <div class="hsec">ספרים דיגיטליים</div><div class="exwrap">${BOOKS.map(bookRow).join('')}</div>
     <div class="hsec">סרטוני הדרכה</div>${techRows(GUIDES)}`;}
 
@@ -919,6 +997,7 @@ function renderProfile(){var passed=getPassed(),next=FLAT.find(f=>!passed.has(f.
     </div>
     <div class="hsec">הגדרות</div>
     <div class="plist">
+      <button class="prow" onclick="clipOpen('intro')"><span class="pi">${S.play}</span><span class="pl">הסבר הפתיחה — איך עובדת התוכנית</span><span class="pg">${S.chev}</span></button>
       <button class="prow" onclick="openInst()"><span class="pi"><svg class="ic" viewBox="0 0 24 24"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M12 7v7M9 11l3 3 3-3"/></svg></span><span class="pl">שמור את האפליקציה במסך הבית</span><span class="pg">${S.chev}</span></button>
       <button class="prow" onclick="openTips()"><span class="pi"><svg class="ic" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M12 8h.01M11 12h1v4h1"/></svg></span><span class="pl">דגשים חשובים</span><span class="pg">${S.chev}</span></button>
       <button class="prow" onclick="redoTest()"><span class="pi"><svg class="ic" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/></svg></span><span class="pl">עשה מחדש את מבחן הכניסה</span><span class="pg">${S.chev}</span></button>
@@ -984,8 +1063,8 @@ function openWorkout(kind){var lv=LEVELS[cur.li],st=lv.stages[cur.si],wo=kind===
   document.getElementById('woTitle').textContent=names[kind]+(kind==='legs'&&lv.legs.note?` · ${lv.legs.note}`:'');
   document.getElementById('woMeta').innerHTML=`<span class="chip">${S.cal}${freqT(wo.freq)}</span><span class="chip">${S.clock}${wo.dur}</span>`+(kind==='legs'?'<span class="chip">משותף לשני השלבים</span>':'');
   var tc=techsForWorkout(wo);
-  document.getElementById('woTech').innerHTML=tc.length?`<div class="mustbox"><div class="mk">${S.target}<span>חובה לצפות לפני האימון · טכניקות התרגילים</span></div>
-    <div class="msub">צפה בטכניקות של התרגילים בשלב הזה לפני שאתה מתחיל. טכניקה נקייה = התקדמות בטוחה, בלי פציעות.</div>`+techRows(tc.map(t=>({n:'טכניקה — '+t.n,u:t.u})))+`</div>`:'';
+  document.getElementById('woTech').innerHTML=clipSlot('workout')+(tc.length?`<div class="mustbox"><div class="mk">${S.target}<span>חובה לצפות לפני האימון · טכניקות התרגילים</span></div>
+    <div class="msub">צפה בטכניקות של התרגילים בשלב הזה לפני שאתה מתחיל. טכניקה נקייה = התקדמות בטוחה, בלי פציעות.</div>`+techRows(tc.map(t=>({n:'טכניקה — '+t.n,u:t.u})))+`</div>`:'');
   document.getElementById('woWarm').innerHTML=`<div class="note warm"><div class="wi">${S.flame}</div><div class="wb"><b>חימום — חובה לפני האימון</b><span>מכין את הגוף ומוריד סיכון לפציעה</span></div>${thumbHtml(WARMUP)}</div>`;
   document.getElementById('woOpen').innerHTML=wo.open?openerHtml(wo.open):'';
   document.getElementById('woExs').innerHTML=woTableHtml(wo.ex);
@@ -1040,6 +1119,7 @@ function openTest(){var lv=LEVELS[cur.li],st=lv.stages[cur.si];
   document.getElementById('teBack').onclick=()=>openStage(cur.li,cur.si);
   document.getElementById('teTitle').textContent=st.fin?'מבחן סיום 🏆':'מבחן מעבר';
   document.getElementById('tePassLbl').textContent=st.fin?'סיימתי את המסע! 🏆':'עברתי!';
+  document.getElementById('teClip').innerHTML=clipSlot('test');
   teChecked=st.test.map(()=>false);
   document.getElementById('teChecks').innerHTML=st.test.map((t,i)=>{var vids=testVidsOf(t);var thumbs=vids.length?`<div class="chkv">`+vids.map(thumbHtml).join('')+`</div>`:'';return `<div class="chk" id="chk${i}"><button class="chkmain" onclick="toggleChk(${i})"><span class="box">${S.check}</span><span class="cl">${ar(t)}</span></button>${thumbs}</div>`;}).join('');
   refreshPass();go('test');}
@@ -1061,7 +1141,7 @@ function renderWelcome(){var nm=LS.get('mk_name','');var el=document.getElementB
   if(nm){el.innerHTML=`<div class="h-top"><span class="eyb">ברוכים הבאים 👋</span>
     <h1>היי, ${esc(nm)}.<br>המסע <span class="hl">שלך</span> מתחיל כאן.</h1>
     <p class="sub">שישה שלבים לגוף חטוב ושרירי — ולתרגילים שרוב האנשים רק חולמים עליהם.</p></div>
-    <div class="h-bot"><button class="prim" onclick="go('quiz')">בוא נמצא את הרמה שלך<svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button></div>`;}
+    <div class="h-bot"><button class="prim" onclick="startQuiz()">בוא נמצא את הרמה שלך<svg class="ic" viewBox="0 0 24 24"><path d="M19 12H5M11 18l-6-6 6-6"/></svg></button></div>`;}
   else{el.innerHTML=`<div class="h-top"><span class="eyb">ברוכים הבאים</span>
     <h1>הגעת למקום <span class="hl">הנכון</span>.</h1>
     <p class="sub">רגע לפני שיוצאים לדרך — איך קוראים לך?</p></div>
@@ -1070,7 +1150,7 @@ function renderWelcome(){var nm=LS.get('mk_name','');var el=document.getElementB
     setTimeout(function(){try{document.getElementById('nameInput').focus();}catch(e){}},90);}
 }
 function onName(){var i=document.getElementById('nameInput');document.getElementById('nameCta').disabled=!i.value.trim();}
-function saveName(){var v=document.getElementById('nameInput').value.trim();if(!v)return;LS.set('mk_name',v);renderWelcome();go('quiz');}
+function saveName(){var v=document.getElementById('nameInput').value.trim();if(!v)return;LS.set('mk_name',v);renderWelcome();startQuiz();}
 
 /* ---------- boot ---------- */
 try{document.documentElement.setAttribute('dir','rtl');document.documentElement.setAttribute('lang','he');}catch(e){}
