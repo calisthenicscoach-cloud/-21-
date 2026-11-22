@@ -1133,7 +1133,11 @@ function passStage(){var p=getPassed();p.add(cur.li+'-'+cur.si);setPassed(p);var
 let toastT;function toast(m){document.getElementById('toastMsg').textContent=m;var t=document.getElementById('toast');t.classList.add('on');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('on'),2800);}
 function openTips(){document.getElementById('tips').classList.add('on');}
 function closeTips(){document.getElementById('tips').classList.remove('on');}
-function resetAll(){LS.del('mk_passed');LS.del('mk_start');qv={pull:3,dip:5,push:12};renderQuiz();renderWelcome();go('welcome');}
+function resetAll(){LS.del('mk_passed');LS.del('mk_start');
+  /* איפוס מלא מחזיר גם את סרטוני ההסבר — אחרת אי אפשר לראות שוב
+     את המסלול כמו שקונה חדש רואה אותו. */
+  Object.keys(CLIPS).forEach(function(k){LS.del('mk_clip_'+k);});
+  qv={pull:3,dip:5,push:12};renderQuiz();renderWelcome();go('welcome');}
 
 /* ---------- welcome / name ---------- */
 function esc(s){return (s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
